@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Define the producer struct and associate json fields
 type Producer struct {
 	ID        int         `json:"id"`
 	Name      string      `json:"name"`
@@ -23,8 +24,8 @@ type Producer struct {
 
 var producers []Producer
 
-// Fetch API to return the list of all producers
-func retrieveProducers(_ fyne.Window) fyne.CanvasObject {
+// Call producer API and return the list of all producers
+func fetchProducers() {
 	env, err := LoadConfig(".")
 	res, err := http.Get(env.SERVER + "/api/producer")
 	if err != nil {
@@ -36,7 +37,11 @@ func retrieveProducers(_ fyne.Window) fyne.CanvasObject {
 	if err := json.NewDecoder(res.Body).Decode(&producers); err != nil {
 		fmt.Println(err)
 	}
+}
 
+// Display API call result in a table
+func displayProducers(_ fyne.Window) fyne.CanvasObject {
+	fetchProducers()
 	table := widget.NewTable(
 		func() (int, int) { return 500, 150 },
 		func() fyne.CanvasObject {
@@ -60,6 +65,7 @@ func retrieveProducers(_ fyne.Window) fyne.CanvasObject {
 				label.SetText(fmt.Sprintf("%v", producers[id.Row].CreatedAt))
 			}
 		})
+
 	table.SetColumnWidth(0, 50)
 	table.SetColumnWidth(1, 200)
 	table.SetColumnWidth(2, 200)

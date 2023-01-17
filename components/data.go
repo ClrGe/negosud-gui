@@ -18,12 +18,12 @@ var (
 			true},
 		"producers": {"Producteurs",
 			"Liste des producteurs",
-			retrieveProducers,
+			displayProducers,
 			true,
 		},
 		"bottles": {"Bouteilles",
 			"Liste des bouteilles",
-			retrieveBottles,
+			displayBottles,
 			true,
 		},
 		"prod_orders": {"Commandes fournisseurs",
@@ -36,9 +36,14 @@ var (
 			retrieveOrders,
 			true,
 		},
+		"users": {"Utilisateurs",
+			"Liste des utilisateurs",
+			displayUsers,
+			true,
+		},
 	}
 
 	ComponentIndex = map[string][]string{
-		"": {"welcome", "producers", "bottles", "prod_orders", "cl_orders"},
+		"": {"welcome", "producers", "bottles", "prod_orders", "cl_orders", "users"},
 	}
 )

@@ -16,19 +16,19 @@ const currentTab = "currentTab"
 var topWindow fyne.Window
 
 func main() {
-	app := app.NewWithID("negosud")
-	w := app.NewWindow("NEGOSUD")
+	a := app.NewWithID("negosud")
+	w := a.NewWindow("NEGOSUD")
 	topWindow = w
-	app.Settings().SetTheme(theme.LightTheme())
+	a.Settings().SetTheme(theme.LightTheme())
 
-	w.SetMainMenu(makeMenu(app, w))
+	w.SetMainMenu(makeMenu(a, w))
 	w.SetMaster()
 
 	content := container.NewMax()
 	title := widget.NewLabel("Onglet")
 
 	setTab := func(t components.Component) {
-		child := app.NewWindow(t.Title)
+		child := a.NewWindow(t.Title)
 		topWindow = child
 		child.SetContent(t.View(topWindow))
 		child.Show()
@@ -48,7 +48,7 @@ func main() {
 	split := container.NewHSplit(makeNav(setTab, true), tab)
 	split.Offset = 0.2
 	w.SetContent(split)
-	w.Resize(fyne.NewSize(1280, 720))
+	w.Resize(fyne.NewSize(1920, 1080))
 	w.ShowAndRun()
 }
 
@@ -100,7 +100,7 @@ func makeNav(setTab func(component components.Component), loadPrevious bool) fyn
 			return ok && len(children) > 0
 		},
 		CreateNode: func(branch bool) fyne.CanvasObject {
-			return widget.NewLabel("Collection Widgets")
+			return widget.NewLabel("Nouvel onglet")
 		},
 		UpdateNode: func(uid string, branch bool, obj fyne.CanvasObject) {
 			t, ok := components.Components[uid]
@@ -119,11 +119,6 @@ func makeNav(setTab func(component components.Component), loadPrevious bool) fyn
 				setTab(t)
 			}
 		},
-	}
-
-	if loadPrevious {
-		currentPref := a.Preferences().StringWithFallback(currentTab, "accueil")
-		tree.Select(currentPref)
 	}
 
 	return container.NewBorder(nil, nil, nil, nil, tree)
