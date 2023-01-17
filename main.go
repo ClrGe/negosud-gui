@@ -20,7 +20,6 @@ func main() {
 	w := a.NewWindow("NEGOSUD")
 	topWindow = w
 	a.Settings().SetTheme(theme.LightTheme())
-
 	w.SetMainMenu(makeMenu(a, w))
 	w.SetMaster()
 
@@ -28,15 +27,16 @@ func main() {
 	title := widget.NewLabel("Onglet")
 
 	setTab := func(t components.Component) {
-		child := a.NewWindow(t.Title)
-		topWindow = child
-		child.SetContent(t.View(topWindow))
-		child.Show()
-		child.SetOnClosed(func() {
-			topWindow = w
-			return
-		})
-
+		if fyne.CurrentDevice().IsMobile() {
+			child := a.NewWindow(t.Title)
+			topWindow = child
+			child.SetContent(t.View(topWindow))
+			child.Show()
+			child.SetOnClosed(func() {
+				topWindow = w
+				return
+			})
+		}
 		title.SetText(t.Title)
 
 		content.Objects = []fyne.CanvasObject{t.View(w)}

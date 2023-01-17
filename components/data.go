@@ -28,7 +28,7 @@ var (
 		},
 		"prod_orders": {"Commandes fournisseurs",
 			"Historique des commandes fournisseurs",
-			producerForm,
+			retrieveOrders,
 			true,
 		},
 		"cl_orders": {"Commandes clients",
