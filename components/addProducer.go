@@ -9,7 +9,7 @@ import (
 	"net/http"
 )
 
-var newProducer []Producer
+var newProducer Producer
 
 func postNewProducer(newProducer Producer) error {
 	env, err := LoadConfig(".")
@@ -41,10 +41,24 @@ func postNewProducer(newProducer Producer) error {
 }
 
 func producerForm(_ fyne.Window) fyne.CanvasObject {
-	form := &widget.Form{}
-	form.Append("Nom:", widget.NewEntry())
-	form.Append("Details:", widget.NewMultiLineEntry())
-	form.Append("Region:", widget.NewEntry())
+	nameProducer := widget.NewEntry()
 
+	largeText := widget.NewMultiLineEntry()
+
+	form := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "Nom", Widget: nameProducer},
+		},
+		OnCancel: func() {
+			fmt.Println("Annulation")
+		},
+		OnSubmit: func() {
+			fmt.Println("Formulaire envoyé")
+			fyne.CurrentApp().SendNotification(&fyne.Notification{
+				Content: largeText.Text,
+			})
+		},
+	}
+	form.Append("Details", largeText)
 	return form
 }
