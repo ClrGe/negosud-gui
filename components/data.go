@@ -16,19 +16,29 @@ var (
 			"Bienvenue",
 			welcomeScreen,
 			true},
-		"box": {"Producteurs",
+		"producers": {"Producteurs",
 			"Liste des producteurs",
 			retrieveProducers,
 			true,
 		},
-		"table": {"Bouteilles",
+		"bottles": {"Bouteilles",
 			"Liste des bouteilles",
 			retrieveBottles,
+			true,
+		},
+		"prod_orders": {"Commandes fournisseurs",
+			"Historique des commandes fournisseurs",
+			retrieveOrders,
+			true,
+		},
+		"cl_orders": {"Commandes clients",
+			"Historique des commandes clients",
+			retrieveOrders,
 			true,
 		},
 	}
 
 	ComponentIndex = map[string][]string{
-		"": {"welcome", "box", "table"},
+		"": {"welcome", "producers", "bottles", "prod_orders", "cl_orders"},
 	}
 )
