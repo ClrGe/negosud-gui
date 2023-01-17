@@ -12,15 +12,18 @@ type Component struct {
 
 var (
 	Components = map[string]Component{
-		"welcome": {"Accueil", "", welcomeScreen, true},
-		"box": {"Clients",
-			"Liste des clients",
-			makeClientsTab,
+		"welcome": {"Accueil",
+			"Bienvenue",
+			welcomeScreen,
+			true},
+		"box": {"Producteurs",
+			"Liste des producteurs",
+			retrieveProducers,
 			true,
 		},
-		"table": {"Stock",
+		"table": {"Bouteilles",
 			"Liste des bouteilles",
-			makeTableTab,
+			retrieveBottles,
 			true,
 		},
 	}

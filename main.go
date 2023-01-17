@@ -16,19 +16,19 @@ const currentTab = "currentTab"
 var topWindow fyne.Window
 
 func main() {
-	a := app.NewWithID("negosud")
-	w := a.NewWindow("NEGOSUD")
+	app := app.NewWithID("negosud")
+	w := app.NewWindow("NEGOSUD")
 	topWindow = w
-	a.Settings().SetTheme(theme.LightTheme())
+	app.Settings().SetTheme(theme.LightTheme())
 
-	w.SetMainMenu(makeMenu(a, w))
+	w.SetMainMenu(makeMenu(app, w))
 	w.SetMaster()
 
 	content := container.NewMax()
 	title := widget.NewLabel("Onglet")
 
 	setTab := func(t components.Component) {
-		child := a.NewWindow(t.Title)
+		child := app.NewWindow(t.Title)
 		topWindow = child
 		child.SetContent(t.View(topWindow))
 		child.Show()
