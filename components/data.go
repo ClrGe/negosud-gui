@@ -28,7 +28,7 @@ var (
 		},
 		"prod_orders": {"Commandes fournisseurs",
 			"Historique des commandes fournisseurs",
-			retrieveOrders,
+			producerForm,
 			true,
 		},
 		"cl_orders": {"Commandes clients",
@@ -41,9 +41,19 @@ var (
 			displayUsers,
 			true,
 		},
+		"addProd": {"Ajouter producteur",
+			"Ajouter un producteur",
+			producerForm,
+			true,
+		},
+		"addBottle": {"Ajouter produit",
+			"Ajouter un produit",
+			bottleForm,
+			true,
+		},
 	}
 
 	ComponentIndex = map[string][]string{
-		"": {"welcome", "producers", "bottles", "prod_orders", "cl_orders", "users"},
+		"": {"welcome", "producers", "bottles", "prod_orders", "cl_orders", "users", "addProd", "addBottle"},
 	}
 )
