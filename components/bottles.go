@@ -57,8 +57,27 @@ func retrieveBottles(_ fyne.Window) fyne.CanvasObject {
 			}
 			switch id.Col {
 			case 0:
+				label.SetText(fmt.Sprintf("%v", bottles[id.Row].ID))
+			case 1:
 				label.SetText(bottles[id.Row].FullName)
+			case 2:
+				label.SetText(bottles[id.Row].Label)
+			case 3:
+				label.SetText(bottles[id.Row].CreatedBy)
+			case 4:
+				label.SetText(fmt.Sprintf("%v", bottles[id.Row].CurrentPrice))
+			case 5:
+				label.SetText(fmt.Sprintf("%v", bottles[id.Row].Volume))
 			}
 		})
+
+	table.SetColumnWidth(0, 50)
+	table.SetColumnWidth(1, 200)
+	table.SetColumnWidth(2, 200)
+	table.SetColumnWidth(3, 200)
+	table.SetColumnWidth(4, 200)
+	table.SetColumnWidth(5, 200)
+	table.SetRowHeight(2, 50)
+
 	return table
 }
