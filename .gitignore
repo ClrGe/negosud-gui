@@ -1,0 +1,17 @@
+# fichiers ide
+.idea/
+.vscode/
+# environnement
+.env
+*.env
+app.env
+# Programmes & plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+# workspace
+go.work
