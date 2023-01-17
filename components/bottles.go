@@ -9,6 +9,7 @@ import (
 	"time"
 )
 
+// Define the producer struct and associate json fields
 type Bottle struct {
 	ID                int         `json:"id"`
 	FullName          string      `json:"full_Name"`
@@ -30,8 +31,8 @@ type Bottle struct {
 
 var bottles []Bottle
 
-// Fetch API to return the list of all bottles
-func retrieveBottles(_ fyne.Window) fyne.CanvasObject {
+// Call bottle API and return the list of all bottles
+func fetchBottles() {
 	env, err := LoadConfig(".")
 
 	res, err := http.Get(env.SERVER + "/api/bottle")
@@ -44,7 +45,11 @@ func retrieveBottles(_ fyne.Window) fyne.CanvasObject {
 	if err := json.NewDecoder(res.Body).Decode(&bottles); err != nil {
 		fmt.Println(err)
 	}
+}
 
+// Display API call result in a table
+func displayBottles(_ fyne.Window) fyne.CanvasObject {
+	fetchBottles()
 	table := widget.NewTable(
 		func() (int, int) { return 500, 150 },
 		func() fyne.CanvasObject {

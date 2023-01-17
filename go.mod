@@ -6,6 +6,7 @@ require fyne.io/fyne/v2 v2.3.0
 
 require (
 	fyne.io/systray v1.10.1-0.20221115204952-d16a6177e6f1 // indirect
+	github.com/PaulWaldo/fyne-headertable v0.0.2 // indirect
 	github.com/benoitkugler/textlayout v0.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v0.1.0 // indirect
