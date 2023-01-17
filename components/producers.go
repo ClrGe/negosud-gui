@@ -23,6 +23,7 @@ type Producer struct {
 
 var producers []Producer
 
+// Fetch API to return the list of all producers
 func retrieveProducers(_ fyne.Window) fyne.CanvasObject {
 	env, err := LoadConfig(".")
 	res, err := http.Get(env.SERVER + "/api/producer")
@@ -49,8 +50,6 @@ func retrieveProducers(_ fyne.Window) fyne.CanvasObject {
 			switch id.Col {
 			case 0:
 				label.SetText(producers[id.Row].Name)
-			default:
-				label.SetText(producers[id.Row].Details)
 			}
 		})
 	return table

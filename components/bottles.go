@@ -30,6 +30,7 @@ type Bottle struct {
 
 var bottles []Bottle
 
+// Fetch API to return the list of all bottles
 func retrieveBottles(_ fyne.Window) fyne.CanvasObject {
 	env, err := LoadConfig(".")
 
@@ -57,10 +58,6 @@ func retrieveBottles(_ fyne.Window) fyne.CanvasObject {
 			switch id.Col {
 			case 0:
 				label.SetText(bottles[id.Row].FullName)
-			case 1:
-				label.SetText(fmt.Sprintf("%d", bottles[id.Row].Label))
-			default:
-				label.SetText(bottles[id.Row].Description)
 			}
 		})
 	return table
