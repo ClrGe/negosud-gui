@@ -5,6 +5,7 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"negosud-gui/components"
 	"net/url"
@@ -18,6 +19,7 @@ func main() {
 	a := app.NewWithID("negosud")
 	w := a.NewWindow("NEGOSUD")
 	topWindow = w
+	a.Settings().SetTheme(theme.LightTheme())
 
 	w.SetMainMenu(makeMenu(a, w))
 	w.SetMaster()
@@ -46,7 +48,6 @@ func main() {
 	split := container.NewHSplit(makeNav(setTab, true), tab)
 	split.Offset = 0.2
 	w.SetContent(split)
-
 	w.Resize(fyne.NewSize(1280, 720))
 	w.ShowAndRun()
 }
