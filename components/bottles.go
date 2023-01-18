@@ -1,6 +1,7 @@
 package components
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -8,6 +9,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"net/http"
+	"strconv"
 	"time"
 )
 
@@ -33,25 +35,111 @@ type Bottle struct {
 
 var bottles []Bottle
 
-// Call bottle API and return the list of all bottles
-func fetchBottles() {
-	env, err := LoadConfig(".")
-
-	res, err := http.Get(env.SERVER + "/api/bottle")
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println(err)
-	}
-	defer res.Body.Close()
-
-	if err := json.NewDecoder(res.Body).Decode(&bottles); err != nil {
-		fmt.Println(err)
-	}
-}
-
 // Display API call result in a table
-func displayBottles(_ fyne.Window) fyne.CanvasObject {
+func displayBottles(w fyne.Window) fyne.CanvasObject {
 	fetchBottles()
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+	bottleUrl := env.SERVER + "/api/bottle"
+
+	idBottle := widget.NewEntry()
+	idBottle.SetText("25")
+
+	nameBottle := widget.NewEntry()
+	nameBottle.SetText("Cooper Ranch")
+
+	descriptionBottle := widget.NewEntry()
+	descriptionBottle.SetText("Vin de caractère")
+
+	labelBottle := widget.NewEntry()
+	labelBottle.SetText("Biologique")
+
+	yearBottle := widget.NewEntry()
+	yearBottle.SetText("2020")
+
+	volumeBottle := widget.NewEntry()
+	volumeBottle.SetText("75")
+
+	alcoholBottle := widget.NewEntry()
+	alcoholBottle.SetText("13")
+
+	currentPriceBottle := widget.NewEntry()
+	currentPriceBottle.SetText("16")
+
+	createdByBottle := widget.NewEntry()
+	createdByBottle.SetText("negosud")
+
+	form := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "ID", Widget: idBottle},
+			{Text: "Nom", Widget: nameBottle},
+			{Text: "Description", Widget: descriptionBottle},
+			{Text: "Label", Widget: labelBottle},
+			{Text: "Year", Widget: yearBottle},
+			{Text: "Volume", Widget: volumeBottle},
+			{Text: "Alcohol percentage", Widget: alcoholBottle},
+			{Text: "Current price", Widget: currentPriceBottle},
+			{Text: "Created By", Widget: createdByBottle},
+		},
+		OnCancel: func() {
+			fmt.Println("Annulé")
+		},
+		OnSubmit: func() {
+
+			// Convert strings to ints to match Bottle struct types
+			id, err := strconv.Atoi(idBottle.Text)
+			if err != nil {
+				return
+			}
+			volume, err := strconv.Atoi(volumeBottle.Text)
+			if err != nil {
+				return
+			}
+			year, err := strconv.Atoi(yearBottle.Text)
+			if err != nil {
+				return
+			}
+			alcohol, err := strconv.Atoi(alcoholBottle.Text)
+			if err != nil {
+				return
+			}
+			price, err := strconv.Atoi(currentPriceBottle.Text)
+			if err != nil {
+				return
+			}
+
+			// extract the value from the input widget and set the corresponding field in the Producer struct
+			bottle := &Bottle{
+				ID:                id,
+				FullName:          nameBottle.Text,
+				Label:             labelBottle.Text,
+				Volume:            volume,
+				YearProduced:      year,
+				AlcoholPercentage: alcohol,
+				CurrentPrice:      price,
+				CreatedBy:         createdByBottle.Text,
+				Description:       descriptionBottle.Text,
+			}
+
+			// encode the value as JSON and send it to the API.
+			bottleJsonValue, _ := json.Marshal(bottle)
+			bottleResp, err := http.Post(bottleUrl, "application/json", bytes.NewBuffer(bottleJsonValue))
+			if err != nil {
+				fmt.Println("error while encoding response")
+				return
+			}
+			if bottleResp.StatusCode == 204 {
+				bottleFailureDialog(w)
+				fmt.Println(bottleJsonValue)
+				return
+			}
+			bottleSuccessDialog(w)
+			fmt.Println("New bottle added with success")
+
+		},
+	}
 	table := widget.NewTable(
 		func() (int, int) { return 500, 150 },
 		func() fyne.CanvasObject {
@@ -86,9 +174,12 @@ func displayBottles(_ fyne.Window) fyne.CanvasObject {
 	table.SetColumnWidth(5, 200)
 	table.SetRowHeight(2, 50)
 
+	dlt := widget.NewButton("Supprimer", func() {
+		fmt.Println("Deleted")
+	})
 	mainContainer := container.New(layout.NewGridLayout(2))
 	leftContainer := table
-	rightContainer := widget.NewLabel("Détail du produit")
+	rightContainer := container.NewGridWithRows(2, form, dlt)
 
 	mainContainer.Add(leftContainer)
 	mainContainer.Add(rightContainer)

@@ -15,7 +15,7 @@ var activePage fyne.Window
 
 func main() {
 	a := app.NewWithID("negosud")
-	w := a.NewWindow("NEGOSUD - Utilitaire de gestion")
+	w := a.NewWindow("NEGOSUD")
 
 	activePage = w
 	a.Settings().SetTheme(theme.LightTheme())
