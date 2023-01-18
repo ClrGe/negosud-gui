@@ -17,14 +17,15 @@ var topWindow fyne.Window
 
 func main() {
 	a := app.NewWithID("negosud")
-	w := a.NewWindow("NEGOSUD")
+	w := a.NewWindow("NEGOSUD - Utilitaire de gestion")
+
 	topWindow = w
 	a.Settings().SetTheme(theme.LightTheme())
 	w.SetMainMenu(makeMenu(a, w))
 	w.SetMaster()
 
 	content := container.NewMax()
-	title := widget.NewLabel("Onglet")
+	title := widget.NewLabel("Accueil")
 
 	setTab := func(t components.Component) {
 		if fyne.CurrentDevice().IsMobile() {
@@ -47,6 +48,10 @@ func main() {
 		container.NewVBox(title, widget.NewSeparator()), nil, nil, nil, content)
 	split := container.NewHSplit(makeNav(setTab, true), tab)
 	split.Offset = 0.2
+
+	negosudLogo, _ := fyne.LoadResourceFromPath("media/logo.png")
+	w.SetIcon(negosudLogo)
+
 	w.SetContent(split)
 	w.Resize(fyne.NewSize(1920, 1080))
 	w.ShowAndRun()

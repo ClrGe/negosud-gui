@@ -63,6 +63,7 @@ func displayProducers(_ fyne.Window) fyne.CanvasObject {
 				label.SetText(producers[id.Row].CreatedBy)
 			case 4:
 				label.SetText(fmt.Sprintf("%v", producers[id.Row].CreatedAt))
+
 			}
 		})
 

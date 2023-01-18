@@ -7,44 +7,63 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 	"net/http"
+	"strconv"
 )
 
-var newProducer []Producer
-
-func postNewProducer(newProducer Producer) error {
+func producerForm(w fyne.Window) fyne.CanvasObject {
 	env, err := LoadConfig(".")
 	if err != nil {
-		return err
+		fmt.Println("cannot load configuration")
 	}
-	// convert producer struct to json
-	producerJSON, err := json.Marshal(newProducer)
-	if err != nil {
-		return err
-	}
-	// create http client and request
-	client := &http.Client{}
-	req, err := http.NewRequest("POST", env.SERVER+"/api/producer", bytes.NewBuffer(producerJSON))
-	if err != nil {
-		return err
-	}
-	req.Header.Set("Content-Type", "application/json")
-	// make request
-	res, err := client.Do(req)
-	if err != nil {
-		return err
-	}
-	defer res.Body.Close()
-	if res.StatusCode != 201 {
-		return fmt.Errorf("error posting new producer, status code: %d", res.StatusCode)
-	}
-	return nil
-}
+	apiUrl := env.SERVER + "/api/producer"
+	idProducer := widget.NewEntry()
+	nameProducer := widget.NewEntry()
+	detailsProducer := widget.NewEntry()
+	createdByProducer := widget.NewEntry()
 
-func producerForm(_ fyne.Window) fyne.CanvasObject {
-	form := &widget.Form{}
-	form.Append("Nom:", widget.NewEntry())
-	form.Append("Details:", widget.NewMultiLineEntry())
-	form.Append("Region:", widget.NewEntry())
+	form := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "ID", Widget: idProducer},
+			{Text: "Nom", Widget: nameProducer},
+			{Text: "Created By", Widget: createdByProducer},
+		},
+		OnCancel: func() {
+			fmt.Println("Annulation")
+		},
+		OnSubmit: func() {
+			id, err := strconv.Atoi(idProducer.Text)
+			if err != nil {
+				fyne.CurrentApp().SendNotification(&fyne.Notification{
+					Content: "Error converting ID: " + err.Error(),
+				})
+				return
+			}
+			producer := &Producer{
+				ID:        id,
+				Name:      nameProducer.Text,
+				Details:   detailsProducer.Text,
+				CreatedBy: createdByProducer.Text,
+			}
+			jsonValue, _ := json.Marshal(producer)
+			resp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonValue))
+			if err != nil {
+				fyne.CurrentApp().SendNotification(&fyne.Notification{
+					Content: "Error creating producer: " + err.Error(),
+				})
+				return
+			}
+			if resp.StatusCode == 204 {
+				fmt.Println(jsonValue)
+				fmt.Println("Erreur à l'envoi du formulaire")
 
+				producerFailureDialog(w)
+				return
+			}
+			producerSuccessDialog(w)
+			fmt.Println("New producer added with success")
+
+		},
+	}
+	form.Append("Details", detailsProducer)
 	return form
 }
