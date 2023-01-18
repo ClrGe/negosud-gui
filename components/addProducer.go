@@ -65,5 +65,6 @@ func producerForm(w fyne.Window) fyne.CanvasObject {
 		},
 	}
 	form.Append("Details", detailsProducer)
+
 	return form
 }
