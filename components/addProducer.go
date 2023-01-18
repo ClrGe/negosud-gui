@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func producerForm(_ fyne.Window) fyne.CanvasObject {
+func producerForm(w fyne.Window) fyne.CanvasObject {
 	env, err := LoadConfig(".")
 	if err != nil {
 		fmt.Println("cannot load configuration")
@@ -52,20 +52,16 @@ func producerForm(_ fyne.Window) fyne.CanvasObject {
 				})
 				return
 			}
-			if resp.StatusCode != http.StatusCreated {
+			if resp.StatusCode == 204 {
 				fmt.Println(jsonValue)
 				fmt.Println("Erreur à l'envoi du formulaire")
 
-				fyne.CurrentApp().SendNotification(&fyne.Notification{
-					Content: "Error creating producer: " + resp.Status,
-				})
+				producerFailureDialog(w)
 				return
 			}
-			fmt.Println("Nouveau producteur crée avec succès")
+			producerSuccessDialog(w)
+			fmt.Println("New producer added with success")
 
-			fyne.CurrentApp().SendNotification(&fyne.Notification{
-				Content: "Producer created successfully!",
-			})
 		},
 	}
 	form.Append("Details", detailsProducer)

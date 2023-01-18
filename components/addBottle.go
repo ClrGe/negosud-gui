@@ -10,7 +10,7 @@ import (
 	"strconv"
 )
 
-func bottleForm(_ fyne.Window) fyne.CanvasObject {
+func bottleForm(w fyne.Window) fyne.CanvasObject {
 	env, err := LoadConfig(".")
 	if err != nil {
 		fmt.Println("cannot load configuration")
@@ -70,14 +70,13 @@ func bottleForm(_ fyne.Window) fyne.CanvasObject {
 			bottle := &Bottle{
 				ID:                id,
 				FullName:          nameBottle.Text,
-				Description:       descriptionBottle.Text,
 				Label:             labelBottle.Text,
 				Volume:            volume,
 				YearProduced:      year,
 				AlcoholPercentage: alcohol,
 				CurrentPrice:      price,
-
-				CreatedBy: createdByBottle.Text,
+				CreatedBy:         createdByBottle.Text,
+				Description:       descriptionBottle.Text,
 			}
 
 			// encode the value as JSON and send it to the API.
@@ -85,25 +84,16 @@ func bottleForm(_ fyne.Window) fyne.CanvasObject {
 			bottleResp, err := http.Post(bottleUrl, "application/json", bytes.NewBuffer(bottleJsonValue))
 			if err != nil {
 				fmt.Println("error while encoding response")
-				fyne.CurrentApp().SendNotification(&fyne.Notification{
-					Content: "Error creating bottle: " + err.Error(),
-				})
 				return
 			}
-			if bottleResp.StatusCode != http.StatusCreated {
+			if bottleResp.StatusCode == 204 {
+				bottleFailureDialog(w)
 				fmt.Println(bottleJsonValue)
-				fmt.Println("Erreur à l'envoi du formulaire")
-
-				fyne.CurrentApp().SendNotification(&fyne.Notification{
-					Content: "Error creating producer: " + bottleResp.Status,
-				})
 				return
 			}
+			bottleSuccessDialog(w)
 			fmt.Println("New bottle added with success")
 
-			fyne.CurrentApp().SendNotification(&fyne.Notification{
-				Content: "Producer created successfully!",
-			})
 		},
 	}
 	form.Append("Description", descriptionBottle)
