@@ -97,5 +97,6 @@ func bottleForm(w fyne.Window) fyne.CanvasObject {
 		},
 	}
 	form.Append("Description", descriptionBottle)
+
 	return form
 }

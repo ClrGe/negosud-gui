@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"net/http"
 	"time"
@@ -75,5 +77,12 @@ func displayProducers(_ fyne.Window) fyne.CanvasObject {
 	table.SetColumnWidth(5, 200)
 
 	table.SetRowHeight(2, 50)
-	return table
+
+	mainContainer := container.New(layout.NewGridLayout(2))
+	leftContainer := table
+	rightContainer := widget.NewLabel("Détail du producteur")
+
+	mainContainer.Add(leftContainer)
+	mainContainer.Add(rightContainer)
+	return mainContainer
 }
