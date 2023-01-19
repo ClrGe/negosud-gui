@@ -9,8 +9,8 @@ import (
 // Call bottle API and return the list of all bottles
 func fetchBottles() {
 	env, err := LoadConfig(".")
-
 	res, err := http.Get(env.SERVER + "/api/bottle")
+
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println(err)
@@ -26,6 +26,7 @@ func fetchBottles() {
 func fetchProducer() {
 	env, err := LoadConfig(".")
 	res, err := http.Get(env.SERVER + "/api/producer/1")
+
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println(err)
@@ -41,6 +42,7 @@ func fetchProducer() {
 func fetchProducers() {
 	env, err := LoadConfig(".")
 	res, err := http.Get(env.SERVER + "/api/producer")
+
 	if err != nil {
 		fmt.Println(err)
 		fmt.Println(err)

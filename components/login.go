@@ -3,7 +3,6 @@ package components
 import (
 	"fmt"
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/widget"
 )
@@ -25,8 +24,6 @@ func loginForm(w fyne.Window) fyne.CanvasObject {
 			fmt.Println("Annulation")
 		},
 		OnSubmit: func() {
-			connectedScreen(w)
-
 			loginSuccessDialog(w)
 			fmt.Println("Form submitted")
 			fyne.CurrentApp().SendNotification(&fyne.Notification{
@@ -34,17 +31,7 @@ func loginForm(w fyne.Window) fyne.CanvasObject {
 			})
 		},
 	}
+
 	form.Append("Password", password)
 	return form
-}
-
-// connectedScreen loads a tab panel for containers
-func connectedScreen(w fyne.Window) fyne.CanvasObject {
-	content := container.NewBorder(
-		widget.NewLabelWithStyle("Top", fyne.TextAlignCenter, fyne.TextStyle{}),
-		widget.NewLabelWithStyle("Bottom", fyne.TextAlignCenter, fyne.TextStyle{}),
-		widget.NewLabel("Left"),
-		widget.NewLabel("Right"),
-		widget.NewLabel("Border Container"))
-	return container.NewCenter(content)
 }

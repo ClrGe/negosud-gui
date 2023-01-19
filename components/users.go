@@ -9,7 +9,6 @@ import (
 func displayUsers(fyne.Window) fyne.CanvasObject {
 	return container.NewCenter(container.NewVBox(
 		widget.NewLabelWithStyle("Liste des utilisateurs", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
-
 		widget.NewLabel(""),
 	))
 }
