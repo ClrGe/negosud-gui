@@ -70,13 +70,16 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 				})
 				return
 			}
+
 			producer := &Producer{
 				ID:        id,
 				Name:      nameProducer.Text,
 				Details:   detailsProducer.Text,
 				CreatedBy: createdByProducer.Text,
 			}
+
 			jsonValue, _ := json.Marshal(producer)
+
 			resp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonValue))
 			if err != nil {
 				fyne.CurrentApp().SendNotification(&fyne.Notification{
@@ -85,9 +88,7 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 				return
 			}
 			if resp.StatusCode == 204 {
-				fmt.Println(jsonValue)
-				fmt.Println("Erreur à l'envoi du formulaire")
-
+				fmt.Println("Form sent with success")
 				producerFailureDialog(w)
 				return
 			}

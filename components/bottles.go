@@ -140,6 +140,7 @@ func displayBottles(w fyne.Window) fyne.CanvasObject {
 
 		},
 	}
+
 	table := widget.NewTable(
 		func() (int, int) { return 500, 150 },
 		func() fyne.CanvasObject {
@@ -177,6 +178,7 @@ func displayBottles(w fyne.Window) fyne.CanvasObject {
 	dlt := widget.NewButton("Supprimer", func() {
 		fmt.Println("Deleted")
 	})
+
 	mainContainer := container.New(layout.NewGridLayout(2))
 	leftContainer := table
 	rightContainer := container.NewGridWithRows(2, form, dlt)

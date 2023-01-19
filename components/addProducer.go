@@ -12,6 +12,7 @@ import (
 
 func producerForm(w fyne.Window) fyne.CanvasObject {
 	env, err := LoadConfig(".")
+
 	if err != nil {
 		fmt.Println("cannot load configuration")
 	}
@@ -30,7 +31,7 @@ func producerForm(w fyne.Window) fyne.CanvasObject {
 			{Text: "Created By", Widget: createdByProducer},
 		},
 		OnCancel: func() {
-			fmt.Println("Annulation")
+			fmt.Println("Canceled")
 		},
 		OnSubmit: func() {
 			id, err := strconv.Atoi(idProducer.Text)
@@ -48,6 +49,7 @@ func producerForm(w fyne.Window) fyne.CanvasObject {
 			}
 			jsonValue, _ := json.Marshal(producer)
 			resp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonValue))
+
 			if err != nil {
 				fyne.CurrentApp().SendNotification(&fyne.Notification{
 					Content: "Error creating producer: " + err.Error(),
@@ -55,15 +57,12 @@ func producerForm(w fyne.Window) fyne.CanvasObject {
 				return
 			}
 			if resp.StatusCode == 204 {
-				fmt.Println(jsonValue)
-				fmt.Println("Erreur à l'envoi du formulaire")
-
+				fmt.Println("Could not send form")
 				producerFailureDialog(w)
 				return
 			}
 			producerSuccessDialog(w)
 			fmt.Println("New producer added with success")
-
 		},
 	}
 	form.Append("Details", detailsProducer)
