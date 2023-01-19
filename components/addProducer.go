@@ -15,7 +15,9 @@ func producerForm(w fyne.Window) fyne.CanvasObject {
 	if err != nil {
 		fmt.Println("cannot load configuration")
 	}
+
 	apiUrl := env.SERVER + "/api/producer"
+
 	idProducer := widget.NewEntry()
 	nameProducer := widget.NewEntry()
 	detailsProducer := widget.NewEntry()
