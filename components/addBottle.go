@@ -15,6 +15,7 @@ func bottleForm(w fyne.Window) fyne.CanvasObject {
 	if err != nil {
 		fmt.Println("cannot load configuration")
 	}
+
 	bottleUrl := env.SERVER + "/api/bottle"
 
 	idBottle := widget.NewEntry()

@@ -35,16 +35,24 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 	if err != nil {
 		fmt.Println("cannot load configuration")
 	}
+
 	apiUrl := env.SERVER + "/api/producer"
+
 	idProducer := widget.NewEntry()
 	idProducer.SetText("1")
+
 	nameProducer := widget.NewEntry()
 	nameProducer.SetText("Belle Ambiance")
+
 	detailsProducer := widget.NewEntry()
 	detailsProducer.SetText("Wine producer")
+
 	createdByProducer := widget.NewEntry()
 	createdByProducer.SetText("negosud")
+
+	// call API - this function is defined in callAPI.go
 	fetchProducers()
+
 	form := &widget.Form{
 		Items: []*widget.FormItem{
 			{Text: "Id", Widget: idProducer},
@@ -85,9 +93,9 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 			}
 			producerSuccessDialog(w)
 			fmt.Println("New producer added with success")
-
 		},
 	}
+
 	table := widget.NewTable(
 		func() (int, int) { return 500, 150 },
 		func() fyne.CanvasObject {
@@ -109,7 +117,6 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 				label.SetText(producers[id.Row].CreatedBy)
 			case 4:
 				label.SetText(fmt.Sprintf("%v", producers[id.Row].CreatedAt))
-
 			}
 		})
 
@@ -121,13 +128,17 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 	table.SetColumnWidth(5, 200)
 
 	table.SetRowHeight(2, 50)
+
 	dlt := widget.NewButton("Supprimer", func() {
 		fmt.Println("Deleted")
 	})
+
 	mainContainer := container.New(layout.NewGridLayout(2))
 	leftContainer := table
 	rightContainer := container.NewGridWithRows(2, form, dlt)
+
 	mainContainer.Add(leftContainer)
 	mainContainer.Add(rightContainer)
+
 	return mainContainer
 }
