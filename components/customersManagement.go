@@ -6,9 +6,9 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-func displayUsers(fyne.Window) fyne.CanvasObject {
+func displayCustomers(fyne.Window) fyne.CanvasObject {
 	return container.NewCenter(container.NewVBox(
-		widget.NewLabelWithStyle("Liste des utilisateurs", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("Liste des clients", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		widget.NewLabel(""),
 	))
 }
