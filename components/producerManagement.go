@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// Define the producer struct and associate json fields
+// Producer struct holds information about a producer
 type Producer struct {
 	ID        int         `json:"id"`
 	Name      string      `json:"name"`
@@ -26,6 +26,7 @@ type Producer struct {
 	Region    interface{} `json:"region"`
 }
 
+// makeProducerTabs function creates a new set of tabs
 func makeProducerTabs(_ fyne.Window) fyne.CanvasObject {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Liste des producteurs", displayProducers(nil)),
@@ -34,36 +35,28 @@ func makeProducerTabs(_ fyne.Window) fyne.CanvasObject {
 		container.NewTabItem("Passer une commande", producerOrdersForm(nil)),
 		container.NewTabItem("Détails", widget.NewLabel("Content of tab 3")),
 	)
-
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
 
-// Call producer API and return individual producer
-func fetchProducer() {
+func producerAPIConfig() string {
 	env, err := LoadConfig(".")
-	res, err := http.Get(env.SERVER + "/api/producer/1")
-
 	if err != nil {
-		fmt.Println(err)
-		fmt.Println(err)
+		fmt.Println("cannot load configuration")
 	}
-	defer res.Body.Close()
 
-	if err := json.NewDecoder(res.Body).Decode(&producer); err != nil {
-		fmt.Println(err)
-	}
+	producerUrl := env.SERVER + "/api/producer"
+	return producerUrl
 }
 
 // Call producer API and return the list of all producers
 func fetchProducers() {
-	env, err := LoadConfig(".")
-	res, err := http.Get(env.SERVER + "/api/producer")
+	apiUrl := producerAPIConfig()
 
+	res, err := http.Get(apiUrl)
 	if err != nil {
 		fmt.Println(err)
 	}
 	defer res.Body.Close()
-
 	if err := json.NewDecoder(res.Body).Decode(&producers); err != nil {
 		fmt.Println(err)
 	}
@@ -74,22 +67,15 @@ var producer []Producer
 
 // Display API call result in a table
 func displayProducers(w fyne.Window) fyne.CanvasObject {
-	env, err := LoadConfig(".")
-	if err != nil {
-		fmt.Println("cannot load configuration")
-	}
 
-	apiUrl := env.SERVER + "/api/producer"
+	apiUrl := producerAPIConfig()
 
 	idProducer := widget.NewEntry()
 	idProducer.SetText("1")
-
 	nameProducer := widget.NewEntry()
 	nameProducer.SetText("Belle Ambiance")
-
 	detailsProducer := widget.NewEntry()
 	detailsProducer.SetText("Wine producer")
-
 	createdByProducer := widget.NewEntry()
 	createdByProducer.SetText("negosud")
 
@@ -112,16 +98,15 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 				})
 				return
 			}
-
 			producer := &Producer{
 				ID:        id,
 				Name:      nameProducer.Text,
 				Details:   detailsProducer.Text,
 				CreatedBy: createdByProducer.Text,
 			}
-
+			// encode the value as JSON
 			jsonValue, _ := json.Marshal(producer)
-
+			// send it to the API
 			resp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonValue))
 			if err != nil {
 				fyne.CurrentApp().SendNotification(&fyne.Notification{
@@ -186,14 +171,10 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 	return mainContainer
 }
 
+// Form to add and send a new producer to the API endpoint (POST)
 func producerForm(w fyne.Window) fyne.CanvasObject {
-	env, err := LoadConfig(".")
 
-	if err != nil {
-		fmt.Println("cannot load configuration")
-	}
-
-	apiUrl := env.SERVER + "/api/producer"
+	apiUrl := producerAPIConfig()
 
 	idProducer := widget.NewEntry()
 	nameProducer := widget.NewEntry()

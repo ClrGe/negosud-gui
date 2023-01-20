@@ -6,6 +6,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+// --------------------------- ENVIRONMENT ------------------------------
+
+// define and load env. variables contained in app.env
+
 type Config struct {
 	SERVER string `mapstructure:"SERVER"`
 }
@@ -25,7 +29,10 @@ func LoadConfig(path string) (config Config, err error) {
 	return
 }
 
-// grouping all information dialogs needed in the package
+// ----------------------------- DIALOGS --------------------------------
+
+// grouping all information dialogs needed in the application
+
 func loginSuccessDialog(w fyne.Window) {
 	dialog.ShowInformation("Succès", "Authentification réussie", w)
 }

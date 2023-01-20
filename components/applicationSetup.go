@@ -76,7 +76,7 @@ var (
 		},
 		"addBottle": {"Ajouter un produit",
 			"Ajouter un produit",
-			bottleForm,
+			addBottleForm,
 			true,
 		},
 		"producerTab": {"Gestion des producteurs",
