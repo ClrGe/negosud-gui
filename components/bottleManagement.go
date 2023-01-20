@@ -172,7 +172,7 @@ func displayBottles(w fyne.Window) fyne.CanvasObject {
 		},
 		func(id widget.TableCellID, cell fyne.CanvasObject) {
 			label := cell.(*widget.Label)
-			if id.Row >= len(producers) {
+			if id.Row >= len(bottles) {
 				return
 			}
 			switch id.Col {
