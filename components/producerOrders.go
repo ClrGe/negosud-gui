@@ -43,7 +43,7 @@ func displayOrders(w fyne.Window) fyne.CanvasObject {
 	createdByProducer := widget.NewEntry()
 	createdByProducer.SetText("negosud")
 
-	producers.fetchProducers()
+	fetchProducers()
 
 	table := widget.NewTable(
 		func() (int, int) { return 500, 150 },
@@ -52,20 +52,20 @@ func displayOrders(w fyne.Window) fyne.CanvasObject {
 		},
 		func(id widget.TableCellID, cell fyne.CanvasObject) {
 			label := cell.(*widget.Label)
-			if id.Row >= len(producers.producers) {
+			if id.Row >= len(producers) {
 				return
 			}
 			switch id.Col {
 			case 0:
-				label.SetText(fmt.Sprintf("%d", producers.producers[id.Row].ID))
+				label.SetText(fmt.Sprintf("%d", producers[id.Row].ID))
 			case 1:
-				label.SetText(producers.producers[id.Row].Name)
+				label.SetText(producers[id.Row].Name)
 			case 2:
-				label.SetText(producers.producers[id.Row].Details)
+				label.SetText(producers[id.Row].Details)
 			case 3:
-				label.SetText(producers.producers[id.Row].CreatedBy)
+				label.SetText(producers[id.Row].CreatedBy)
 			case 4:
-				label.SetText(fmt.Sprintf("%v", producers.producers[id.Row].CreatedAt))
+				label.SetText(fmt.Sprintf("%v", producers[id.Row].CreatedAt))
 			}
 		})
 
@@ -117,7 +117,7 @@ func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
 				})
 				return
 			}
-			producer := &producers.Producer{
+			producer := &Producer{
 				ID:        id,
 				Name:      nameProducer.Text,
 				Details:   comment.Text,
