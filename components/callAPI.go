@@ -45,7 +45,6 @@ func fetchProducers() {
 
 	if err != nil {
 		fmt.Println(err)
-		fmt.Println(err)
 	}
 	defer res.Body.Close()
 

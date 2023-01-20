@@ -76,10 +76,14 @@ var (
 			bottleForm,
 			true,
 		},
+		"tabs": {"Test onglets",
+			"test",
+			makeAppTabsTab,
+			true},
 	}
 
 	ComponentIndex = map[string][]string{
-		"":                    {"welcome", "login", "connected"},
+		"":                    {"welcome", "login", "connected", "tabs"},
 		"connected":           {"producer_management", "bottle_management", "customer_management"},
 		"producer_management": {"producers", "prod_orders", "addProd"},
 		"bottle_management":   {"bottles", "addBottle"},
