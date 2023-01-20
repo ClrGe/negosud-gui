@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-// Define the producer struct and associate json fields
+// Define the Bottle struct and associate json fields
 type Bottle struct {
 	ID                int         `json:"id"`
 	FullName          string      `json:"full_Name"`
@@ -33,7 +33,31 @@ type Bottle struct {
 	Producer          interface{} `json:"producer"`
 }
 
+func makeBottleTabs(_ fyne.Window) fyne.CanvasObject {
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Liste des produits", displayBottles(nil)),
+		container.NewTabItem("Ajouter un produit", bottleForm(nil)),
+	)
+	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
+
 var bottles []Bottle
+
+// Call bottle API and return the list of all bottles
+func fetchBottles() {
+	env, err := LoadConfig(".")
+	res, err := http.Get(env.SERVER + "/api/bottle")
+
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println(err)
+	}
+	defer res.Body.Close()
+
+	if err := json.NewDecoder(res.Body).Decode(&bottles); err != nil {
+		fmt.Println(err)
+	}
+}
 
 // Display API call result in a table
 func displayBottles(w fyne.Window) fyne.CanvasObject {
@@ -185,5 +209,102 @@ func displayBottles(w fyne.Window) fyne.CanvasObject {
 
 	mainContainer.Add(leftContainer)
 	mainContainer.Add(rightContainer)
+	return mainContainer
+}
+
+func bottleForm(w fyne.Window) fyne.CanvasObject {
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+
+	bottleUrl := env.SERVER + "/api/bottle"
+
+	idBottle := widget.NewEntry()
+	nameBottle := widget.NewEntry()
+	descriptionBottle := widget.NewEntry()
+	labelBottle := widget.NewEntry()
+	yearBottle := widget.NewEntry()
+	volumeBottle := widget.NewEntry()
+	alcoholBottle := widget.NewEntry()
+	currentPriceBottle := widget.NewEntry()
+	createdByBottle := widget.NewEntry()
+
+	title := widget.NewLabelWithStyle("AJOUTER UN NOUVEAU PRODUIT", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
+
+	form :=
+		&widget.Form{
+			Items: []*widget.FormItem{
+				{Text: "ID", Widget: idBottle},
+				{Text: "Nom", Widget: nameBottle},
+				{Text: "Description", Widget: descriptionBottle},
+				{Text: "Label", Widget: labelBottle},
+				{Text: "Year", Widget: yearBottle},
+				{Text: "Volume", Widget: volumeBottle},
+				{Text: "Alcohol percentage", Widget: alcoholBottle},
+				{Text: "Current price", Widget: currentPriceBottle},
+				{Text: "Created By", Widget: createdByBottle},
+			},
+			OnCancel: func() {
+				fmt.Println("Annulé")
+			},
+			OnSubmit: func() {
+
+				// Convert strings to ints to match Bottle struct types
+				id, err := strconv.Atoi(idBottle.Text)
+				if err != nil {
+					return
+				}
+				volume, err := strconv.Atoi(volumeBottle.Text)
+				if err != nil {
+					return
+				}
+				year, err := strconv.Atoi(yearBottle.Text)
+				if err != nil {
+					return
+				}
+				alcohol, err := strconv.Atoi(alcoholBottle.Text)
+				if err != nil {
+					return
+				}
+				price, err := strconv.Atoi(currentPriceBottle.Text)
+				if err != nil {
+					return
+				}
+
+				// extract the value from the input widget and set the corresponding field in the Producer struct
+				bottle := &Bottle{
+					ID:                id,
+					FullName:          nameBottle.Text,
+					Label:             labelBottle.Text,
+					Volume:            volume,
+					YearProduced:      year,
+					AlcoholPercentage: alcohol,
+					CurrentPrice:      price,
+					CreatedBy:         createdByBottle.Text,
+					Description:       descriptionBottle.Text,
+				}
+
+				// encode the value as JSON and send it to the API.
+				bottleJsonValue, _ := json.Marshal(bottle)
+				bottleResp, err := http.Post(bottleUrl, "application/json", bytes.NewBuffer(bottleJsonValue))
+				if err != nil {
+					fmt.Println("error while encoding response")
+					return
+				}
+				if bottleResp.StatusCode == 204 {
+					bottleFailureDialog(w)
+					fmt.Println(bottleJsonValue)
+					return
+				}
+				bottleSuccessDialog(w)
+				fmt.Println("New bottle added with success")
+
+			},
+		}
+	form.Append("Description", descriptionBottle)
+	form.Size()
+	mainContainer := container.NewVBox(title, form)
+
 	return mainContainer
 }

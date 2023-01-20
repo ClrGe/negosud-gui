@@ -2,6 +2,9 @@ package components
 
 import (
 	"fyne.io/fyne/v2"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/widget"
 )
 
 type Component struct {
@@ -38,12 +41,12 @@ var (
 		},
 		"prod_orders": {"Commandes producteurs",
 			"Historique des commandes producteurs",
-			retrieveOrders,
+			displayOrders,
 			true,
 		},
 		"cl_orders": {"Commandes clients",
 			"Historique des commandes clients",
-			retrieveOrders,
+			displayOrders,
 			true,
 		},
 		"users": {"Liste des utilisateurs",
@@ -76,17 +79,55 @@ var (
 			bottleForm,
 			true,
 		},
-		"tabs": {"Test onglets",
-			"test",
-			makeAppTabsTab,
+		"producerTab": {"Gestion des producteurs",
+			"producteurs",
+			makeProducerTabs,
+			true,
+		},
+		"bottleTab": {"Gestion des produits",
+			"produits",
+			makeBottleTabs,
 			true},
 	}
 
 	ComponentIndex = map[string][]string{
-		"":                    {"welcome", "login", "connected", "tabs"},
+		"":                    {"welcome", "login", "connected", "producerTab", "bottleTab"},
 		"connected":           {"producer_management", "bottle_management", "customer_management"},
 		"producer_management": {"producers", "prod_orders", "addProd"},
 		"bottle_management":   {"bottles", "addBottle"},
 		"customer_management": {"cl_orders", "users"},
 	}
 )
+
+func welcomeScreen(_ fyne.Window) fyne.CanvasObject {
+	logo := canvas.NewImageFromFile("media/logo-large.png")
+	logo.FillMode = canvas.ImageFillContain
+
+	if fyne.CurrentDevice().IsMobile() {
+		logo.SetMinSize(fyne.NewSize(192, 192))
+	} else {
+		logo.SetMinSize(fyne.NewSize(1364, 920))
+	}
+
+	return container.NewCenter(container.NewVBox(
+		widget.NewLabelWithStyle("Bienvenue sur l'utilitaire de gestion de stock de NEGOSUD !", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		logo,
+		widget.NewLabel(""),
+	))
+}
+
+func logoScreen(_ fyne.Window) fyne.CanvasObject {
+	logo := canvas.NewImageFromFile("media/logo-large.png")
+	logo.FillMode = canvas.ImageFillContain
+
+	if fyne.CurrentDevice().IsMobile() {
+		logo.SetMinSize(fyne.NewSize(192, 192))
+	} else {
+		logo.SetMinSize(fyne.NewSize(1364, 920))
+	}
+
+	return container.NewCenter(container.NewVBox(
+		logo,
+		widget.NewLabel(""),
+	))
+}
