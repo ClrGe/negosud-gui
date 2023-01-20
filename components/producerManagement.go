@@ -26,6 +26,49 @@ type Producer struct {
 	Region    interface{} `json:"region"`
 }
 
+func makeProducerTabs(_ fyne.Window) fyne.CanvasObject {
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Liste des producteurs", displayProducers(nil)),
+		container.NewTabItem("Ajouter un producteur", producerForm(nil)),
+		container.NewTabItem("Historique des commandes", displayOrders(nil)),
+		container.NewTabItem("Passer une commande", producerOrdersForm(nil)),
+		container.NewTabItem("Détails", widget.NewLabel("Content of tab 3")),
+	)
+
+	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
+
+// Call producer API and return individual producer
+func fetchProducer() {
+	env, err := LoadConfig(".")
+	res, err := http.Get(env.SERVER + "/api/producer/1")
+
+	if err != nil {
+		fmt.Println(err)
+		fmt.Println(err)
+	}
+	defer res.Body.Close()
+
+	if err := json.NewDecoder(res.Body).Decode(&producer); err != nil {
+		fmt.Println(err)
+	}
+}
+
+// Call producer API and return the list of all producers
+func fetchProducers() {
+	env, err := LoadConfig(".")
+	res, err := http.Get(env.SERVER + "/api/producer")
+
+	if err != nil {
+		fmt.Println(err)
+	}
+	defer res.Body.Close()
+
+	if err := json.NewDecoder(res.Body).Decode(&producers); err != nil {
+		fmt.Println(err)
+	}
+}
+
 var producers []Producer
 var producer []Producer
 
@@ -50,7 +93,6 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 	createdByProducer := widget.NewEntry()
 	createdByProducer.SetText("negosud")
 
-	// call API - this function is defined in callAPI.go
 	fetchProducers()
 
 	form := &widget.Form{
@@ -70,13 +112,16 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 				})
 				return
 			}
+
 			producer := &Producer{
 				ID:        id,
 				Name:      nameProducer.Text,
 				Details:   detailsProducer.Text,
 				CreatedBy: createdByProducer.Text,
 			}
+
 			jsonValue, _ := json.Marshal(producer)
+
 			resp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonValue))
 			if err != nil {
 				fyne.CurrentApp().SendNotification(&fyne.Notification{
@@ -85,9 +130,7 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 				return
 			}
 			if resp.StatusCode == 204 {
-				fmt.Println(jsonValue)
-				fmt.Println("Erreur à l'envoi du formulaire")
-
+				fmt.Println("Form sent with success")
 				producerFailureDialog(w)
 				return
 			}
@@ -139,6 +182,69 @@ func displayProducers(w fyne.Window) fyne.CanvasObject {
 
 	mainContainer.Add(leftContainer)
 	mainContainer.Add(rightContainer)
+
+	return mainContainer
+}
+
+func producerForm(w fyne.Window) fyne.CanvasObject {
+	env, err := LoadConfig(".")
+
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+
+	apiUrl := env.SERVER + "/api/producer"
+
+	idProducer := widget.NewEntry()
+	nameProducer := widget.NewEntry()
+	detailsProducer := widget.NewEntry()
+	createdByProducer := widget.NewEntry()
+
+	title := widget.NewLabelWithStyle("AJOUTER UN NOUVEAU PRODUCTEUR", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
+
+	form := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "ID", Widget: idProducer},
+			{Text: "Nom", Widget: nameProducer},
+			{Text: "Created By", Widget: createdByProducer},
+		},
+		OnCancel: func() {
+			fmt.Println("Canceled")
+		},
+		OnSubmit: func() {
+			id, err := strconv.Atoi(idProducer.Text)
+			if err != nil {
+				fyne.CurrentApp().SendNotification(&fyne.Notification{
+					Content: "Error converting ID: " + err.Error(),
+				})
+				return
+			}
+			producer := &Producer{
+				ID:        id,
+				Name:      nameProducer.Text,
+				Details:   detailsProducer.Text,
+				CreatedBy: createdByProducer.Text,
+			}
+			jsonValue, _ := json.Marshal(producer)
+			resp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonValue))
+
+			if err != nil {
+				fyne.CurrentApp().SendNotification(&fyne.Notification{
+					Content: "Error creating producer: " + err.Error(),
+				})
+				return
+			}
+			if resp.StatusCode == 204 {
+				fmt.Println("Could not send form")
+				producerFailureDialog(w)
+				return
+			}
+			producerSuccessDialog(w)
+			fmt.Println("New producer added with success")
+		},
+	}
+	form.Append("Details", detailsProducer)
+	mainContainer := container.NewVBox(title, form)
 
 	return mainContainer
 }

@@ -3,10 +3,29 @@ package components
 import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/dialog"
+	"github.com/spf13/viper"
 )
 
-// grouping all information dialogs needed in the package
+type Config struct {
+	SERVER string `mapstructure:"SERVER"`
+}
 
+func LoadConfig(path string) (config Config, err error) {
+	viper.AddConfigPath(path)
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
+	viper.AutomaticEnv()
+
+	err = viper.ReadInConfig()
+	if err != nil {
+		return
+	}
+	err = viper.Unmarshal(&config)
+
+	return
+}
+
+// grouping all information dialogs needed in the package
 func loginSuccessDialog(w fyne.Window) {
 	dialog.ShowInformation("Succès", "Authentification réussie", w)
 }
