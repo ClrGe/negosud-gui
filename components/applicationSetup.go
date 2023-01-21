@@ -87,11 +87,16 @@ var (
 		"bottleTab": {"Gestion des produits",
 			"produits",
 			makeBottleTabs,
+			true,
+		},
+		"ind": {"Producteur individuel",
+			"prod",
+			displayIndividualProducer,
 			true},
 	}
 
 	ComponentIndex = map[string][]string{
-		"":                    {"welcome", "login", "connected", "producerTab", "bottleTab"},
+		"":                    {"welcome", "login", "connected", "producerTab", "bottleTab", "ind"},
 		"connected":           {"producer_management", "bottle_management", "customer_management"},
 		"producer_management": {"producers", "prod_orders", "addProd"},
 		"bottle_management":   {"bottles", "addBottle"},
