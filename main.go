@@ -12,10 +12,13 @@ import (
 	"net/url"
 )
 
+// --------------------------------------------------------------------
+
 const currentTab = "currentTab"
 
 var activePage fyne.Window
 
+// define and start the window
 func main() {
 	a := app.NewWithID("negosud")
 	a.Settings().SetTheme(theme.LightTheme())
@@ -64,6 +67,7 @@ func main() {
 	w.ShowAndRun()
 }
 
+// static homepage with logo and welcome message
 func homePage(_ fyne.Window) fyne.CanvasObject {
 	logo := canvas.NewImageFromFile("media/logo-large.png")
 	logo.FillMode = canvas.ImageFillContain
@@ -116,6 +120,7 @@ func makeNavigation(setTab func(component components.Component), loadPrevious bo
 	return container.NewBorder(nil, nil, nil, nil, arborescence)
 }
 
+// TODO : implement functions for menu items
 func makeMenu(a fyne.App, w fyne.Window) *fyne.MainMenu {
 	newItem := fyne.NewMenuItem("Nouveau", nil)
 	settingsItem := fyne.NewMenuItem("Paramètres", func() {

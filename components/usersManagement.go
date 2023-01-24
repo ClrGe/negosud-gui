@@ -1,7 +1,6 @@
 package components
 
 import (
-	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/validation"
@@ -20,26 +19,18 @@ func loginForm(w fyne.Window) fyne.CanvasObject {
 	email := widget.NewEntry()
 	email.SetPlaceHolder("truc@example.com")
 	email.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
+	email.Resize(fyne.NewSize(300, 35))
+	email.Move(fyne.NewPos(100, 150))
 
 	password := widget.NewPasswordEntry()
 	password.SetPlaceHolder("Mot de passe")
+	password.Resize(fyne.NewSize(300, 35))
+	password.Move(fyne.NewPos(100, 200))
 
-	form := &widget.Form{
-		Items: []*widget.FormItem{
-			{Text: "Email", Widget: email},
-		},
-		OnCancel: func() {
-			fmt.Println("Annulation")
-		},
-		OnSubmit: func() {
-			loginSuccessDialog(w)
-			fmt.Println("Form submitted")
-			fyne.CurrentApp().SendNotification(&fyne.Notification{
-				Title: "Form for: " + email.Text,
-			})
-		},
-	}
+	submitBtn := widget.NewButton("Envoyer", nil)
+	submitBtn.Resize(fyne.NewSize(300, 50))
+	submitBtn.Move(fyne.NewPos(100, 300))
 
-	form.Append("Password", password)
-	return form
+	mainContainer := container.NewWithoutLayout(email, password, submitBtn)
+	return mainContainer
 }

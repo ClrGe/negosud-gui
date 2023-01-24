@@ -2,11 +2,15 @@ module negosud-gui
 
 go 1.19
 
-require fyne.io/fyne/v2 v2.3.0
+require (
+	fyne.io/fyne/v2 v2.3.0
+	github.com/rohanthewiz/rerr v0.1.0
+	github.com/rohanthewiz/rtable v0.1.2
+	github.com/spf13/viper v1.14.0
+)
 
 require (
 	fyne.io/systray v1.10.1-0.20221115204952-d16a6177e6f1 // indirect
-	github.com/PaulWaldo/fyne-headertable v0.0.2 // indirect
 	github.com/benoitkugler/textlayout v0.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/fredbi/uri v0.1.0 // indirect
@@ -31,7 +35,6 @@ require (
 	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/spf13/viper v1.14.0 // indirect
 	github.com/srwiley/oksvg v0.0.0-20220731023508-a61f04f16b76 // indirect
 	github.com/srwiley/rasterx v0.0.0-20210519020934-456a8d69b780 // indirect
 	github.com/stretchr/testify v1.8.1 // indirect

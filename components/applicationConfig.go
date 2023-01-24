@@ -6,6 +6,10 @@ import (
 	"github.com/spf13/viper"
 )
 
+// --------------------------- ENVIRONMENT ------------------------------
+
+// define and load env. variables contained in app.env
+
 type Config struct {
 	SERVER string `mapstructure:"SERVER"`
 }
@@ -25,7 +29,10 @@ func LoadConfig(path string) (config Config, err error) {
 	return
 }
 
-// grouping all information dialogs needed in the package
+// ----------------------------- DIALOGS --------------------------------
+
+// grouping all information dialogs needed in the application
+
 func loginSuccessDialog(w fyne.Window) {
 	dialog.ShowInformation("Succès", "Authentification réussie", w)
 }
@@ -48,4 +55,15 @@ func producerSuccessDialog(w fyne.Window) {
 
 func producerFailureDialog(w fyne.Window) {
 	dialog.ShowInformation("Échec", "Impossible d'ajouter le nouveau producteur", w)
+}
+
+func rvsString(in string) (out string) {
+	runes := []rune(in)
+	ln := len(runes)
+	halfLn := ln / 2
+
+	for i := 0; i < halfLn; i++ {
+		runes[i], runes[ln-1-i] = runes[ln-1-i], runes[i]
+	}
+	return string(runes)
 }
