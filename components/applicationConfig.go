@@ -56,3 +56,14 @@ func producerSuccessDialog(w fyne.Window) {
 func producerFailureDialog(w fyne.Window) {
 	dialog.ShowInformation("Échec", "Impossible d'ajouter le nouveau producteur", w)
 }
+
+func rvsString(in string) (out string) {
+	runes := []rune(in)
+	ln := len(runes)
+	halfLn := ln / 2
+
+	for i := 0; i < halfLn; i++ {
+		runes[i], runes[ln-1-i] = runes[ln-1-i], runes[i]
+	}
+	return string(runes)
+}
