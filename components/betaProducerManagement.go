@@ -105,7 +105,6 @@ func betaProducerTable(_ fyne.Window) fyne.CanvasObject {
 		}
 		//Handle non-header row clicked
 		str, err := rtable.GetStrCellValue(cell, tableOptions)
-		str2, err := rtable.GetStrCellValue(cell, tableOptions)
 
 		if err != nil {
 			fmt.Println(rerr.StringFromErr(err))
@@ -113,24 +112,20 @@ func betaProducerTable(_ fyne.Window) fyne.CanvasObject {
 		}
 		// Printout body cells
 		rowBinding := tableOptions.Bindings[cell.Row-1]
-		associatedRows := tableOptions.Bindings[cell.Col+1]
 
-		colBinding, err := associatedRows.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
 		cellBinding, err := rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
 		if err != nil {
 			fmt.Println(rerr.StringFromErr(err))
 			return
 		}
-
-		err = colBinding.(binding.String).Set(rvsString(str2))
-		err = cellBinding.(binding.String).Set(rvsString(str))
-		if err != nil {
-			fmt.Println(rerr.StringFromErr(err))
-			return
-		}
+		fmt.Println(cellBinding)
+		//err = cellBinding.(binding.String).Set(rvsString(str))
+		//if err != nil {
+		//	fmt.Println(rerr.StringFromErr(err))
+		//	return
+		//}
 
 		fmt.Println("-->", str)
-		fmt.Println(str2)
 
 		nameProducer.SetText(str)
 		details := string(individual.Details)
