@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"negosud-gui/components"
+	"negosud-gui/widgets"
 	"net/url"
 )
 
@@ -33,7 +33,7 @@ func main() {
 
 	title := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 
-	setTab := func(t components.Component) {
+	setTab := func(t widgets.Component) {
 		if fyne.CurrentDevice().IsMobile() {
 			child := a.NewWindow(t.Title)
 			activePage = child
@@ -83,15 +83,15 @@ func homePage(_ fyne.Window) fyne.CanvasObject {
 	))
 }
 
-func makeNavigation(setTab func(component components.Component), loadPrevious bool) fyne.CanvasObject {
+func makeNavigation(setTab func(component widgets.Component), loadPrevious bool) fyne.CanvasObject {
 	a := fyne.CurrentApp()
 
 	arborescence := &widget.Tree{
 		ChildUIDs: func(uid string) []string {
-			return components.ComponentIndex[uid]
+			return widgets.ComponentIndex[uid]
 		},
 		IsBranch: func(uid string) bool {
-			children, ok := components.ComponentIndex[uid]
+			children, ok := widgets.ComponentIndex[uid]
 
 			return ok && len(children) > 0
 		},
@@ -99,7 +99,7 @@ func makeNavigation(setTab func(component components.Component), loadPrevious bo
 			return widget.NewLabel("Nouvel onglet")
 		},
 		UpdateNode: func(uid string, branch bool, obj fyne.CanvasObject) {
-			t, ok := components.Components[uid]
+			t, ok := widgets.Components[uid]
 			if !ok {
 				fyne.LogError("Missing something : "+uid, nil)
 				return
@@ -110,7 +110,7 @@ func makeNavigation(setTab func(component components.Component), loadPrevious bo
 
 		},
 		OnSelected: func(uid string) {
-			if t, ok := components.Components[uid]; ok {
+			if t, ok := widgets.Components[uid]; ok {
 				a.Preferences().SetString(currentTab, uid)
 				setTab(t)
 			}
