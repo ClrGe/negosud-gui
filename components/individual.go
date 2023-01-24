@@ -6,71 +6,101 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 	"image/color"
+	"io"
 	"net/http"
 	"strings"
 )
 
 var individual Producer
 
-func displayIndividualProducer(w fyne.Window) fyne.CanvasObject {
-	apiUrl := producerAPIConfig() + "/100"
+func fetchIndividual(id string) io.ReadCloser {
+	apiUrl := producerAPIConfig() + "/" + id
 	res, err := http.Get(apiUrl)
 	if err != nil {
 		fmt.Println(err)
 	}
-	defer res.Body.Close()
-	if err := json.NewDecoder(res.Body).Decode(&individual); err != nil {
-		fmt.Println(err)
-	}
 
-	displayName := canvas.NewText(individual.Name, color.Black)
-	displayName.TextSize = 35
-	displayName.Move(fyne.NewPos(10, 50))
+	return res.Body
+}
 
-	displayCreator := canvas.NewText("Ajouté par "+individual.CreatedBy, color.Black)
-	displayCreator.TextSize = 15
-	displayCreator.Move(fyne.NewPos(10, 130))
+func displayIndividualProducer(w fyne.Window) fyne.CanvasObject {
+	var id string
 
-	details := string(individual.Details)
-	details = strings.Replace(individual.Details, "\\n", "\n", -1)
-	displayDetails := widget.NewTextGridFromString(details)
-	displayDetails.Move(fyne.NewPos(10, 180))
+	chooseId := widget.NewEntryWithData(binding.BindString(&id))
+	chooseId.SetText("Saississez un identifiant...")
 
-	//try and bind form
+	nameProducer := widget.NewEntry()
+	nameProducer.Resize(fyne.NewSize(400, 35))
+	nameProducer.Move(fyne.NewPos(10, 200))
 
 	formTitle := canvas.NewText("Modifier un producteur", color.Black)
 	formTitle.TextSize = 20
 	formTitle.TextStyle = fyne.TextStyle{Bold: true}
 	formTitle.Resize(fyne.NewSize(400, 35))
-	formTitle.Move(fyne.NewPos(10, 50))
+	formTitle.Move(fyne.NewPos(10, 150))
 
-	nameProducer := widget.NewEntry()
-	nameProducer.SetText(individual.Name)
-	nameProducer.Resize(fyne.NewSize(400, 35))
-	nameProducer.Move(fyne.NewPos(10, 100))
-
-	detailsProducer := widget.NewEntry()
-	detailsProducer.SetText(details)
+	detailsProducer := widget.NewMultiLineEntry()
 	detailsProducer.Resize(fyne.NewSize(400, 100))
-	detailsProducer.Move(fyne.NewPos(10, 150))
+	detailsProducer.Move(fyne.NewPos(10, 250))
 
 	createdByProducer := widget.NewEntry()
-	createdByProducer.SetText(individual.CreatedBy)
 	createdByProducer.Resize(fyne.NewSize(400, 35))
-	createdByProducer.Move(fyne.NewPos(10, 270))
+	createdByProducer.Move(fyne.NewPos(10, 370))
 
 	submitBtn := widget.NewButton("Envoyer", nil)
 	submitBtn.Resize(fyne.NewSize(400, 50))
-	submitBtn.Move(fyne.NewPos(10, 320))
+	submitBtn.Move(fyne.NewPos(10, 420))
 
-	leftContainer := container.NewWithoutLayout(displayName, displayDetails, displayCreator)
-	rightContainer := container.NewWithoutLayout(nameProducer, detailsProducer, createdByProducer, formTitle, submitBtn)
-	mainContainer := container.New(layout.NewGridLayout(2))
+	form := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "Choix ID", Widget: chooseId},
+		},
+		OnCancel: func() {
+			fmt.Println("Cancelled")
+		},
+		OnSubmit: func() {
+			fmt.Println("Form submitted")
+			id = chooseId.Text
 
-	mainContainer.Add(leftContainer)
-	mainContainer.Add(rightContainer)
+			resultApi := fetchIndividual(id)
+
+			if err := json.NewDecoder(resultApi).Decode(&individual); err != nil {
+				fmt.Println(err)
+			}
+			defer resultApi.Close()
+
+			nameProducer.SetText(individual.Name)
+			details := string(individual.Details)
+			details = strings.Replace(individual.Details, "\\n", "\n", -1)
+			detailsProducer.SetText(details)
+			createdByProducer.SetText(individual.CreatedBy)
+		},
+	}
+
+	form.Move(fyne.NewPos(400, 50))
+
+	mainContainer := container.NewWithoutLayout(form, nameProducer, detailsProducer, createdByProducer, formTitle, submitBtn)
+
 	return mainContainer
+}
+
+func individualPresentation() {
+	details := string(individual.Details)
+	details = strings.Replace(individual.Details, "\\n", "\n", -1)
+
+	displayDetails := widget.NewTextGridFromString(details)
+	displayName := canvas.NewText(individual.Name, color.Black)
+	displayName.TextSize = 35
+	displayName.Move(fyne.NewPos(10, 50))
+	displayCreator := canvas.NewText("Ajouté par "+individual.CreatedBy, color.Black)
+	displayName.TextSize = 35
+	displayName.Move(fyne.NewPos(10, 50))
+
+	displayCreator.TextSize = 15
+	displayCreator.Move(fyne.NewPos(10, 130))
+	displayDetails.Move(fyne.NewPos(10, 180))
+
 }

@@ -89,6 +89,11 @@ var (
 			makeBottleTabs,
 			true,
 		},
+		"tabletab": {"table",
+			"produits",
+			bindTable,
+			true,
+		},
 		"ind": {"Producteur individuel",
 			"prod",
 			displayIndividualProducer,
@@ -96,7 +101,7 @@ var (
 	}
 
 	ComponentIndex = map[string][]string{
-		"":                    {"welcome", "login", "connected", "producerTab", "bottleTab", "ind"},
+		"":                    {"welcome", "login", "connected", "producerTab", "bottleTab", "ind", "tabletab"},
 		"connected":           {"producer_management", "bottle_management", "customer_management"},
 		"producer_management": {"producers", "prod_orders", "addProd"},
 		"bottle_management":   {"bottles", "addBottle"},
