@@ -21,35 +21,62 @@ import (
 
 var BindProducer []binding.DataMap
 
+// makeProducerTabs function creates a new set of tabs
+func makeProducerTabs(_ fyne.Window) fyne.CanvasObject {
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Liste des producteurs", betaProducerTable(nil)),
+		container.NewTabItem("Ajouter un producteur", addNewProducer(nil)),
+		container.NewTabItem("Historique des commandes", displayOrders(nil)),
+		container.NewTabItem("Passer une commande", producerOrdersForm(nil)),
+		container.NewTabItem("Détails", widget.NewLabel("Content of tab 3")),
+	)
+	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
+
 // ProducerColumns defines the header row for the table
 var ProducerColumns = []rtable.ColAttr{
-	{ColName: "Name", Header: "Nom", WidthPercent: 150},
+	{ColName: "ID", Header: "ID", WidthPercent: 50},
+	{ColName: "Name", Header: "Nom", WidthPercent: 120},
 	{ColName: "CreatedBy", Header: "Crée par", WidthPercent: 50},
 }
 
 // betaProducerTable implements a dynamic table bound to an editing form
 func betaProducerTable(_ fyne.Window) fyne.CanvasObject {
-	nameProducer := widget.NewEntry()
-	nameProducer.Resize(fyne.NewSize(400, 35))
-	nameProducer.Move(fyne.NewPos(150, 200))
+
+	// retrieve structs from config package
+	Individual := config.Individual
+	ProducerData := config.ProducerData
 
 	formTitle := canvas.NewText("Modifier un producteur", color.Black)
 	formTitle.TextSize = 20
 	formTitle.TextStyle = fyne.TextStyle{Bold: true}
-	formTitle.Resize(fyne.NewSize(400, 35))
-	formTitle.Move(fyne.NewPos(150, 150))
+	formTitle.Resize(fyne.NewSize(600, 50))
+	formTitle.Move(fyne.NewPos(50, 100))
 
+	nameLabel := canvas.NewText("Nom", color.Black)
+	nameLabel.Resize(fyne.NewSize(600, 20))
+	nameLabel.Move(fyne.NewPos(50, 180))
+	nameProducer := widget.NewEntry()
+	nameProducer.Resize(fyne.NewSize(600, 50))
+	nameProducer.Move(fyne.NewPos(50, 200))
+
+	detailsLabel := canvas.NewText("Description", color.Black)
+	detailsLabel.Resize(fyne.NewSize(600, 20))
+	detailsLabel.Move(fyne.NewPos(50, 280))
 	detailsProducer := widget.NewMultiLineEntry()
-	detailsProducer.Resize(fyne.NewSize(400, 100))
-	detailsProducer.Move(fyne.NewPos(150, 250))
+	detailsProducer.Resize(fyne.NewSize(600, 150))
+	detailsProducer.Move(fyne.NewPos(50, 300))
 
+	createdByLabel := canvas.NewText("Ajouté par", color.Black)
+	createdByLabel.Resize(fyne.NewSize(600, 20))
+	createdByLabel.Move(fyne.NewPos(50, 480))
 	createdByProducer := widget.NewEntry()
-	createdByProducer.Resize(fyne.NewSize(400, 35))
-	createdByProducer.Move(fyne.NewPos(150, 370))
+	createdByProducer.Resize(fyne.NewSize(600, 50))
+	createdByProducer.Move(fyne.NewPos(50, 500))
 
 	submitBtn := widget.NewButton("Envoyer", nil)
-	submitBtn.Resize(fyne.NewSize(400, 50))
-	submitBtn.Move(fyne.NewPos(150, 420))
+	submitBtn.Resize(fyne.NewSize(600, 50))
+	submitBtn.Move(fyne.NewPos(50, 600))
 
 	apiUrl := config.ProducerAPIConfig()
 
@@ -58,12 +85,15 @@ func betaProducerTable(_ fyne.Window) fyne.CanvasObject {
 		fmt.Println(err)
 	}
 
-	if err := json.NewDecoder(res.Body).Decode(&config.ProducerData); err != nil {
+	if err := json.NewDecoder(res.Body).Decode(&ProducerData); err != nil {
 		fmt.Println(err)
 	}
 
-	for i := 0; i < len(config.ProducerData); i++ {
-		BindProducer = append(BindProducer, binding.BindStruct(&config.ProducerData[i]))
+	for i := 0; i < len(ProducerData); i++ {
+		t := ProducerData[i]
+		id := strconv.Itoa(t.Id)
+		ProducerData[i].ID = id
+		BindProducer = append(BindProducer, binding.BindStruct(&ProducerData[i]))
 	}
 
 	tableOptions := &rtable.TableOptions{
@@ -94,7 +124,7 @@ func betaProducerTable(_ fyne.Window) fyne.CanvasObject {
 			return
 		}
 		//Handle non-header row clicked
-		str, err := rtable.GetStrCellValue(cell, tableOptions)
+		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 
 		if err != nil {
 			fmt.Println(rerr.StringFromErr(err))
@@ -109,41 +139,31 @@ func betaProducerTable(_ fyne.Window) fyne.CanvasObject {
 			return
 		}
 		fmt.Println(cellBinding)
-		//err = cellBinding.(binding.String).Set(rvsString(str))
-		//if err != nil {
-		//	fmt.Println(rerr.StringFromErr(err))
-		//	return
-		//}
 
-		fmt.Println("-->", str)
+		fmt.Println("-->", identifier)
 
-		nameProducer.SetText(str)
-		details := config.Individual.Details
-		details = strings.Replace(config.Individual.Details, "\\n", "\n", -1)
+		// Fetch individual producer to fill form
+		resultApi := config.FetchIndividualProducer(identifier)
+		if err := json.NewDecoder(resultApi).Decode(&Individual); err != nil {
+			fmt.Println(err)
+		}
+		// Fill form fields with fetched data
+		nameProducer.SetText(Individual.Name)
+		details := string(Individual.Details)
+		details = strings.Replace(Individual.Details, "\\n", "\n", -1)
 		detailsProducer.SetText(details)
-		createdByProducer.SetText(config.Individual.CreatedBy)
+		createdByProducer.SetText(Individual.CreatedBy)
 	}
 
+	// Define layout
 	mainContainer := container.New(layout.NewGridLayout(2))
 	leftContainer := table
-	rightContainer := container.NewWithoutLayout(nameProducer, detailsProducer, createdByProducer, formTitle, submitBtn)
+	rightContainer := container.NewWithoutLayout(nameLabel, nameProducer, detailsLabel, detailsProducer, createdByLabel, createdByProducer, formTitle, submitBtn)
 
 	mainContainer.Add(leftContainer)
 	mainContainer.Add(rightContainer)
 
 	return mainContainer
-}
-
-// makeProducerTabs function creates a new set of tabs
-func makeProducerTabs(_ fyne.Window) fyne.CanvasObject {
-	tabs := container.NewAppTabs(
-		container.NewTabItem("Liste des producteurs", betaProducerTable(nil)),
-		container.NewTabItem("Ajouter un producteur", addNewProducer(nil)),
-		container.NewTabItem("Historique des commandes", displayOrders(nil)),
-		container.NewTabItem("Passer une commande", producerOrdersForm(nil)),
-		container.NewTabItem("Détails", widget.NewLabel("Content of tab 3")),
-	)
-	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
 
 // Form to add and send a new producer to the API endpoint (POST)

@@ -18,6 +18,8 @@ type Producer struct {
 }
 
 type PartialProducer struct {
+	Id        int `json:"id"`
+	ID        string
 	Name      string `json:"name"`
 	CreatedBy string `json:"created_By"`
 }
@@ -42,6 +44,23 @@ type Bottle struct {
 	Producer          interface{} `json:"producer"`
 }
 
+type PartialBottle struct {
+	Id                int `json:"id"`
+	ID                string
+	Price             string
+	Volume            string
+	Alcohol           string
+	Year              string
+	FullName          string `json:"full_Name"`
+	Description       string `json:"description"`
+	Label             string `json:"label"`
+	VolumeInt         int    `json:"volume"`
+	Picture           string `json:"picture"`
+	YearProduced      int    `json:"year_Produced"`
+	AlcoholPercentage int    `json:"alcohol_Percentage"`
+	CurrentPrice      int    `json:"current_Price"`
+}
+
 // TODO : wait for the Oder API to be implemented
 // Define the order struct and associate json fields
 type Order struct {
@@ -59,6 +78,8 @@ type Order struct {
 var orders []Order
 var order []Order
 var Bottles []Bottle
+var BottleData []PartialBottle
+var IndBottle Bottle
 var Individual Producer
 var ProducerData []PartialProducer
 var Producers []Producer

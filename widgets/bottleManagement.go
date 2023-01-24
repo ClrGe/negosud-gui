@@ -16,7 +16,7 @@ import (
 // The makeBottleTabs function creates a new set of tabs
 func makeBottleTabs(_ fyne.Window) fyne.CanvasObject {
 	tabs := container.NewAppTabs(
-		container.NewTabItem("Liste des produits", displayBottles(nil)),
+		container.NewTabItem("Liste des produits", betaBottleTable(nil)),
 		container.NewTabItem("Ajouter un produit", addNewBottle(nil)),
 	)
 	return container.NewBorder(nil, nil, nil, nil, tabs)
