@@ -89,18 +89,10 @@ var (
 			makeBottleTabs,
 			true,
 		},
-		"betaProd": {"BETA - gestion producteurs",
-			"BETA",
-			betaProducerTable,
-			true},
-		//"ind": {"BETA - Producteur individuel",
-		//	"prod",
-		//	displayIndividualProducer,
-		//	true},
 	}
 
 	ComponentIndex = map[string][]string{
-		"":                    {"welcome", "login", "connected", "producerTab", "bottleTab", "betaProd"},
+		"":                    {"welcome", "login", "connected", "producerTab", "bottleTab"},
 		"connected":           {"producer_management", "bottle_management", "customer_management"},
 		"producer_management": {"Producers", "prod_orders", "addProd"},
 		"bottle_management":   {"Bottles", "addBottle"},

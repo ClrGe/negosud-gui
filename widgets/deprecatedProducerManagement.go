@@ -164,8 +164,7 @@ func displayIndividualProducer(w fyne.Window) fyne.CanvasObject {
 			fmt.Println("Form submitted")
 			id = chooseId.Text
 
-			resultApi := config.FetchIndividual(id)
-
+			resultApi := config.FetchIndividualProducer(id)
 			if err := json.NewDecoder(resultApi).Decode(&Individual); err != nil {
 				fmt.Println(err)
 			}

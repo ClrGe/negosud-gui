@@ -32,8 +32,9 @@ func FetchProducers() {
 }
 
 // Call producer API and return producer matching ID
-func FetchIndividual(id string) io.ReadCloser {
+func FetchIndividualProducer(id string) io.ReadCloser {
 	apiUrl := ProducerAPIConfig() + "/" + id
+
 	res, err := http.Get(apiUrl)
 	if err != nil {
 		fmt.Println(err)
@@ -50,6 +51,18 @@ func BottleAPIConfig() string {
 
 	bottleUrl := env.SERVER + "/api/bottle"
 	return bottleUrl
+}
+
+// Call producer API and return producer matching ID
+func FetchIndividualBottle(id string) io.ReadCloser {
+	apiUrl := BottleAPIConfig() + "/" + id
+
+	res, err := http.Get(apiUrl)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	return res.Body
 }
 
 // Retrieve a list of bottles from an API endpoint
