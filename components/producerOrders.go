@@ -12,7 +12,8 @@ import (
 	"time"
 )
 
-// Define the producer struct and associate json fields
+// TODO : wait for the Oder API to be implemented
+// Define the order struct and associate json fields
 type Order struct {
 	ID        int         `json:"id"`
 	Name      string      `json:"name"`
@@ -28,7 +29,17 @@ type Order struct {
 var orders []Order
 var order []Order
 
-// Display API call result in a table
+func orderAPIConfig() string {
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+
+	orderUrl := env.SERVER + "/api/producer"
+	return orderUrl
+}
+
+// Display the list of orders fetched from API in a table
 func displayOrders(w fyne.Window) fyne.CanvasObject {
 
 	idProducer := widget.NewEntry()
@@ -81,14 +92,10 @@ func displayOrders(w fyne.Window) fyne.CanvasObject {
 	return table
 }
 
+// form to place a new order to a producer
 func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
-	env, err := LoadConfig(".")
 
-	if err != nil {
-		fmt.Println("cannot load configuration")
-	}
-
-	apiUrl := env.SERVER + "/api/producer"
+	apiUrl := orderAPIConfig()
 
 	idProducer := widget.NewEntry()
 	nameProducer := widget.NewEntry()
