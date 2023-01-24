@@ -98,6 +98,33 @@ var ProducerColumns = []rtable.ColAttr{
 
 func betaProducerTable(_ fyne.Window) fyne.CanvasObject {
 
+	var id string
+
+	chooseId := widget.NewEntryWithData(binding.BindString(&id))
+	chooseId.SetText("Saississez un identifiant...")
+
+	nameProducer := widget.NewEntry()
+	nameProducer.Resize(fyne.NewSize(400, 35))
+	nameProducer.Move(fyne.NewPos(10, 200))
+
+	formTitle := canvas.NewText("Modifier un producteur", color.Black)
+	formTitle.TextSize = 20
+	formTitle.TextStyle = fyne.TextStyle{Bold: true}
+	formTitle.Resize(fyne.NewSize(400, 35))
+	formTitle.Move(fyne.NewPos(10, 150))
+
+	detailsProducer := widget.NewMultiLineEntry()
+	detailsProducer.Resize(fyne.NewSize(400, 100))
+	detailsProducer.Move(fyne.NewPos(10, 250))
+
+	createdByProducer := widget.NewEntry()
+	createdByProducer.Resize(fyne.NewSize(400, 35))
+	createdByProducer.Move(fyne.NewPos(10, 370))
+
+	submitBtn := widget.NewButton("Envoyer", nil)
+	submitBtn.Resize(fyne.NewSize(400, 50))
+	submitBtn.Move(fyne.NewPos(10, 420))
+
 	apiUrl := producerAPIConfig()
 
 	res, err := http.Get(apiUrl)
@@ -142,26 +169,48 @@ func betaProducerTable(_ fyne.Window) fyne.CanvasObject {
 		}
 		//Handle non-header row clicked
 		str, err := rtable.GetStrCellValue(cell, tableOptions)
+		str2, err := rtable.GetStrCellValue(cell, tableOptions)
+
 		if err != nil {
 			fmt.Println(rerr.StringFromErr(err))
 			return
 		}
 		// Printout body cells
 		rowBinding := tableOptions.Bindings[cell.Row-1]
+		associatedRows := tableOptions.Bindings[cell.Col+1]
+
+		colBinding, err := associatedRows.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
 		cellBinding, err := rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
 		if err != nil {
 			fmt.Println(rerr.StringFromErr(err))
 			return
 		}
+
+		err = colBinding.(binding.String).Set(rvsString(str2))
 		err = cellBinding.(binding.String).Set(rvsString(str))
 		if err != nil {
 			fmt.Println(rerr.StringFromErr(err))
 			return
 		}
+
 		fmt.Println("-->", str)
+		fmt.Println(str2)
+
+		nameProducer.SetText(str)
+		details := string(individual.Details)
+		details = strings.Replace(individual.Details, "\\n", "\n", -1)
+		detailsProducer.SetText(details)
+		createdByProducer.SetText(individual.CreatedBy)
 	}
 
-	return table
+	mainContainer := container.New(layout.NewGridLayout(2))
+	leftContainer := table
+	rightContainer := container.NewWithoutLayout(nameProducer, detailsProducer, createdByProducer, formTitle, submitBtn)
+
+	mainContainer.Add(leftContainer)
+	mainContainer.Add(rightContainer)
+
+	return mainContainer
 }
 
 // Display API call result in a table
