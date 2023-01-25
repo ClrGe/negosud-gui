@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -81,33 +82,61 @@ func displayOrders(w fyne.Window) fyne.CanvasObject {
 // form to place a new order to a producer
 func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
 
+	nameLabel := widget.NewLabelWithStyle("Nom du producteur", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	nameProducer := widget.NewEntry()
-	nameProducer.SetPlaceHolder("Nom du producteur...")
+	nameProducer.SetPlaceHolder("Jean Bon")
+	productLabel := widget.NewLabelWithStyle("Nom du produit", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	productToOrder := widget.NewEntry()
-	productToOrder.SetPlaceHolder("Nom du produit...")
+	productToOrder.SetPlaceHolder("Pinard")
+	quantityLabel := widget.NewLabelWithStyle("Quantité", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	quantity := widget.NewSelectEntry([]string{"10", "20", "50", "100", "150", "200", "250", "300", "350", "400", "450"})
 	quantity.SetPlaceHolder("Sélectionnez une quantité...")
+	commentLabel := widget.NewLabelWithStyle("Commentaire (facultatif)", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	comment := widget.NewMultiLineEntry()
-	comment.SetPlaceHolder("Ajouter un commentaire (facultatif)")
+	comment.SetPlaceHolder("Votre commentaire...")
 
-	title := widget.NewLabelWithStyle("PASSER UNE NOUVELLE COMMANDE", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
+	apiUrl := data.OrderAPIConfig()
 
 	form := &widget.Form{
 		Items: []*widget.FormItem{
-			{Text: "Nom du producteur", Widget: nameProducer},
-			{Text: "Nom du produit", Widget: productToOrder},
-			{Text: "Quantité", Widget: quantity},
-			{Text: "Commentaire", Widget: comment},
-		},
-		OnCancel: func() {
-			fmt.Println("Canceled")
+			{Text: "", Widget: nameLabel},
+			{Text: "", Widget: nameProducer},
+			{Text: "", Widget: productLabel},
+			{Text: " ", Widget: productToOrder},
+			{Text: "", Widget: quantityLabel},
+			{Text: "", Widget: quantity},
+			{Text: "", Widget: commentLabel},
+			{Text: "", Widget: comment},
 		},
 		OnSubmit: func() {
 
+			// extract the value from the input widget and set the corresponding field in the Producer struct
+			newOrder := &data.Order{
+				Producer: nameProducer.Text,
+				Product:  productToOrder.Text,
+				Quantity: quantity.Text,
+				Comment:  comment.Text,
+			}
+
+			// encode the value as JSON and send it to the API.
+			bottleJsonValue, _ := json.Marshal(newOrder)
+			bottleResp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(bottleJsonValue))
+			if err != nil {
+				fmt.Println("error while encoding response")
+				return
+			}
+			if bottleResp.StatusCode == 204 {
+				data.BottleFailureDialog(w)
+				fmt.Println(bottleJsonValue)
+				return
+			}
+			data.BottleSuccessDialog(w)
+			fmt.Println("New order placed with success")
 		},
+		SubmitText: "Envoyer",
 	}
 
-	mainContainer := container.NewCenter(container.NewVBox(title, form))
+	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), form))
 
 	return mainContainer
 }
