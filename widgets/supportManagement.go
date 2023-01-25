@@ -13,52 +13,56 @@ import (
 func contactForm(w fyne.Window) fyne.CanvasObject {
 
 	var xPos, yPos, widthForm, heightFields, heightLabels float32
-	xPos = 500
-	yPos = 100
+	xPos = 100
+	yPos = 0
 	widthForm = 600
 	heightFields = 50
 	heightLabels = 20
 
-	text := widget.NewLabelWithStyle("Si vous avez un problème avec ce logiciel, et n'avez pas trouvé de réponse dans la \"FAQ\",\nremplissez ce formulaire, nous vous répondrons dans les meilleurs délais !", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
-	text.Resize(fyne.NewSize(widthForm, 50))
-	text.Move(fyne.NewPos(xPos, 10))
+	text := canvas.NewText("Un problème avec ce logiciel ? Nous vous répondrons dans les meilleurs délais !", color.Black)
+	text.TextSize = 20
+	text.TextStyle = fyne.TextStyle{Bold: true}
+	text.Resize(fyne.NewSize(widthForm, heightFields))
+	text.Move(fyne.NewPos(0, yPos-400))
 
 	formTitle := canvas.NewText("Contacter les développeurs", color.Black)
 	formTitle.TextSize = 20
 	formTitle.TextStyle = fyne.TextStyle{Bold: true}
 	formTitle.Resize(fyne.NewSize(widthForm, heightFields))
-	formTitle.Move(fyne.NewPos(xPos, yPos))
+	formTitle.Move(fyne.NewPos(xPos, yPos-300))
 
 	emailLabel := canvas.NewText("Email", color.Black)
 	emailLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	emailLabel.Move(fyne.NewPos(xPos, yPos+70))
+	emailLabel.Move(fyne.NewPos(xPos, yPos-240))
 	email := widget.NewEntry()
 	email.SetPlaceHolder("truc@example.com")
 	email.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
 	email.Resize(fyne.NewSize(widthForm, heightFields))
-	email.Move(fyne.NewPos(xPos, yPos+90))
+	email.Move(fyne.NewPos(xPos, yPos-220))
 
 	subjectLabel := canvas.NewText("Sujet", color.Black)
 	subjectLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	subjectLabel.Move(fyne.NewPos(xPos, yPos+170))
+	subjectLabel.Move(fyne.NewPos(xPos, yPos-160))
 	subject := widget.NewEntry()
 	subject.SetPlaceHolder("Sujet")
 	subject.Resize(fyne.NewSize(widthForm, heightFields))
-	subject.Move(fyne.NewPos(xPos, yPos+190))
+	subject.Move(fyne.NewPos(xPos, yPos-140))
 
 	messageLabel := canvas.NewText("Message", color.Black)
 	messageLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	messageLabel.Move(fyne.NewPos(xPos, yPos+270))
+	messageLabel.Move(fyne.NewPos(xPos, yPos-80))
 	message := widget.NewMultiLineEntry()
 	message.SetPlaceHolder("Votre message...")
 	message.Resize(fyne.NewSize(widthForm, heightFields+50))
-	message.Move(fyne.NewPos(xPos, yPos+290))
+	message.Move(fyne.NewPos(xPos, yPos-60))
 
 	submitBtn := widget.NewButton("Envoyer", nil)
 	submitBtn.Resize(fyne.NewSize(widthForm, heightFields))
-	submitBtn.Move(fyne.NewPos(xPos, yPos+440))
+	submitBtn.Move(fyne.NewPos(xPos, yPos+50))
 
-	mainContainer := container.NewWithoutLayout(text, formTitle, emailLabel, email, subjectLabel, subject, messageLabel, message, submitBtn)
+	formContainer := container.NewWithoutLayout(text, formTitle, emailLabel, email, subjectLabel, subject, messageLabel, message, submitBtn)
+	mainContainer := container.NewCenter(formContainer)
+
 	return mainContainer
 }
 

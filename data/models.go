@@ -1,23 +1,14 @@
-package config
+package data
 
 import (
 	"time"
 )
 
+// ############################################
+// ################## USERS ###################
+// ############################################
+
 var Users []User
-
-var Bottles []Bottle
-var BottleData []PartialBottle
-var IndBottle Bottle
-
-var Individual Producer
-var ProducerData []PartialProducer
-var Producers []Producer
-
-var Orders []Order
-var order []Order
-
-var CustomerOrders []CustomerOrder
 
 // User struct holds information about a user
 type User struct {
@@ -27,6 +18,14 @@ type User struct {
 	Email string `json:"details"`
 	Role  string `json:"created_By"`
 }
+
+// ############################################
+// ############### PRODUCERS ##################
+// ############################################
+
+var Individual Producer
+var ProducerData []PartialProducer
+var Producers []Producer
 
 // Producer struct holds information about a producer
 type Producer struct {
@@ -41,12 +40,21 @@ type Producer struct {
 	Region    interface{} `json:"region"`
 }
 
+// PartialProducer holds only the necessary data for the table (= needs string only)
 type PartialProducer struct {
 	Id        int `json:"id"`
 	ID        string
 	Name      string `json:"name"`
 	CreatedBy string `json:"created_By"`
 }
+
+// ############################################
+// ################# BOTTLES ##################
+// ############################################
+
+var Bottles []Bottle
+var BottleData []PartialBottle
+var IndBottle Bottle
 
 // Bottle struct holds information about a bottle of wine.
 type Bottle struct {
@@ -68,6 +76,7 @@ type Bottle struct {
 	Producer          interface{} `json:"producer"`
 }
 
+// PartialBottle holds only the necessary data for the table (= needs string only)
 type PartialBottle struct {
 	Id                int `json:"id"`
 	ID                string
@@ -84,6 +93,14 @@ type PartialBottle struct {
 	AlcoholPercentage int    `json:"alcohol_Percentage"`
 	CurrentPrice      int    `json:"current_Price"`
 }
+
+// ############################################
+// ################## ORDERS ##################
+// ############################################
+
+var Orders []Order
+var order []Order
+var CustomerOrders []CustomerOrder
 
 type Order struct {
 	ID          string
