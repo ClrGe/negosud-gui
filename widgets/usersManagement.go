@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -80,43 +81,47 @@ func displayUsers(w fyne.Window) fyne.CanvasObject {
 // loginForm to perform an authentication to access the API
 func loginForm(w fyne.Window) fyne.CanvasObject {
 
-	var xPos, yPos, heightFields, heightLabels, widthForm float32
-
-	xPos = 50
-	yPos = 0
-	heightFields = 50
-	heightLabels = 20
-	widthForm = 550
-
-	text := canvas.NewText("Pour accéder à toutes les fonctionnalités, veuillez vous authentifier.", color.Black)
-	text.TextSize = 20
-	text.TextStyle = fyne.TextStyle{Bold: true}
-	text.Resize(fyne.NewSize(widthForm, heightFields))
-	text.Move(fyne.NewPos(0, yPos-300))
-
 	emailLabel := canvas.NewText("Email", color.Black)
-	emailLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	emailLabel.Move(fyne.NewPos(xPos, yPos-240))
-	email := widget.NewEntry()
-	email.SetPlaceHolder("truc@example.com")
-	email.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
-	email.Resize(fyne.NewSize(widthForm, heightFields))
-	email.Move(fyne.NewPos(xPos, yPos-220))
+	emailInput := widget.NewEntry()
+	emailInput.SetPlaceHolder("truc@example.com")
+	emailInput.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
 
-	pwdLabel := canvas.NewText("Mot de passe", color.Black)
-	pwdLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	pwdLabel.Move(fyne.NewPos(xPos, yPos-120))
-	password := widget.NewPasswordEntry()
-	password.SetPlaceHolder("****")
-	password.Resize(fyne.NewSize(widthForm, heightFields))
-	password.Move(fyne.NewPos(xPos, yPos-100))
+	passwordLabel := canvas.NewText("Mot de passe", color.Black)
+	passwordInput := widget.NewPasswordEntry()
+	passwordInput.SetPlaceHolder("****")
 
-	submitBtn := widget.NewButton("Envoyer", nil)
-	submitBtn.Resize(fyne.NewSize(widthForm, heightFields))
-	submitBtn.Move(fyne.NewPos(xPos, yPos-20))
+	form := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "", Widget: emailLabel},
+			{Text: "", Widget: emailInput},
+			{Text: "", Widget: passwordLabel},
+			{Text: "", Widget: passwordInput},
+		},
+		OnSubmit: func() {
+			email := emailInput.Text
+			password := passwordInput.Text
 
-	formContainer := container.NewWithoutLayout(text, emailLabel, email, pwdLabel, password, submitBtn)
-	mainContainer := container.NewCenter(formContainer)
+			apiUrl := data.LoginAPIConfig(email, password)
+
+			resp, err := http.Post(apiUrl, "application/json", bytes.NewBufferString(email))
+
+			if err != nil {
+				fyne.CurrentApp().SendNotification(&fyne.Notification{
+					Content: "Error on login form submitting: " + err.Error(),
+				})
+				return
+			}
+			if resp.StatusCode == 204 {
+				fmt.Println("Could not log in")
+				return
+			}
+			fmt.Println("User is connected")
+		},
+		SubmitText: "Envoyer",
+		CancelText: "",
+	}
+
+	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), form))
 
 	return mainContainer
 }
@@ -124,59 +129,59 @@ func loginForm(w fyne.Window) fyne.CanvasObject {
 // addUserForm to add an authorized user
 func addUserForm(w fyne.Window) fyne.CanvasObject {
 
-	var xPos, yPos, heightFields, heightLabels, widthForm float32
-
-	xPos = 50
-	yPos = 0
-	heightFields = 50
-	heightLabels = 20
-	widthForm = 550
-
-	text := canvas.NewText("Pour ajouter un nouvel utilisateur, veuillez remplir ce formulaire.", color.Black)
-	text.TextSize = 20
-	text.TextStyle = fyne.TextStyle{Bold: true}
-	text.Resize(fyne.NewSize(widthForm, heightFields))
-	text.Move(fyne.NewPos(0, -430))
-
-	nameLabel := canvas.NewText("Nom", color.Black)
-	nameLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	nameLabel.Move(fyne.NewPos(xPos, yPos-380))
+	nameLabel := widget.NewLabelWithStyle("Nom", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	name := widget.NewEntry()
 	name.SetPlaceHolder("Jean Bon")
-	name.Resize(fyne.NewSize(widthForm, heightFields))
-	name.Move(fyne.NewPos(xPos, yPos-360))
 
-	emailLabel := canvas.NewText("Email", color.Black)
-	emailLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	emailLabel.Move(fyne.NewPos(xPos, yPos-260))
-	email := widget.NewEntry()
-	email.SetPlaceHolder("truc@example.com")
-	email.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
-	email.Resize(fyne.NewSize(widthForm, heightFields))
-	email.Move(fyne.NewPos(xPos, yPos-240))
+	emailLabel := widget.NewLabelWithStyle("Email", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+	emailInput := widget.NewEntry()
+	emailInput.SetPlaceHolder("truc@example.com")
+	emailInput.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
 
-	pwdLabel := canvas.NewText("Mot de passe", color.Black)
-	pwdLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	pwdLabel.Move(fyne.NewPos(xPos, yPos-140))
-	password := widget.NewPasswordEntry()
-	password.SetPlaceHolder("****")
-	password.Resize(fyne.NewSize(widthForm, heightFields))
-	password.Move(fyne.NewPos(xPos, yPos-120))
+	passwordLabel := widget.NewLabelWithStyle("Mot de passe", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+	passwordInput := widget.NewPasswordEntry()
+	passwordInput.SetPlaceHolder("******")
 
-	roleLabel := canvas.NewText("Rôle de l'utilisateur", color.Black)
-	roleLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	roleLabel.Move(fyne.NewPos(xPos, yPos-20))
+	roleLabel := widget.NewLabelWithStyle("Rôle", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	roleUser := widget.NewSelectEntry([]string{"Administrateur", "Employé", "Intérimaire"})
 	roleUser.SetPlaceHolder("Veuillez sélectionner un rôle...")
-	roleUser.Resize(fyne.NewSize(widthForm, heightFields))
-	roleUser.Move(fyne.NewPos(xPos, yPos))
 
-	submitBtn := widget.NewButton("Envoyer", nil)
-	submitBtn.Resize(fyne.NewSize(widthForm, heightFields))
-	submitBtn.Move(fyne.NewPos(xPos, yPos+120))
+	form := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "", Widget: nameLabel},
+			{Text: "", Widget: name},
+			{Text: "", Widget: emailLabel},
+			{Text: "", Widget: emailInput},
+			{Text: "", Widget: passwordLabel},
+			{Text: "", Widget: passwordInput},
+			{Text: "", Widget: roleLabel},
+			{Text: "", Widget: roleUser},
+		},
+		OnSubmit: func() {
+			email := emailInput.Text
+			password := passwordInput.Text
 
-	formContainer := container.NewWithoutLayout(text, nameLabel, name, emailLabel, email, pwdLabel, password, roleLabel, roleUser, submitBtn)
-	mainContainer := container.NewCenter(formContainer)
+			apiUrl := data.LoginAPIConfig(email, password)
+
+			resp, err := http.Post(apiUrl, "application/json", bytes.NewBufferString(email))
+
+			if err != nil {
+				fyne.CurrentApp().SendNotification(&fyne.Notification{
+					Content: "Error on login form submitting: " + err.Error(),
+				})
+				return
+			}
+			if resp.StatusCode == 204 {
+				fmt.Println("Could not log in")
+				return
+			}
+			fmt.Println("User is connected")
+		},
+		SubmitText: "Envoyer",
+		CancelText: "",
+	}
+
+	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), form))
 
 	return mainContainer
 }

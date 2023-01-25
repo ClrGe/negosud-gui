@@ -5,11 +5,11 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/cmd/fyne_settings/settings"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"negosud-gui/widgets"
-	"net/url"
 )
 
 // --------------------------------------------------------------------
@@ -26,7 +26,7 @@ func main() {
 
 	activePage = w
 
-	w.SetMainMenu(makeMenu(a, w))
+	w.SetMainMenu(appBarMenu(a, w))
 	w.SetMaster()
 
 	content := container.NewMax(homePage(w))
@@ -74,7 +74,7 @@ func homePage(_ fyne.Window) fyne.CanvasObject {
 	if fyne.CurrentDevice().IsMobile() {
 		logo.SetMinSize(fyne.NewSize(192, 192))
 	} else {
-		logo.SetMinSize(fyne.NewSize(1364, 920))
+		logo.SetMinSize(fyne.NewSize(900, 600))
 	}
 	return container.NewCenter(container.NewVBox(
 		widget.NewLabelWithStyle("Bienvenue dans l'utilitaire de gestion de NEGOSUD !", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
@@ -121,35 +121,27 @@ func makeNavigation(setTab func(component widgets.Component), loadPrevious bool)
 }
 
 // TODO : implement functions for menu items
-func makeMenu(a fyne.App, w fyne.Window) *fyne.MainMenu {
-	newItem := fyne.NewMenuItem("Nouveau", nil)
-	settingsItem := fyne.NewMenuItem("Paramètres", func() {
-		// à faire : fonction ouverture settings
-	})
+func appBarMenu(a fyne.App, w fyne.Window) *fyne.MainMenu {
+	param := func() {
+		w := a.NewWindow("Fyne Settings")
+		w.SetContent(settings.NewSettings().LoadAppearanceScreen(w))
+		w.Resize(fyne.NewSize(480, 480))
+		w.Show()
+	}
+	parametersItem := fyne.NewMenuItem("Paramètres", param)
 
-	cutItem := fyne.NewMenuItem("Couper", func() {
-	})
+	performFind := func() { fmt.Println("Recherche") }
+	findItem := fyne.NewMenuItem("Recherche", performFind)
+	negosudMenu := fyne.NewMenu("Negosud", parametersItem, findItem)
+	negosudMenu.Items = append(negosudMenu.Items, fyne.NewMenuItemSeparator())
 
-	copyItem := fyne.NewMenuItem("Copier", func() {
-	})
-
-	pasteItem := fyne.NewMenuItem("Coller", func() {
-	})
-	performFind := func() { fmt.Println("Chercher") }
-	findItem := fyne.NewMenuItem("Chercher", performFind)
-
-	helpMenu := fyne.NewMenu("Aide",
-		fyne.NewMenuItem("Documentation", func() {
-			u, _ := url.Parse("https://negosud.com")
-			_ = a.OpenURL(u)
-		}))
-
-	file := fyne.NewMenu("Fichier", newItem)
-	file.Items = append(file.Items, fyne.NewMenuItemSeparator(), settingsItem)
-
+	helpMenu := fyne.NewMenu("Support",
+		fyne.NewMenuItem("FAQ", func() {}),
+		fyne.NewMenuItem("Contacter les développeurs", func() {}),
+		fyne.NewMenuItem("Documentation", func() {}),
+	)
 	main := fyne.NewMainMenu(
-		file,
-		fyne.NewMenu("Édition", cutItem, copyItem, pasteItem, fyne.NewMenuItemSeparator(), findItem),
+		negosudMenu,
 		helpMenu,
 	)
 

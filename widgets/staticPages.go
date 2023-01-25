@@ -14,7 +14,7 @@ func welcomeScreen(_ fyne.Window) fyne.CanvasObject {
 	if fyne.CurrentDevice().IsMobile() {
 		logo.SetMinSize(fyne.NewSize(192, 192))
 	} else {
-		logo.SetMinSize(fyne.NewSize(1364, 920))
+		logo.SetMinSize(fyne.NewSize(900, 600))
 	}
 
 	return container.NewCenter(container.NewVBox(
@@ -31,7 +31,7 @@ func logoScreen(_ fyne.Window) fyne.CanvasObject {
 	if fyne.CurrentDevice().IsMobile() {
 		logo.SetMinSize(fyne.NewSize(192, 192))
 	} else {
-		logo.SetMinSize(fyne.NewSize(1364, 920))
+		logo.SetMinSize(fyne.NewSize(900, 600))
 	}
 
 	return container.NewCenter(container.NewVBox(

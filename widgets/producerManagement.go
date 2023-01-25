@@ -12,7 +12,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rerr"
 	"github.com/rohanthewiz/rtable"
-	"image/color"
 	"negosud-gui/data"
 	"net/http"
 	"strconv"
@@ -45,71 +44,42 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 	Individual := data.Individual
 	ProducerData := data.ProducerData
 
-	var xPos, yPos, heightFields, heightLabels, widthForm float32
+	var identifier string
+	var yPos, heightFields, widthForm float32
 
-	xPos = -200
 	yPos = 200
 	heightFields = 50
-	heightLabels = 20
-	widthForm = 600
 
 	// DETAILS PRODUCER
 
-	instructions := canvas.NewText("Cliquez sur un identifiant dans le tableau pour afficher les détails du producteur.", color.Black)
-	instructions.TextSize = 15
-	instructions.TextStyle = fyne.TextStyle{Bold: true}
+	instructions := widget.NewLabelWithStyle("Cliquez sur un identifiant dans le tableau pour afficher les détails", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 	instructions.Resize(fyne.NewSize(widthForm, heightFields))
 	instructions.Move(fyne.NewPos(0, yPos-500))
 
 	productImg := canvas.NewImageFromFile("media/wineyard.jpeg")
 	productImg.FillMode = canvas.ImageFillContain
 	if fyne.CurrentDevice().IsMobile() {
-		productImg.SetMinSize(fyne.NewSize(800, 340))
+		productImg.SetMinSize(fyne.NewSize(600, 340))
 	} else {
-		productImg.SetMinSize(fyne.NewSize(800, 340))
+		productImg.SetMinSize(fyne.NewSize(600, 340))
 	}
 	productImg.Hidden = true
 
-	productTitle := widget.NewLabel("")
+	productTitle := widget.NewLabelWithStyle("", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	productTitle.Resize(fyne.NewSize(widthForm, heightFields))
-	productTitle.Move(fyne.NewPos(0, yPos-400))
+	productTitle.Move(fyne.NewPos(0, yPos-300))
 
-	productDesc := widget.NewLabel("")
+	productDesc := widget.NewLabelWithStyle("", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	productDesc.Resize(fyne.NewSize(widthForm, heightFields))
-	productDesc.Move(fyne.NewPos(0, yPos-350))
+	productDesc.Move(fyne.NewPos(0, yPos-250))
 
 	// UPDATE FORM
 
-	formTitle := canvas.NewText("Modifier un producteur", color.Black)
-	formTitle.TextSize = 20
-	formTitle.TextStyle = fyne.TextStyle{Bold: true}
-	formTitle.Resize(fyne.NewSize(widthForm, heightFields))
-	formTitle.Move(fyne.NewPos(xPos, yPos-600))
-
-	nameLabel := canvas.NewText("Nom", color.Black)
-	nameLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	nameLabel.Move(fyne.NewPos(xPos, yPos-520))
+	nameLabel := widget.NewLabelWithStyle("Nom", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	nameProducer := widget.NewEntry()
-	nameProducer.Resize(fyne.NewSize(widthForm, heightFields))
-	nameProducer.Move(fyne.NewPos(xPos, yPos-500))
 
-	detailsLabel := canvas.NewText("Description", color.Black)
-	detailsLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	detailsLabel.Move(fyne.NewPos(xPos, yPos-420))
+	detailsLabel := widget.NewLabelWithStyle("Description", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	detailsProducer := widget.NewMultiLineEntry()
-	detailsProducer.Resize(fyne.NewSize(widthForm, heightFields*2))
-	detailsProducer.Move(fyne.NewPos(xPos, yPos-400))
-
-	createdByLabel := canvas.NewText("Ajouté par", color.Black)
-	createdByLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	createdByLabel.Move(fyne.NewPos(xPos, yPos-280))
-	createdByProducer := widget.NewEntry()
-	createdByProducer.Resize(fyne.NewSize(widthForm, heightFields))
-	createdByProducer.Move(fyne.NewPos(xPos, yPos-260))
-
-	submitBtn := widget.NewButton("Envoyer", nil)
-	submitBtn.Resize(fyne.NewSize(widthForm, heightFields))
-	submitBtn.Move(fyne.NewPos(xPos, yPos-150))
 
 	apiUrl := data.ProducerAPIConfig()
 
@@ -157,7 +127,7 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 			return
 		}
 		//Handle non-header row clicked
-		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
+		identifier, err = rtable.GetStrCellValue(cell, tableOptions)
 
 		if err != nil {
 			fmt.Println(rerr.StringFromErr(err))
@@ -170,6 +140,8 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 		if err != nil {
 			fmt.Println(rerr.StringFromErr(err))
 			return
+		} else {
+			instructions.Hidden = true
 		}
 		fmt.Println(cellBinding)
 
@@ -187,21 +159,54 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 		details := string(Individual.Details)
 		details = strings.Replace(Individual.Details, "\\n", "\n", -1)
 		detailsProducer.SetText(details)
-		createdByProducer.SetText(Individual.CreatedBy)
 
 		productTitle.SetText("Nom: " + Individual.Name)
 		productDesc.SetText("Description: " + details)
 	}
+
+	updateForm := &widget.Form{
+		BaseWidget: widget.BaseWidget{},
+		Items: []*widget.FormItem{
+			{Text: "", Widget: nameLabel},
+			{Text: "", Widget: nameProducer},
+			{Text: "", Widget: detailsLabel},
+			{Text: "", Widget: detailsProducer},
+		},
+		OnSubmit: func() {
+			producer := &data.Producer{
+				Name:    nameProducer.Text,
+				Details: detailsProducer.Text,
+			}
+			jsonValue, _ := json.Marshal(producer)
+			updateEndpoint := data.UpdateProducerAPI()
+			resp, err := http.Post(updateEndpoint+identifier, "application/json", bytes.NewBuffer(jsonValue))
+
+			if err != nil {
+				fmt.Println("Could not send form")
+				return
+			}
+			if resp.StatusCode == 204 {
+				fmt.Println("Response : no content (204)")
+				return
+			}
+			fmt.Println("Producer updated")
+		},
+		OnCancel: func() {
+			fmt.Println("Canceled")
+		},
+		SubmitText: "Envoyer",
+		CancelText: "Annuler",
+	}
+
 	image := container.NewBorder(container.NewVBox(productImg), nil, nil, nil)
 	textProduct := container.NewCenter(container.NewWithoutLayout(productTitle, productDesc))
-	detailsProduct := container.NewBorder(image, instructions, nil, nil, textProduct)
-
-	updateForm := container.NewCenter(container.NewWithoutLayout(nameLabel, nameProducer, detailsLabel, detailsProducer, createdByLabel, createdByProducer, formTitle, submitBtn))
+	detailsProduct := container.NewBorder(image, nil, nil, nil, textProduct, instructions)
+	updateContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 600), updateForm))
 
 	// Define layout
 	individualTabs := container.NewAppTabs(
 		container.NewTabItem("Détails du producteur", detailsProduct),
-		container.NewTabItem("Modifier le producteur", updateForm),
+		container.NewTabItem("Modifier le producteur", updateContainer),
 	)
 
 	mainContainer := container.New(layout.NewGridLayout(2))
@@ -218,35 +223,26 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 func addNewProducer(w fyne.Window) fyne.CanvasObject {
 	apiUrl := data.ProducerAPIConfig()
 
-	idProducer := widget.NewEntry()
+	nameLabel := widget.NewLabelWithStyle("Nom", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	nameProducer := widget.NewEntry()
-	detailsProducer := widget.NewEntry()
-	createdByProducer := widget.NewEntry()
+	detailsLabel := widget.NewLabelWithStyle("Description", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
+	detailsProducer := widget.NewMultiLineEntry()
 
-	title := widget.NewLabelWithStyle("AJOUTER UN NOUVEAU PRODUCTEUR", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
+	title := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 
 	form := &widget.Form{
 		Items: []*widget.FormItem{
-			{Text: "ID", Widget: idProducer},
-			{Text: "Nom", Widget: nameProducer},
-			{Text: "Created By", Widget: createdByProducer},
-		},
-		OnCancel: func() {
-			fmt.Println("Canceled")
+			{Text: "", Widget: title},
+			{Text: "", Widget: nameLabel},
+			{Text: "", Widget: nameProducer},
+			{Text: "", Widget: detailsLabel},
+			{Text: "", Widget: detailsProducer},
 		},
 		OnSubmit: func() {
-			id, err := strconv.Atoi(idProducer.Text)
-			if err != nil {
-				fyne.CurrentApp().SendNotification(&fyne.Notification{
-					Content: "Error converting ID: " + err.Error(),
-				})
-				return
-			}
+
 			producer := &data.Producer{
-				ID:        id,
-				Name:      nameProducer.Text,
-				Details:   detailsProducer.Text,
-				CreatedBy: createdByProducer.Text,
+				Name:    nameProducer.Text,
+				Details: detailsProducer.Text,
 			}
 			jsonValue, _ := json.Marshal(producer)
 			resp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonValue))
@@ -265,10 +261,9 @@ func addNewProducer(w fyne.Window) fyne.CanvasObject {
 			data.ProducerSuccessDialog(w)
 			fmt.Println("New producer added with success")
 		},
+		SubmitText: "Envoyer",
 	}
-	form.Append("Details", detailsProducer)
-	formContainer := container.NewVBox(title, form)
-	mainContainer := container.NewCenter(formContainer)
+	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), form))
 
 	return mainContainer
 }
