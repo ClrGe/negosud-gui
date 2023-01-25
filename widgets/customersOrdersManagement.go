@@ -8,7 +8,7 @@ import (
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
-	"negosud-gui/config"
+	"negosud-gui/data"
 	"net/http"
 )
 
@@ -37,9 +37,9 @@ var CustomersOrdersColumns = []rtable.ColAttr{
 // Display the list of orders fetched from API in a table
 func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 
-	CustomerOrders := config.CustomerOrders
+	CustomerOrders := data.CustomerOrders
 
-	apiUrl := config.CustomerOrderAPIConfig()
+	apiUrl := data.CustomerOrderAPIConfig()
 
 	res, err := http.Get(apiUrl)
 	if err != nil {
