@@ -7,6 +7,16 @@ import (
 	"net/http"
 )
 
+func UserAPIConfig() string {
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+
+	userUrl := env.SERVER + "/api/users"
+	return userUrl
+}
+
 func ProducerAPIConfig() string {
 	env, err := LoadConfig(".")
 	if err != nil {
@@ -15,6 +25,26 @@ func ProducerAPIConfig() string {
 
 	producerUrl := env.SERVER + "/api/producer"
 	return producerUrl
+}
+
+func OrderAPIConfig() string {
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+
+	orderUrl := env.SERVER + "/api/orders"
+	return orderUrl
+}
+
+func CustomerOrderAPIConfig() string {
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+
+	orderUrl := env.SERVER + "/api/orders/customers"
+	return orderUrl
 }
 
 // Call producer API and return the list of all producers
