@@ -24,11 +24,9 @@ var BindProducer []binding.DataMap
 // makeProducerTabs function creates a new set of tabs
 func makeProducerTabs(_ fyne.Window) fyne.CanvasObject {
 	tabs := container.NewAppTabs(
-		container.NewTabItem("Liste des producteurs", betaProducerTable(nil)),
+		container.NewTabItem("Liste des producteurs", displayAndUpdateProducers(nil)),
 		container.NewTabItem("Ajouter un producteur", addNewProducer(nil)),
-		container.NewTabItem("Historique des commandes", displayOrders(nil)),
-		container.NewTabItem("Passer une commande", producerOrdersForm(nil)),
-		container.NewTabItem("Détails", widget.NewLabel("Content of tab 3")),
+		container.NewTabItem("Contact producteurs", contactProducers(nil)),
 	)
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
@@ -40,8 +38,8 @@ var ProducerColumns = []rtable.ColAttr{
 	{ColName: "CreatedBy", Header: "Crée par", WidthPercent: 50},
 }
 
-// betaProducerTable implements a dynamic table bound to an editing form
-func betaProducerTable(_ fyne.Window) fyne.CanvasObject {
+// displayAndUpdateProducers implements a dynamic table bound to an editing form
+func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 
 	// retrieve structs from config package
 	Individual := config.Individual
@@ -222,4 +220,11 @@ func addNewProducer(w fyne.Window) fyne.CanvasObject {
 	mainContainer := container.NewVBox(title, form)
 
 	return mainContainer
+}
+
+func contactProducers(_ fyne.Window) fyne.CanvasObject {
+	return container.NewCenter(container.NewVBox(
+		widget.NewLabelWithStyle("Messages échangés avec les producteurs (à implémenter)", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabel(""),
+	))
 }
