@@ -83,6 +83,36 @@ func BottleAPIConfig() string {
 	return bottleUrl
 }
 
+func LoginAPIConfig(email string, password string) string {
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+
+	bottleUrl := env.SERVER + "/api/authentication/login?email=" + email + "&password=" + password
+	return bottleUrl
+}
+
+func UpdateBottleAPI() string {
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+
+	bottleUrl := env.SERVER + "/api/updatebottle/"
+	return bottleUrl
+}
+
+func UpdateProducerAPI() string {
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("cannot load configuration")
+	}
+
+	bottleUrl := env.SERVER + "/api/updateproducer/"
+	return bottleUrl
+}
+
 // Call producer API and return producer matching ID
 func FetchIndividualBottle(id string) io.ReadCloser {
 	apiUrl := BottleAPIConfig() + "/" + id

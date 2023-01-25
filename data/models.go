@@ -108,6 +108,7 @@ type Order struct {
 	Quantity    string
 	Producer    string
 	Date        string
+	Comment     string
 	Status      string
 	Id          int `json:"id"`
 	ProductId   int `json:"bottle_id"`
