@@ -13,7 +13,7 @@ import (
 	"github.com/rohanthewiz/rerr"
 	"github.com/rohanthewiz/rtable"
 	"image/color"
-	"negosud-gui/config"
+	"negosud-gui/data"
 	"net/http"
 	"strconv"
 	"strings"
@@ -21,8 +21,8 @@ import (
 
 var BindBottle []binding.DataMap
 
-// makeBottleTabs creates a new set of tabs for bottle management
-func makeBottleTabs(_ fyne.Window) fyne.CanvasObject {
+// makeBottlesTabs creates a new set of tabs for bottles management
+func makeBottlesTabs(_ fyne.Window) fyne.CanvasObject {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Liste des produits", displayAndUpdateBottle(nil)),
 		container.NewTabItem("Ajouter un produit", addNewBottle(nil)),
@@ -45,72 +45,127 @@ var BottlesColumns = []rtable.ColAttr{
 }
 
 // displayAndUpdateBottle implements a dynamic table bound to an editing form
-func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
+func displayAndUpdateBottle(w fyne.Window) fyne.CanvasObject {
 
-	// retrieve structs from config package
-	Individual := config.IndBottle
-	BottleData := config.BottleData
+	// retrieve structs from data package
+	Individual := data.IndBottle
+	BottleData := data.BottleData
+
+	var xPos, yPos, heightFields, heightLabels, widthForm float32
+
+	xPos = -200
+	yPos = 180
+	heightFields = 50
+	heightLabels = 20
+	widthForm = 600
+
+	// DETAILS PRODUCT
+
+	instructions := canvas.NewText("Cliquez sur un identifiant dans le tableau pour afficher les détails du produit.", color.Black)
+	instructions.TextSize = 15
+	instructions.TextStyle = fyne.TextStyle{Bold: true}
+	instructions.Resize(fyne.NewSize(widthForm, heightFields))
+	instructions.Move(fyne.NewPos(0, yPos-500))
+
+	productImg := canvas.NewImageFromFile("media/bouteille.jpeg")
+	productImg.FillMode = canvas.ImageFillContain
+	if fyne.CurrentDevice().IsMobile() {
+		productImg.SetMinSize(fyne.NewSize(250, 350))
+	} else {
+		productImg.SetMinSize(fyne.NewSize(250, 350))
+	}
+	productImg.Hidden = true
+
+	productTitle := widget.NewLabel("")
+	productTitle.Resize(fyne.NewSize(widthForm, heightFields))
+	productTitle.Move(fyne.NewPos(0, yPos-400))
+
+	productDesc := widget.NewLabel("")
+	productDesc.Resize(fyne.NewSize(widthForm, heightFields))
+	productDesc.Move(fyne.NewPos(0, yPos-350))
+
+	productLab := widget.NewLabel("")
+	productLab.Resize(fyne.NewSize(widthForm, heightFields))
+	productLab.Move(fyne.NewPos(0, yPos-300))
+
+	productVol := widget.NewLabel("")
+	productVol.Resize(fyne.NewSize(widthForm, heightFields))
+	productVol.Move(fyne.NewPos(0, yPos-250))
+
+	productYear := widget.NewLabel("")
+	productYear.Resize(fyne.NewSize(widthForm, heightFields))
+	productYear.Move(fyne.NewPos(0, yPos-200))
+
+	productPr := widget.NewLabel("")
+	productPr.Resize(fyne.NewSize(widthForm, heightFields))
+	productPr.Move(fyne.NewPos(0, yPos-150))
+
+	productAlc := widget.NewLabel("")
+	productAlc.Resize(fyne.NewSize(widthForm, heightFields))
+	productAlc.Move(fyne.NewPos(0, yPos-100))
+
+	// UPDATE FORM
 
 	formTitle := canvas.NewText("Modifier un produit", color.Black)
 	formTitle.TextSize = 20
 	formTitle.TextStyle = fyne.TextStyle{Bold: true}
-	formTitle.Resize(fyne.NewSize(600, 20))
-	formTitle.Move(fyne.NewPos(50, 40))
+	formTitle.Resize(fyne.NewSize(widthForm, heightFields))
+	formTitle.Move(fyne.NewPos(xPos, yPos-600))
 
 	nameLabel := canvas.NewText("Nom", color.Black)
-	nameLabel.Resize(fyne.NewSize(600, 20))
-	nameLabel.Move(fyne.NewPos(50, 100))
+	nameLabel.Resize(fyne.NewSize(widthForm, heightLabels))
+	nameLabel.Move(fyne.NewPos(xPos, yPos-520))
 	nameBottle := widget.NewEntry()
-	nameBottle.Resize(fyne.NewSize(600, 40))
-	nameBottle.Move(fyne.NewPos(50, 120))
+	nameBottle.Resize(fyne.NewSize(widthForm, heightFields))
+	nameBottle.Move(fyne.NewPos(xPos, yPos-500))
 
 	detailsLabel := canvas.NewText("Description", color.Black)
-	detailsLabel.Resize(fyne.NewSize(600, 20))
-	detailsLabel.Move(fyne.NewPos(50, 180))
+	detailsLabel.Resize(fyne.NewSize(widthForm, heightLabels))
+	detailsLabel.Move(fyne.NewPos(xPos, yPos-420))
 	detailsBottle := widget.NewMultiLineEntry()
-	detailsBottle.Resize(fyne.NewSize(600, 100))
-	detailsBottle.Move(fyne.NewPos(50, 200))
+	detailsBottle.Resize(fyne.NewSize(widthForm, heightFields*2))
+	detailsBottle.Move(fyne.NewPos(xPos, yPos-400))
 
 	labelLabel := canvas.NewText("Label", color.Black)
-	labelLabel.Resize(fyne.NewSize(600, 20))
-	labelLabel.Move(fyne.NewPos(50, 320))
+	labelLabel.Resize(fyne.NewSize(widthForm, heightLabels))
+	labelLabel.Move(fyne.NewPos(xPos, yPos-280))
 	labelBottle := widget.NewEntry()
-	labelBottle.Resize(fyne.NewSize(600, 40))
-	labelBottle.Move(fyne.NewPos(50, 340))
+	labelBottle.Resize(fyne.NewSize(widthForm, heightFields))
+	labelBottle.Move(fyne.NewPos(xPos, yPos-260))
 
 	volumeLabel := canvas.NewText("Volume (cL)", color.Black)
-	volumeLabel.Resize(fyne.NewSize(600, 20))
-	volumeLabel.Move(fyne.NewPos(50, 400))
+	volumeLabel.Resize(fyne.NewSize(widthForm, heightLabels))
+	volumeLabel.Move(fyne.NewPos(xPos, yPos-180))
 	volumeBottle := widget.NewEntry()
-	volumeBottle.Resize(fyne.NewSize(600, 40))
-	volumeBottle.Move(fyne.NewPos(50, 420))
+	volumeBottle.Resize(fyne.NewSize(widthForm, heightFields))
+	volumeBottle.Move(fyne.NewPos(xPos, yPos-160))
 
 	alcoholLabel := canvas.NewText("Alcool (%)", color.Black)
-	alcoholLabel.Resize(fyne.NewSize(600, 20))
-	alcoholLabel.Move(fyne.NewPos(50, 480))
+	alcoholLabel.Resize(fyne.NewSize(widthForm, heightLabels))
+	alcoholLabel.Move(fyne.NewPos(xPos, yPos-80))
 	alcoholBottle := widget.NewEntry()
-	alcoholBottle.Resize(fyne.NewSize(600, 40))
-	alcoholBottle.Move(fyne.NewPos(50, 500))
+	alcoholBottle.Resize(fyne.NewSize(widthForm, heightFields))
+	alcoholBottle.Move(fyne.NewPos(xPos, yPos-60))
 
 	yearLabel := canvas.NewText("Année", color.Black)
-	yearLabel.Resize(fyne.NewSize(600, 20))
-	yearLabel.Move(fyne.NewPos(50, 560))
+	yearLabel.Resize(fyne.NewSize(widthForm, heightLabels))
+	yearLabel.Move(fyne.NewPos(xPos, yPos+20))
 	yearBottle := widget.NewEntry()
-	yearBottle.Resize(fyne.NewSize(600, 40))
-	yearBottle.Move(fyne.NewPos(50, 580))
+	yearBottle.Resize(fyne.NewSize(widthForm, heightFields))
+	yearBottle.Move(fyne.NewPos(xPos, yPos+40))
 
 	priceLabel := canvas.NewText("Prix", color.Black)
-	priceLabel.Resize(fyne.NewSize(600, 20))
-	priceLabel.Move(fyne.NewPos(50, 640))
+	priceLabel.Resize(fyne.NewSize(widthForm, heightLabels))
+	priceLabel.Move(fyne.NewPos(xPos, yPos+120))
 	priceBottle := widget.NewEntry()
-	priceBottle.Resize(fyne.NewSize(600, 40))
-	priceBottle.Move(fyne.NewPos(50, 660))
+	priceBottle.Resize(fyne.NewSize(widthForm, heightFields))
+	priceBottle.Move(fyne.NewPos(xPos, yPos+140))
 
 	submitBtn := widget.NewButton("Envoyer", nil)
-	submitBtn.Resize(fyne.NewSize(600, 40))
-	submitBtn.Move(fyne.NewPos(50, 720))
+	submitBtn.Resize(fyne.NewSize(widthForm, heightFields))
+	submitBtn.Move(fyne.NewPos(xPos, yPos+220))
 
-	apiUrl := config.BottleAPIConfig()
+	apiUrl := data.BottleAPIConfig()
 
 	res, err := http.Get(apiUrl)
 	if err != nil {
@@ -157,7 +212,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 		if cell.Row == 0 { // fmt.Println("-->", tblOpts.ColAttrs[cell.Col].Header)
 			// Add a row
 			BindProducer = append(BindProducer,
-				binding.BindStruct(&config.Producer{Name: "Belle Ambiance",
+				binding.BindStruct(&data.Producer{Name: "Belle Ambiance",
 					Details: "brown", CreatedBy: "170"}))
 			tableOptions.Bindings = BindProducer
 			table.Refresh()
@@ -183,9 +238,11 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 		fmt.Println("-->", identifier)
 
 		// Fetch individual producer to fill form
-		resultApi := config.FetchIndividualBottle(identifier)
+		resultApi := data.FetchIndividualBottle(identifier)
 		if err := json.NewDecoder(resultApi).Decode(&Individual); err != nil {
 			fmt.Println(err)
+		} else {
+			productImg.Hidden = false
 		}
 		// Fill form fields with fetched data
 		nameBottle.SetText(Individual.FullName)
@@ -197,12 +254,31 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 		priceBottle.SetText(strconv.Itoa(Individual.CurrentPrice))
 		alcoholBottle.SetText(strconv.Itoa(Individual.AlcoholPercentage))
 
+		productTitle.SetText("Nom: " + Individual.FullName)
+		productDesc.SetText("Description: " + details)
+		productLab.SetText("Label: " + Individual.FullName)
+		productYear.SetText("Année: " + strconv.Itoa(Individual.YearProduced))
+		productVol.SetText("Volume (cL): " + strconv.Itoa(Individual.Volume))
+		productPr.SetText("Prix HT: " + strconv.Itoa(Individual.CurrentPrice))
+		productAlc.SetText("Alcool (%): " + strconv.Itoa(Individual.AlcoholPercentage))
 	}
 
+	image := container.NewBorder(container.NewVBox(productImg), nil, nil, nil)
+	textProduct := container.NewCenter(container.NewWithoutLayout(productTitle, productDesc, productLab, productVol, productYear, productPr, productAlc))
+	detailsProduct := container.NewBorder(image, instructions, nil, nil, textProduct)
+
+	updateForm := container.NewCenter(container.NewWithoutLayout(formTitle, nameLabel, nameBottle, detailsLabel, detailsBottle, labelLabel, labelBottle, volumeLabel, volumeBottle, alcoholLabel, alcoholBottle, yearLabel, yearBottle, priceLabel, priceBottle, submitBtn))
+
 	// Define layout
+
+	individualTabs := container.NewAppTabs(
+		container.NewTabItem("Détails du produit", detailsProduct),
+		container.NewTabItem("Modifier le produit", updateForm),
+	)
+
 	mainContainer := container.New(layout.NewGridLayout(2))
 	leftContainer := table
-	rightContainer := container.NewWithoutLayout(formTitle, nameLabel, nameBottle, detailsLabel, detailsBottle, labelLabel, labelBottle, volumeLabel, volumeBottle, alcoholLabel, alcoholBottle, yearLabel, yearBottle, priceLabel, priceBottle, submitBtn)
+	rightContainer := container.NewBorder(nil, nil, nil, nil, individualTabs)
 
 	mainContainer.Add(leftContainer)
 	mainContainer.Add(rightContainer)
@@ -210,10 +286,21 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 	return mainContainer
 }
 
+// makeBottleTabs creates a new set of tabs for individual bottle management
+func makeBottleTabs(_ fyne.Window) fyne.CanvasObject {
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Détails du produit", displayAndUpdateBottle(nil)),
+		container.NewTabItem("Ajouter un produit", addNewBottle(nil)),
+		container.NewTabItem("Produits en stock", displayStock(nil)),
+		container.NewTabItem("Historique des inventaires", displayInventory(nil)),
+	)
+	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
+
 // Form to add and send a new bottle to the API endpoint (POST /api/producer)
 func addNewBottle(w fyne.Window) fyne.CanvasObject {
 
-	apiUrl := config.BottleAPIConfig()
+	apiUrl := data.BottleAPIConfig()
 
 	idBottle := widget.NewEntry()
 	nameBottle := widget.NewEntry()
@@ -268,7 +355,7 @@ func addNewBottle(w fyne.Window) fyne.CanvasObject {
 				}
 
 				// extract the value from the input widget and set the corresponding field in the Producer struct
-				bottle := &config.Bottle{
+				bottle := &data.Bottle{
 					ID:                id,
 					FullName:          nameBottle.Text,
 					Label:             labelBottle.Text,
@@ -288,11 +375,11 @@ func addNewBottle(w fyne.Window) fyne.CanvasObject {
 					return
 				}
 				if bottleResp.StatusCode == 204 {
-					config.BottleFailureDialog(w)
+					data.BottleFailureDialog(w)
 					fmt.Println(bottleJsonValue)
 					return
 				}
-				config.BottleSuccessDialog(w)
+				data.BottleSuccessDialog(w)
 				fmt.Println("New bottle added with success")
 
 			},

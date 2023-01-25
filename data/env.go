@@ -1,4 +1,4 @@
-package config
+package data
 
 import (
 	"fyne.io/fyne/v2"
@@ -33,12 +33,8 @@ func LoadConfig(path string) (config Config, err error) {
 
 // grouping all information dialogs needed in the application
 
-func LoginSuccessDialog(w fyne.Window) {
-	dialog.ShowInformation("Succès", "Authentification réussie", w)
-}
-
-func LoginFailureDialog(w fyne.Window) {
-	dialog.ShowInformation("Échec", "Échec de l'authentification", w)
+func FailureDialog(w fyne.Window) {
+	dialog.ShowInformation("Échec", "Échec de l'opération", w)
 }
 
 func BottleSuccessDialog(w fyne.Window) {

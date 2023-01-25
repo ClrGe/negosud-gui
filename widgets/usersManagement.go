@@ -11,7 +11,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
 	"image/color"
-	"negosud-gui/config"
+	"negosud-gui/data"
 	"net/http"
 	"strconv"
 )
@@ -27,6 +27,15 @@ func makeUsersTabs(_ fyne.Window) fyne.CanvasObject {
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
 
+// makeUsersTabs function creates a new set of tabs
+func makeHomeTabs(_ fyne.Window) fyne.CanvasObject {
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Accueil", welcomeScreen(nil)),
+		container.NewTabItem("Se connecter", loginForm(nil)),
+	)
+	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
+
 // UsersColumns defines the header row for the table
 var UsersColumns = []rtable.ColAttr{
 	{ColName: "ID", Header: "ID", WidthPercent: 10},
@@ -36,10 +45,10 @@ var UsersColumns = []rtable.ColAttr{
 }
 
 func displayUsers(w fyne.Window) fyne.CanvasObject {
-	// retrieve structs from config package
-	Users := config.Users
+	// retrieve structs from data package
+	Users := data.Users
 
-	apiUrl := config.UserAPIConfig()
+	apiUrl := data.UserAPIConfig()
 
 	res, err := http.Get(apiUrl)
 	if err != nil {
@@ -73,8 +82,8 @@ func loginForm(w fyne.Window) fyne.CanvasObject {
 
 	var xPos, yPos, heightFields, heightLabels, widthForm float32
 
-	xPos = 500
-	yPos = 150
+	xPos = 50
+	yPos = 0
 	heightFields = 50
 	heightLabels = 20
 	widthForm = 550
@@ -83,30 +92,32 @@ func loginForm(w fyne.Window) fyne.CanvasObject {
 	text.TextSize = 20
 	text.TextStyle = fyne.TextStyle{Bold: true}
 	text.Resize(fyne.NewSize(widthForm, heightFields))
-	text.Move(fyne.NewPos(430, 10))
+	text.Move(fyne.NewPos(0, yPos-300))
 
 	emailLabel := canvas.NewText("Email", color.Black)
 	emailLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	emailLabel.Move(fyne.NewPos(xPos, yPos))
+	emailLabel.Move(fyne.NewPos(xPos, yPos-240))
 	email := widget.NewEntry()
 	email.SetPlaceHolder("truc@example.com")
 	email.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
 	email.Resize(fyne.NewSize(widthForm, heightFields))
-	email.Move(fyne.NewPos(xPos, yPos+20))
+	email.Move(fyne.NewPos(xPos, yPos-220))
 
 	pwdLabel := canvas.NewText("Mot de passe", color.Black)
 	pwdLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	pwdLabel.Move(fyne.NewPos(xPos, yPos+100))
+	pwdLabel.Move(fyne.NewPos(xPos, yPos-120))
 	password := widget.NewPasswordEntry()
 	password.SetPlaceHolder("****")
 	password.Resize(fyne.NewSize(widthForm, heightFields))
-	password.Move(fyne.NewPos(xPos, yPos+120))
+	password.Move(fyne.NewPos(xPos, yPos-100))
 
 	submitBtn := widget.NewButton("Envoyer", nil)
 	submitBtn.Resize(fyne.NewSize(widthForm, heightFields))
-	submitBtn.Move(fyne.NewPos(xPos, yPos+220))
+	submitBtn.Move(fyne.NewPos(xPos, yPos-20))
 
-	mainContainer := container.NewWithoutLayout(text, emailLabel, email, pwdLabel, password, submitBtn)
+	formContainer := container.NewWithoutLayout(text, emailLabel, email, pwdLabel, password, submitBtn)
+	mainContainer := container.NewCenter(formContainer)
+
 	return mainContainer
 }
 
@@ -115,8 +126,8 @@ func addUserForm(w fyne.Window) fyne.CanvasObject {
 
 	var xPos, yPos, heightFields, heightLabels, widthForm float32
 
-	xPos = 500
-	yPos = 150
+	xPos = 50
+	yPos = 0
 	heightFields = 50
 	heightLabels = 20
 	widthForm = 550
@@ -125,45 +136,47 @@ func addUserForm(w fyne.Window) fyne.CanvasObject {
 	text.TextSize = 20
 	text.TextStyle = fyne.TextStyle{Bold: true}
 	text.Resize(fyne.NewSize(widthForm, heightFields))
-	text.Move(fyne.NewPos(430, 10))
+	text.Move(fyne.NewPos(0, -430))
 
 	nameLabel := canvas.NewText("Nom", color.Black)
 	nameLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	nameLabel.Move(fyne.NewPos(xPos, yPos))
+	nameLabel.Move(fyne.NewPos(xPos, yPos-380))
 	name := widget.NewEntry()
 	name.SetPlaceHolder("Jean Bon")
 	name.Resize(fyne.NewSize(widthForm, heightFields))
-	name.Move(fyne.NewPos(xPos, yPos+20))
+	name.Move(fyne.NewPos(xPos, yPos-360))
 
 	emailLabel := canvas.NewText("Email", color.Black)
 	emailLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	emailLabel.Move(fyne.NewPos(xPos, yPos+100))
+	emailLabel.Move(fyne.NewPos(xPos, yPos-260))
 	email := widget.NewEntry()
 	email.SetPlaceHolder("truc@example.com")
 	email.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
 	email.Resize(fyne.NewSize(widthForm, heightFields))
-	email.Move(fyne.NewPos(xPos, yPos+120))
+	email.Move(fyne.NewPos(xPos, yPos-240))
 
 	pwdLabel := canvas.NewText("Mot de passe", color.Black)
 	pwdLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	pwdLabel.Move(fyne.NewPos(xPos, yPos+220))
+	pwdLabel.Move(fyne.NewPos(xPos, yPos-140))
 	password := widget.NewPasswordEntry()
 	password.SetPlaceHolder("****")
 	password.Resize(fyne.NewSize(widthForm, heightFields))
-	password.Move(fyne.NewPos(xPos, yPos+240))
+	password.Move(fyne.NewPos(xPos, yPos-120))
 
 	roleLabel := canvas.NewText("Rôle de l'utilisateur", color.Black)
 	roleLabel.Resize(fyne.NewSize(widthForm, heightLabels))
-	roleLabel.Move(fyne.NewPos(xPos, yPos+340))
+	roleLabel.Move(fyne.NewPos(xPos, yPos-20))
 	roleUser := widget.NewSelectEntry([]string{"Administrateur", "Employé", "Intérimaire"})
 	roleUser.SetPlaceHolder("Veuillez sélectionner un rôle...")
 	roleUser.Resize(fyne.NewSize(widthForm, heightFields))
-	roleUser.Move(fyne.NewPos(xPos, yPos+360))
+	roleUser.Move(fyne.NewPos(xPos, yPos))
 
 	submitBtn := widget.NewButton("Envoyer", nil)
 	submitBtn.Resize(fyne.NewSize(widthForm, heightFields))
-	submitBtn.Move(fyne.NewPos(xPos, yPos+460))
+	submitBtn.Move(fyne.NewPos(xPos, yPos+120))
 
-	mainContainer := container.NewWithoutLayout(text, nameLabel, name, emailLabel, email, pwdLabel, password, roleLabel, roleUser, submitBtn)
+	formContainer := container.NewWithoutLayout(text, nameLabel, name, emailLabel, email, pwdLabel, password, roleLabel, roleUser, submitBtn)
+	mainContainer := container.NewCenter(formContainer)
+
 	return mainContainer
 }

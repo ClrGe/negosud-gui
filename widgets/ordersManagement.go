@@ -6,14 +6,14 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
-	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
-	"negosud-gui/config"
+	"negosud-gui/data"
 	"net/http"
 	"strconv"
 )
 
+// TODO : ADD FUNCTIONNALITY "ORDER AGAIN" ON THE LIST OF ORDERS
 // TODO : SEND MAIL TO PRODUCER AUTOMATICALLY WHEN PLACING ORDER
 
 var BindOrder []binding.DataMap
@@ -41,9 +41,9 @@ var OrdersColumns = []rtable.ColAttr{
 // Display the list of orders fetched from API in a table
 func displayOrders(w fyne.Window) fyne.CanvasObject {
 
-	Orders := config.Orders
+	Orders := data.Orders
 
-	apiUrl := config.OrderAPIConfig()
+	apiUrl := data.OrderAPIConfig()
 
 	res, err := http.Get(apiUrl)
 	if err != nil {
@@ -103,16 +103,11 @@ func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
 			fmt.Println("Canceled")
 		},
 		OnSubmit: func() {
-			fmt.Println("New order placed with success")
+
 		},
 	}
-	form.Resize(fyne.NewSize(600, 1000))
-	left := container.NewVBox(title, form)
-	right := container.NewVBox()
-	mainContainer := container.New(layout.NewGridLayout(2))
 
-	mainContainer.Add(left)
-	mainContainer.Add(right)
+	mainContainer := container.NewCenter(container.NewVBox(title, form))
 
 	return mainContainer
 }
