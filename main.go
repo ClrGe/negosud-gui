@@ -5,69 +5,108 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/cmd/fyne_settings/settings"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"image/color"
 	"negosud-gui/widgets"
 )
 
-// --------------------------------------------------------------------
-
 const currentTab = "currentTab"
 
-var activePage fyne.Window
+var currentPage fyne.Window
 
-// define and start the window
+// main sets up the window configuration and behaviour
 func main() {
-	a := app.NewWithID("negosud")
-	a.Settings().SetTheme(theme.LightTheme())
-	w := a.NewWindow("NEGOSUD")
+	app := app.NewWithID("negosud")
+	app.Settings().SetTheme(theme.LightTheme())
 
-	activePage = w
+	w := app.NewWindow("NEGOSUD")
 
-	w.SetMainMenu(appBarMenu(a, w))
-	w.SetMaster()
-
-	content := container.NewMax(homePage(w))
-
-	title := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-
-	setTab := func(t widgets.Component) {
-		if fyne.CurrentDevice().IsMobile() {
-			child := a.NewWindow(t.Title)
-			activePage = child
-			child.SetContent(t.View(activePage))
-			child.Show()
-			child.SetOnClosed(func() {
-				activePage = w
-				return
-			})
-		}
-		title.SetText(t.Title)
-		content.Objects = []fyne.CanvasObject{t.View(w)}
-		content.Refresh()
-	}
-
-	tab := container.NewBorder(
-		container.NewVBox(title, widget.NewSeparator()), nil, nil, nil, content)
-
-	if fyne.CurrentDevice().IsMobile() {
-		w.SetContent(makeNavigation(setTab, false))
-	} else {
-		split := container.NewHSplit(makeNavigation(setTab, true), tab)
-		split.Offset = 0.2
-		w.SetContent(split)
-	}
-
+	content := container.NewMax(loginForm(w))
 	negosudLogo, _ := fyne.LoadResourceFromPath("media/logo.png")
 
 	w.SetIcon(negosudLogo)
 	w.Resize(fyne.NewSize(1920, 1080))
+	w.SetContent(content)
+
 	w.ShowAndRun()
 }
 
-// static homepage with logo and welcome message
+// loginForm to perform an authentication to access the API
+func loginForm(w fyne.Window) fyne.CanvasObject {
+	appLogo := canvas.NewImageFromFile("media/logo.png")
+	appLogo.FillMode = canvas.ImageFillContain
+	appLogo.SetMinSize(fyne.NewSize(100, 100))
+
+	text := canvas.NewText("Merci de vous identifier pour accéder à l'application", color.Black)
+	text.TextSize = 15
+	text.Alignment = fyne.TextAlignCenter
+
+	emailLabel := canvas.NewText("Email", color.Black)
+	emailInput := widget.NewEntry()
+	emailInput.SetPlaceHolder("exemple@negosud.fr")
+	emailInput.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "Adresse e-mail invalide !")
+
+	passwordLabel := canvas.NewText("Mot de passe", color.Black)
+	passwordInput := widget.NewPasswordEntry()
+	passwordInput.SetPlaceHolder("******")
+
+	form := &widget.Form{
+		Items: []*widget.FormItem{
+			{Text: "", Widget: emailLabel},
+			{Text: "", Widget: emailInput},
+			{Text: "", Widget: passwordLabel},
+			{Text: "", Widget: passwordInput},
+		},
+		OnSubmit: func() {
+			app := fyne.CurrentApp()
+			content := container.NewMax(homePage(w))
+			currentPage = w
+			changePage := func(c widgets.Component) {
+				if fyne.CurrentDevice().IsMobile() {
+					newPage := app.NewWindow(c.Title)
+					currentPage = newPage
+					newPage.SetContent(c.View(currentPage))
+					newPage.Show()
+					newPage.SetOnClosed(func() {
+						currentPage = w
+						return
+					})
+				}
+				content.Objects = []fyne.CanvasObject{c.View(w)}
+				content.Refresh()
+			}
+			page := container.NewBorder(container.NewVBox(widget.NewSeparator()), nil, nil, nil, content)
+			// responsive
+			if fyne.CurrentDevice().IsMobile() {
+				w.SetContent(makeNavigation(changePage, false))
+			} else {
+				split := container.NewHSplit(makeNavigation(changePage, true), page)
+				split.Offset = 0.2
+				w.SetContent(split)
+			}
+		},
+		OnCancel: func() {
+			// close app when clicking on cancel button
+			fyne.CurrentApp().Quit()
+		},
+		SubmitText: "Envoyer",
+		CancelText: "Quitter",
+	}
+	form.Resize(fyne.NewSize(800, 200))
+	form.Move(fyne.NewPos(555, 100))
+
+	// LAYOUT
+	spacer := widget.NewLabel("")
+	formContainer := container.NewWithoutLayout(form)
+	layoutPage := container.NewVBox(spacer, spacer, appLogo, widget.NewSeparator(), text, widget.NewSeparator(), formContainer)
+	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(1900, 800), layoutPage))
+	return mainContainer
+}
+
+// homePage with logo and message
 func homePage(_ fyne.Window) fyne.CanvasObject {
 	logo := canvas.NewImageFromFile("media/logo-large.png")
 	logo.FillMode = canvas.ImageFillContain
@@ -83,9 +122,9 @@ func homePage(_ fyne.Window) fyne.CanvasObject {
 	))
 }
 
+// makeNavigation implements the left-side navigation panel with layout defined in widgets/navigationLayout
 func makeNavigation(setTab func(component widgets.Component), loadPrevious bool) fyne.CanvasObject {
-	a := fyne.CurrentApp()
-
+	app := fyne.CurrentApp()
 	arborescence := &widget.Tree{
 		ChildUIDs: func(uid string) []string {
 			return widgets.ComponentIndex[uid]
@@ -99,51 +138,23 @@ func makeNavigation(setTab func(component widgets.Component), loadPrevious bool)
 			return widget.NewLabel("Nouvel onglet")
 		},
 		UpdateNode: func(uid string, branch bool, obj fyne.CanvasObject) {
-			t, ok := widgets.Components[uid]
-			if !ok {
-				fyne.LogError("Missing something : "+uid, nil)
-				return
-			}
+			t, _ := widgets.Components[uid]
 			obj.(*widget.Label).SetText(t.Title)
-
 			obj.(*widget.Label).TextStyle = fyne.TextStyle{}
-
 		},
 		OnSelected: func(uid string) {
 			if t, ok := widgets.Components[uid]; ok {
-				a.Preferences().SetString(currentTab, uid)
+				app.Preferences().SetString(currentTab, uid)
 				setTab(t)
 			}
 		},
 	}
 
-	return container.NewBorder(nil, nil, nil, nil, arborescence)
-}
+	// close app when hitting button
+	disconnectUser := widget.NewButton("Déconnexion", func() {
+		fmt.Println("user disconnected")
+		fyne.CurrentApp().Quit()
+	})
 
-// TODO : implement functions for menu items
-func appBarMenu(a fyne.App, w fyne.Window) *fyne.MainMenu {
-	param := func() {
-		w := a.NewWindow("Fyne Settings")
-		w.SetContent(settings.NewSettings().LoadAppearanceScreen(w))
-		w.Resize(fyne.NewSize(480, 480))
-		w.Show()
-	}
-	parametersItem := fyne.NewMenuItem("Paramètres", param)
-
-	performFind := func() { fmt.Println("Recherche") }
-	findItem := fyne.NewMenuItem("Recherche", performFind)
-	negosudMenu := fyne.NewMenu("Negosud", parametersItem, findItem)
-	negosudMenu.Items = append(negosudMenu.Items, fyne.NewMenuItemSeparator())
-
-	helpMenu := fyne.NewMenu("Support",
-		fyne.NewMenuItem("FAQ", func() {}),
-		fyne.NewMenuItem("Contacter les développeurs", func() {}),
-		fyne.NewMenuItem("Documentation", func() {}),
-	)
-	main := fyne.NewMainMenu(
-		negosudMenu,
-		helpMenu,
-	)
-
-	return main
+	return container.NewBorder(nil, disconnectUser, nil, nil, arborescence)
 }

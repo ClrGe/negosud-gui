@@ -1,11 +1,12 @@
-# fichiers ide
+# IDE
 .idea/
 .vscode/
-# environnement
+# Env
 .env
 *.env
 app.env
 # Programmes & plugins
+build/
 *.exe
 *.exe~
 *.dll
@@ -13,5 +14,5 @@ app.env
 *.dylib
 *.test
 *.out
-# workspace
+# Workspace
 go.work

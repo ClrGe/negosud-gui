@@ -21,15 +21,12 @@ func contactForm(w fyne.Window) fyne.CanvasObject {
 	text.TextStyle = fyne.TextStyle{Bold: true}
 	text.Resize(fyne.NewSize(widthForm, heightFields))
 	text.Move(fyne.NewPos(0, yPos-400))
-
 	emailLabel := widget.NewLabelWithStyle("Votre email", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	email := widget.NewEntry()
 	email.SetPlaceHolder("truc@example.com")
-
 	subjectLabel := widget.NewLabelWithStyle("Sujet", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	subject := widget.NewEntry()
 	subject.SetPlaceHolder("Au sujet de...")
-
 	messageLabel := widget.NewLabelWithStyle("Message", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	message := widget.NewMultiLineEntry()
 	message.SetPlaceHolder("Votre message...")
@@ -55,7 +52,6 @@ func contactForm(w fyne.Window) fyne.CanvasObject {
 func displayFAQ(w fyne.Window) fyne.CanvasObject {
 
 	questions := widget.NewAccordion(
-
 		&widget.AccordionItem{
 			Title:  "Les données des bouteilles et producteurs ne s'affichent pas. Que faire ?",
 			Detail: widget.NewLabel("Relancer l'application. Si rien ne change, utilisez le formulaire de contact de l'onglet \"Demander de l'aide\"."),

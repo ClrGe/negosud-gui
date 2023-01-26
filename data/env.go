@@ -11,7 +11,8 @@ import (
 // define and load env. variables contained in app.env
 
 type Config struct {
-	SERVER string `mapstructure:"SERVER"`
+	SERVER  string `mapstructure:"SERVER"`
+	API_KEY string `mapstructure:"API_KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

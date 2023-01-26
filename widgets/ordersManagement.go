@@ -41,16 +41,13 @@ var OrdersColumns = []rtable.ColAttr{
 
 // Display the list of orders fetched from API in a table
 func displayOrders(w fyne.Window) fyne.CanvasObject {
-
 	Orders := data.Orders
 
 	apiUrl := data.OrderAPIConfig()
-
 	res, err := http.Get(apiUrl)
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	if err := json.NewDecoder(res.Body).Decode(&Orders); err != nil {
 		fmt.Println(err)
 	}
@@ -60,7 +57,6 @@ func displayOrders(w fyne.Window) fyne.CanvasObject {
 		q := strconv.Itoa(Orders[i].QuantityInt)
 		p := strconv.Itoa(Orders[i].ProducerId)
 		b := strconv.Itoa(Orders[i].ProductId)
-
 		Orders[i].Product = b
 		Orders[i].Producer = p
 		Orders[i].Quantity = q
@@ -73,15 +69,12 @@ func displayOrders(w fyne.Window) fyne.CanvasObject {
 		ColAttrs: OrdersColumns,
 		Bindings: BindOrder,
 	}
-
 	table := rtable.CreateTable(tableOptions)
-
 	return table
 }
 
 // form to place a new order to a producer
 func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
-
 	nameLabel := widget.NewLabelWithStyle("Nom du producteur", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	nameProducer := widget.NewEntry()
 	nameProducer.SetPlaceHolder("Jean Bon")
@@ -117,7 +110,6 @@ func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
 				Quantity: quantity.Text,
 				Comment:  comment.Text,
 			}
-
 			// encode the value as JSON and send it to the API.
 			bottleJsonValue, _ := json.Marshal(newOrder)
 			bottleResp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(bottleJsonValue))
@@ -126,17 +118,13 @@ func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
 				return
 			}
 			if bottleResp.StatusCode == 204 {
-				data.BottleFailureDialog(w)
 				fmt.Println(bottleJsonValue)
 				return
 			}
-			data.BottleSuccessDialog(w)
 			fmt.Println("New order placed with success")
 		},
 		SubmitText: "Envoyer",
 	}
-
 	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), form))
-
 	return mainContainer
 }
