@@ -12,7 +12,7 @@ type Component struct {
 
 var (
 	Components = map[string]Component{
-		"login": {"Accueil",
+		"home": {"Accueil",
 			makeHomeTabs,
 			true,
 		},
@@ -51,12 +51,25 @@ var (
 			true},
 		"contact_tab": {"Demander de l'aide",
 			contactForm,
+			true,
+		},
+		"admin_tab": {"Administration",
+			logoScreen,
+			true,
+		},
+		"documents_tab": {"Documents",
+			makeDocumentsTabs,
 			true},
+		"statistics_tab": {"Statistiques",
+			makeStatsTabs,
+			true,
+		},
 	}
 
 	ComponentIndex = map[string][]string{
-		"":            {"login", "users_management", "producers_management", "bottles_management", "orders_tab", "support_tab", "website_management"},
+		"":            {"home", "users_management", "producers_management", "bottles_management", "orders_tab", "admin_tab", "support_tab"},
 		"support_tab": {"faq_tab", "contact_tab"},
 		"orders_tab":  {"orders_producers", "orders_customers"},
+		"admin_tab":   {"documents_tab", "statistics_tab", "website_management"},
 	}
 )

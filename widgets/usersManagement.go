@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
-	"image/color"
 	"negosud-gui/data"
 	"net/http"
 	"strconv"
@@ -32,7 +30,6 @@ func makeUsersTabs(_ fyne.Window) fyne.CanvasObject {
 func makeHomeTabs(_ fyne.Window) fyne.CanvasObject {
 	tabs := container.NewAppTabs(
 		container.NewTabItem("Accueil", welcomeScreen(nil)),
-		container.NewTabItem("Se connecter", loginForm(nil)),
 	)
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
@@ -76,54 +73,6 @@ func displayUsers(w fyne.Window) fyne.CanvasObject {
 	table := rtable.CreateTable(tableOptions)
 
 	return table
-}
-
-// loginForm to perform an authentication to access the API
-func loginForm(w fyne.Window) fyne.CanvasObject {
-
-	emailLabel := canvas.NewText("Email", color.Black)
-	emailInput := widget.NewEntry()
-	emailInput.SetPlaceHolder("truc@example.com")
-	emailInput.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
-
-	passwordLabel := canvas.NewText("Mot de passe", color.Black)
-	passwordInput := widget.NewPasswordEntry()
-	passwordInput.SetPlaceHolder("****")
-
-	form := &widget.Form{
-		Items: []*widget.FormItem{
-			{Text: "", Widget: emailLabel},
-			{Text: "", Widget: emailInput},
-			{Text: "", Widget: passwordLabel},
-			{Text: "", Widget: passwordInput},
-		},
-		OnSubmit: func() {
-			email := emailInput.Text
-			password := passwordInput.Text
-
-			apiUrl := data.LoginAPIConfig(email, password)
-
-			resp, err := http.Post(apiUrl, "application/json", bytes.NewBufferString(email))
-
-			if err != nil {
-				fyne.CurrentApp().SendNotification(&fyne.Notification{
-					Content: "Error on login form submitting: " + err.Error(),
-				})
-				return
-			}
-			if resp.StatusCode == 204 {
-				fmt.Println("Could not log in")
-				return
-			}
-			fmt.Println("User is connected")
-		},
-		SubmitText: "Envoyer",
-		CancelText: "",
-	}
-
-	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), form))
-
-	return mainContainer
 }
 
 // addUserForm to add an authorized user
