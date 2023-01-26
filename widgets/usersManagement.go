@@ -5,13 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
-	"image/color"
 	"negosud-gui/data"
 	"net/http"
 	"strconv"
@@ -28,18 +26,9 @@ func makeUsersTabs(_ fyne.Window) fyne.CanvasObject {
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
 
-// makeUsersTabs function creates a new set of tabs
-func makeHomeTabs(_ fyne.Window) fyne.CanvasObject {
-	tabs := container.NewAppTabs(
-		container.NewTabItem("Accueil", welcomeScreen(nil)),
-		container.NewTabItem("Se connecter", loginForm(nil)),
-	)
-	return container.NewBorder(nil, nil, nil, nil, tabs)
-}
-
 // UsersColumns defines the header row for the table
 var UsersColumns = []rtable.ColAttr{
-	{ColName: "ID", Header: "ID", WidthPercent: 10},
+	{ColName: "ID", Header: "ID", WidthPercent: 40},
 	{ColName: "Name", Header: "Nom", WidthPercent: 120},
 	{ColName: "Email", Header: "Email", WidthPercent: 120},
 	{ColName: "Role", Header: "Rôle", WidthPercent: 120},
@@ -48,14 +37,12 @@ var UsersColumns = []rtable.ColAttr{
 func displayUsers(w fyne.Window) fyne.CanvasObject {
 	// retrieve structs from data package
 	Users := data.Users
-
 	apiUrl := data.UserAPIConfig()
 
 	res, err := http.Get(apiUrl)
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	if err := json.NewDecoder(res.Body).Decode(&Users); err != nil {
 		fmt.Println(err)
 	}
@@ -66,64 +53,13 @@ func displayUsers(w fyne.Window) fyne.CanvasObject {
 		Users[i].ID = id
 		BindUser = append(BindUser, binding.BindStruct(&Users[i]))
 	}
-
 	tableOptions := &rtable.TableOptions{
 		RefWidth: "========================================",
 		ColAttrs: UsersColumns,
 		Bindings: BindUser,
 	}
-
 	table := rtable.CreateTable(tableOptions)
-
 	return table
-}
-
-// loginForm to perform an authentication to access the API
-func loginForm(w fyne.Window) fyne.CanvasObject {
-
-	emailLabel := canvas.NewText("Email", color.Black)
-	emailInput := widget.NewEntry()
-	emailInput.SetPlaceHolder("truc@example.com")
-	emailInput.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
-
-	passwordLabel := canvas.NewText("Mot de passe", color.Black)
-	passwordInput := widget.NewPasswordEntry()
-	passwordInput.SetPlaceHolder("****")
-
-	form := &widget.Form{
-		Items: []*widget.FormItem{
-			{Text: "", Widget: emailLabel},
-			{Text: "", Widget: emailInput},
-			{Text: "", Widget: passwordLabel},
-			{Text: "", Widget: passwordInput},
-		},
-		OnSubmit: func() {
-			email := emailInput.Text
-			password := passwordInput.Text
-
-			apiUrl := data.LoginAPIConfig(email, password)
-
-			resp, err := http.Post(apiUrl, "application/json", bytes.NewBufferString(email))
-
-			if err != nil {
-				fyne.CurrentApp().SendNotification(&fyne.Notification{
-					Content: "Error on login form submitting: " + err.Error(),
-				})
-				return
-			}
-			if resp.StatusCode == 204 {
-				fmt.Println("Could not log in")
-				return
-			}
-			fmt.Println("User is connected")
-		},
-		SubmitText: "Envoyer",
-		CancelText: "",
-	}
-
-	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), form))
-
-	return mainContainer
 }
 
 // addUserForm to add an authorized user
@@ -132,16 +68,13 @@ func addUserForm(w fyne.Window) fyne.CanvasObject {
 	nameLabel := widget.NewLabelWithStyle("Nom", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	name := widget.NewEntry()
 	name.SetPlaceHolder("Jean Bon")
-
 	emailLabel := widget.NewLabelWithStyle("Email", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	emailInput := widget.NewEntry()
 	emailInput.SetPlaceHolder("truc@example.com")
 	emailInput.Validator = validation.NewRegexp(`\w{1,}@\w{1,}\.\w{1,4}`, "not a valid email")
-
 	passwordLabel := widget.NewLabelWithStyle("Mot de passe", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	passwordInput := widget.NewPasswordEntry()
 	passwordInput.SetPlaceHolder("******")
-
 	roleLabel := widget.NewLabelWithStyle("Rôle", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	roleUser := widget.NewSelectEntry([]string{"Administrateur", "Employé", "Intérimaire"})
 	roleUser.SetPlaceHolder("Veuillez sélectionner un rôle...")
@@ -160,11 +93,8 @@ func addUserForm(w fyne.Window) fyne.CanvasObject {
 		OnSubmit: func() {
 			email := emailInput.Text
 			password := passwordInput.Text
-
 			apiUrl := data.LoginAPIConfig(email, password)
-
 			resp, err := http.Post(apiUrl, "application/json", bytes.NewBufferString(email))
-
 			if err != nil {
 				fyne.CurrentApp().SendNotification(&fyne.Notification{
 					Content: "Error on login form submitting: " + err.Error(),
@@ -180,8 +110,6 @@ func addUserForm(w fyne.Window) fyne.CanvasObject {
 		SubmitText: "Envoyer",
 		CancelText: "",
 	}
-
 	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), form))
-
 	return mainContainer
 }
