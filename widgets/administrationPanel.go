@@ -45,7 +45,7 @@ func displayStatistics(_ fyne.Window) fyne.CanvasObject {
 
 	return container.NewCenter(container.NewVBox(
 		image,
-		widget.NewLabelWithStyle("Statistiques sur les prix, les ventes etc (à implémenter)", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		widget.NewLabelWithStyle("Statistiques vente/entrées-sorties/prix etc (à implémenter)", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
 		widget.NewLabel(""),
 	))
 }

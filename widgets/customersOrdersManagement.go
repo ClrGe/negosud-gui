@@ -36,16 +36,12 @@ var CustomersOrdersColumns = []rtable.ColAttr{
 
 // Display the list of orders fetched from API in a table
 func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
-
 	CustomerOrders := data.CustomerOrders
-
 	apiUrl := data.CustomerOrderAPIConfig()
-
 	res, err := http.Get(apiUrl)
 	if err != nil {
 		fmt.Println(err)
 	}
-
 	if err := json.NewDecoder(res.Body).Decode(&CustomerOrders); err != nil {
 		fmt.Println(err)
 	}
@@ -53,15 +49,12 @@ func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 	for i := 0; i < len(CustomerOrders); i++ {
 		BindCustomerOrder = append(BindCustomerOrder, binding.BindStruct(&CustomerOrders[i]))
 	}
-
 	tableOptions := &rtable.TableOptions{
 		RefWidth: "========================================",
 		ColAttrs: CustomersOrdersColumns,
 		Bindings: BindCustomerOrder,
 	}
-
 	table := rtable.CreateTable(tableOptions)
-
 	return table
 }
 

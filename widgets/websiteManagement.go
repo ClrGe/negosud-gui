@@ -27,7 +27,6 @@ func displayStats(_ fyne.Window) fyne.CanvasObject {
 	image := canvas.NewImageFromFile("media/stat2.png")
 	image.FillMode = canvas.ImageFillContain
 	image.SetMinSize(fyne.NewSize(1280, 720))
-
 	return container.NewCenter(container.NewVBox(
 		image,
 		widget.NewLabelWithStyle("Statistiques du site ecommerce (à implémenter)", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
