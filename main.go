@@ -103,10 +103,13 @@ func loginForm(w fyne.Window) fyne.CanvasObject {
 		SubmitText: "Envoyer",
 		CancelText: "",
 	}
+	spacer := widget.NewLabel("")
+	form.Resize(fyne.NewSize(800, 800))
+	form.Move(fyne.NewPos(555, 100))
 
-	formContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(800, 1080), form))
-	box := container.NewVBox(negosudLogo, widget.NewSeparator(), text, widget.NewSeparator(), formContainer)
-	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(1920, 1080), box))
+	formContainer := container.NewWithoutLayout(form)
+	layoutPage := container.NewVBox(spacer, spacer, negosudLogo, widget.NewSeparator(), text, widget.NewSeparator(), formContainer)
+	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(1920, 1080), layoutPage))
 	return mainContainer
 }
 
