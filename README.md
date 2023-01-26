@@ -1,18 +1,21 @@
-# NEGOSUD-GUI
-#### *Logiciel de gestion de stock et d'inventaire pour un négociant en vin* 
+# :wine_glass: NEGOSUD-GUI :wine_glass:
+### *Logiciel de gestion de stock et d'inventaire pour un négociant en vin* 
 
 ---
 
-### Présentation
+---
 
 Langage : [Go](https://go.dev/)
 
 Framework : [Fyne](https://github.com/fyne-io/fyne)
 
 ---
-### Prérequis
 
-Nécessite l'installation de **Go** ~v1.19
+---
+
+## :computer: Prérequis
+
+*Nécessite l'installation de **[Go ~1.19](https://go.dev/dl/)**
 
 ``` 
 git clone https://github.com/ClrGe/negosud-gui.git
@@ -28,5 +31,37 @@ Créer un exécutable :
 ```
 go build
 ```
+
 ---
-![Login]("https://github.com/ClrGe/negosud-gui/blob/feature/connect-forms-to-api/media/login.png?raw=true")
+
+## :closed_lock_with_key: Sécurité
+
+*Accès authentifié par JWT acquis à la connexion pour les requêtes API*
+
+![login.png](media/login.png)
+
+---
+
+## :open_file_folder: Gestion
+*Produits / commandes / fournisseurs / producteurs / stocks / documents administratifs* 
+
+![management.png](media/management.png)
+
+---
+
+## :chart_with_upwards_trend: Monitoring
+
+*Historique des prix / activité / site e-commerce / rentabilité*
+
+![stats.png](media/stats.png)
+
+---
+
+## :clock4: Support
+*Formulaire de contact des développeurs et documentation (FAQ)*
+
+![stats.png](media/faq.png)
+
+---
+
+---
