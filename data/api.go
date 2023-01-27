@@ -6,6 +6,8 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"os"
 )
 
 var Token string
@@ -16,9 +18,18 @@ func AuthGetRequest(route string) io.ReadCloser {
 	if err != nil {
 		fmt.Println("Could not load config")
 	}
-	Token = env.APIKEY
+	Token = env.KEY
+	var server string
 
-	req, err := http.NewRequest("GET", env.SERVER+"/"+route, nil)
+	if env.ENV == "dev" {
+		server = env.SERVER_DEV
+	} else {
+		server = env.SERVER_PROD
+	}
+
+	url := server + "/" + route
+
+	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		panic(err)
 	}
@@ -39,15 +50,24 @@ func AuthGetRequest(route string) io.ReadCloser {
 	return resp.Body
 }
 
-func AuthPostRequest(route string, body []byte) int {
+func AuthPostRequest(route string, body *bytes.Buffer) int {
 	env, err := LoadConfig(".")
 	if err != nil {
 		fmt.Println("Could not load config")
 	}
 
-	Token = env.APIKEY
+	Token = env.KEY
+	var server string
 
-	req, err := http.NewRequest("POST", env.SERVER+"/"+route, bytes.NewBuffer(body))
+	if env.ENV == "dev" {
+		server = env.SERVER_DEV
+	} else {
+		server = env.SERVER_PROD
+	}
+
+	url := server + "/" + route
+
+	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
 		panic(err)
 	}
@@ -70,32 +90,53 @@ func AuthPostRequest(route string, body []byte) int {
 	return resp.StatusCode
 }
 
-func loginAndSaveToken(body []byte) string {
+func LoginAndSaveToken(email string, password string) int {
 	env, err := LoadConfig(".")
 	if err != nil {
 		fmt.Print(err, "Error loading config")
 	}
 
+	var response int
 	var token string
+	var server string
 
-	req, err := http.NewRequest("POST", env.SERVER+"/api/authentication/login", nil)
+	if env.ENV == "dev" {
+		server = env.SERVER_DEV
+	} else {
+		server = env.SERVER_PROD
+	}
+	// escape special characters in email and password
+	email = url.QueryEscape(email)
+	password = url.QueryEscape(password)
+	hostname, _ := os.Hostname()
+	url := server + "/authentication/login?email=" + email + "&password=" + password
+
+	req, err := http.NewRequest("POST", url, nil)
 	if err != nil {
 		fmt.Print(err, "Error creating request")
 	}
 	client := &http.Client{}
 	resp, err := client.Do(req)
-	if err == nil {
+	if err != nil {
+		Logger(true, "LOGIN", err.Error())
 		fmt.Print(err, "Error sending request")
 	}
-
-	body, err = ioutil.ReadAll(resp.Body)
+	if resp.StatusCode != 200 {
+		message := "Login failed from origin " + hostname + "\n"
+		Logger(true, "LOGIN ", message)
+		response = resp.StatusCode
+		return response
+	}
+	Logger(false, "LOGIN", "Login successful from origin "+hostname+"\n")
+	body, err := ioutil.ReadAll(resp.Body)
 	token = string(body)
 
 	if err != nil {
 		fmt.Print(err, "Error retrieving token from response")
 	}
 	defer resp.Body.Close()
+	SaveConfig("KEY", token)
 
-	SaveConfig("APIKEY", token)
-	return token
+	response = resp.StatusCode
+	return response
 }

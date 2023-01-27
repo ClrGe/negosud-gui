@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -17,7 +18,7 @@ import (
 )
 
 var BindProducer []binding.DataMap
-var log = data.ErrorLogger
+var log = data.Logger
 var source = "WIDGETS.PRODUCER "
 
 // makeProducerTabs function creates a new set of tabs
@@ -78,7 +79,7 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 	resultApi := data.AuthGetRequest("producer")
 	if err := json.NewDecoder(resultApi).Decode(&ProducerData); err != nil {
 		fmt.Println(err)
-		log(source, err.Error())
+		log(true, source, err.Error())
 	}
 
 	for i := 0; i < len(ProducerData); i++ {
@@ -120,7 +121,7 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 		if err != nil {
 			fmt.Println(err.Error())
-			log(source, err.Error())
+			log(true, source, err.Error())
 			return
 		}
 		// Printout body cells
@@ -128,7 +129,7 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 		_, err = rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
 		if err != nil {
 			fmt.Println(err.Error())
-			log(source, err.Error())
+			log(true, source, err.Error())
 
 			return
 		} else {
@@ -142,7 +143,7 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 			// Fetch individual producer to fill form
 			response := data.AuthGetRequest("producer/" + identifier)
 			if err := json.NewDecoder(response).Decode(&Individual); err != nil {
-				log(source, err.Error())
+				log(true, source, err.Error())
 				fmt.Println(err)
 			} else {
 				productImg.Hidden = false
@@ -154,7 +155,7 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 			productTitle.SetText(Individual.Name)
 			productDesc.SetText(details)
 		} else {
-			log(source, err.Error())
+			log(true, source, err.Error())
 		}
 	}
 	updateForm := &widget.Form{
@@ -173,11 +174,11 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 				Details: detailsProducer.Text,
 			}
 			jsonValue, _ := json.Marshal(producer)
-			postData := data.AuthPostRequest("producer"+identifier, jsonValue)
+			postData := data.AuthPostRequest("producer"+identifier, bytes.NewBuffer(jsonValue))
 			if postData != 201|200 {
 				fmt.Println("Error on update")
 				message := "Error on producer " + identifier + " update"
-				log(source, message)
+				log(true, source, message)
 			} else {
 				fmt.Println("Success on update")
 			}
@@ -238,13 +239,13 @@ func addNewProducer(_ fyne.Window) fyne.CanvasObject {
 			jsonValue, err := json.Marshal(&producer)
 			if err != nil {
 				fmt.Println(err)
-				log(source, err.Error())
+				log(true, source, err.Error())
 				return
 			}
-			postData := data.AuthPostRequest("producer", jsonValue)
+			postData := data.AuthPostRequest("producer", bytes.NewBuffer(jsonValue))
 			if postData != 200|201 {
 				message := "StatusCode " + strconv.Itoa(postData)
-				log(source, message)
+				log(true, source, message)
 				fmt.Println(message)
 				return
 			}
