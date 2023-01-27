@@ -17,7 +17,7 @@ type User struct {
 	Name     string `json:"name"`
 	Email    string `json:"details"`
 	Password string `json:"password"`
-	Role     string `json:"created_By"`
+	Role     string `json:"createdBy"`
 }
 
 // ############################################
@@ -32,10 +32,10 @@ type Producer struct {
 	ID        int         `json:"id"`
 	Name      string      `json:"name"`
 	Details   string      `json:"details"`
-	CreatedAt interface{} `json:"created_At"`
-	UpdatedAt time.Time   `json:"updated_At"`
-	CreatedBy string      `json:"created_By"`
-	UpdatedBy string      `json:"updated_By"`
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt time.Time   `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
 	Bottles   interface{} `json:"Bottles"`
 	Region    interface{} `json:"region"`
 }
@@ -45,7 +45,7 @@ type PartialProducer struct {
 	Id        int `json:"id"`
 	ID        string
 	Name      string `json:"name"`
-	CreatedBy string `json:"created_By"`
+	CreatedBy string `json:"createdBy"`
 }
 
 // ############################################
@@ -54,22 +54,23 @@ type PartialProducer struct {
 
 var BottleData []PartialBottle
 var IndBottle Bottle
+var Bottles []Bottle
 
 // Bottle struct holds information about a bottle of wine.
 type Bottle struct {
 	ID                int         `json:"id"`
-	FullName          string      `json:"full_Name"`
+	FullName          string      `json:"fullName"`
 	Description       string      `json:"description"`
-	Label             string      `json:"label"`
+	WineType          string      `json:"wineType"`
 	Volume            int         `json:"volume"`
 	Picture           string      `json:"picture"`
-	YearProduced      int         `json:"year_Produced"`
-	AlcoholPercentage int         `json:"alcohol_Percentage"`
-	CurrentPrice      int         `json:"current_Price"`
-	CreatedAt         time.Time   `json:"created_At"`
-	UpdatedAt         time.Time   `json:"updated_At"`
-	CreatedBy         string      `json:"created_By"`
-	UpdatedBy         string      `json:"updated_By"`
+	YearProduced      int         `json:"yearProduced"`
+	AlcoholPercentage int         `json:"alcoholPercentage"`
+	CurrentPrice      int         `json:"currentPrice"`
+	CreatedAt         time.Time   `json:"createdAt"`
+	UpdatedAt         time.Time   `json:"updatedAt"`
+	CreatedBy         string      `json:"createdBy"`
+	UpdatedBy         string      `json:"updatedBy"`
 	BottleLocations   interface{} `json:"bottleLocations"`
 	BottleGrapes      interface{} `json:"bottleGrapes"`
 	Producer          interface{} `json:"producer"`
@@ -83,14 +84,14 @@ type PartialBottle struct {
 	Volume            string
 	Alcohol           string
 	Year              string
-	FullName          string `json:"full_Name"`
+	FullName          string `json:"fullName"`
 	Description       string `json:"description"`
-	Label             string `json:"label"`
+	WineType          string `json:"wineType"`
 	VolumeInt         int    `json:"volume"`
 	Picture           string `json:"picture"`
-	YearProduced      int    `json:"year_Produced"`
-	AlcoholPercentage int    `json:"alcohol_Percentage"`
-	CurrentPrice      int    `json:"current_Price"`
+	YearProduced      int    `json:"yearProduced"`
+	AlcoholPercentage int    `json:"alcoholPercentage"`
+	CurrentPrice      int    `json:"currentPrice"`
 }
 
 // ############################################

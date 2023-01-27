@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -104,7 +105,7 @@ func producerOrdersForm(_ fyne.Window) fyne.CanvasObject {
 			}
 			// encode the value as JSON and send it to the API.
 			jsonValue, _ := json.Marshal(newOrder)
-			postData := data.AuthPostRequest("orders", jsonValue)
+			postData := data.AuthPostRequest("orders", bytes.NewBuffer(jsonValue))
 			if postData != 201|200 {
 				fmt.Println("Error while posting data to API")
 			}

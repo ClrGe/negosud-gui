@@ -11,7 +11,7 @@ Framework : [Fyne](https://github.com/fyne-io/fyne)
 
 ## :computer: Prérequis
 
-#### Nécessite l'installation de **[Go ~1.19](https://go.dev/dl/)**
+Nécessite l'installation de **[Go ~1.19](https://go.dev/dl/)** 
 
 
 ``` 
@@ -33,23 +33,23 @@ go build
 
 ## :closed_lock_with_key: Sécurité
 
-*Accès authentifié par JWT acquis à la connexion pour les requêtes API*
+**_Authentification obligatoire pour accéder au logiciel et aux données API_**
 
 ![login.png](media/login.png)
 
 ## :open_file_folder: Gestion
-*Produits / commandes / fournisseurs / producteurs / stocks / documents administratifs* 
+**_Produits / commandes / fournisseurs / producteurs / stocks / documents administratifs_** 
 
 ![management.png](media/management.png)
 
 ## :chart_with_upwards_trend: Monitoring
 
-*Historique des prix / activité / site e-commerce / rentabilité*
+**_Historique des prix / activité / site e-commerce / rentabilité_**
 
 ![stats.png](media/stats.png)
 
 ## :clock4: Support
-*Formulaire de contact des développeurs et documentation (FAQ)*
+**_Formulaire de contact des développeurs et documentation (FAQ)_**
 
 ![stats.png](media/faq.png)
 

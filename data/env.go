@@ -9,8 +9,10 @@ import (
 // define and load env. variables contained in app.env
 
 type Config struct {
-	SERVER string `mapstructure:"SERVER"`
-	APIKEY string `mapstructure:"APIKEY"`
+	ENV         string `mapstructure:"ENV"`
+	SERVER_DEV  string `mapstructure:"SERVER_DEV"`
+	SERVER_PROD string `mapstructure:"SERVER_PROD"`
+	KEY         string `mapstructure:"KEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
