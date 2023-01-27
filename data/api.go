@@ -1,7 +1,7 @@
 package data
 
 import (
-	"encoding/json"
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -9,130 +9,62 @@ import (
 
 var Token string
 
-func AuthAPI() string {
+// AuthGetRequest sends a req to the endpoint (route parameter) and returns the response body
+func AuthGetRequest(route string) io.ReadCloser {
 	env, err := LoadConfig(".")
 	if err != nil {
-		fmt.Println("cannot load configuration")
+		fmt.Println("Could not load config")
 	}
-	Token = env.API_KEY
-	return Token
+	Token = env.APIKEY
+
+	req, err := http.NewRequest("GET", env.SERVER+"/"+route, nil)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Add("Authorization", "Bearer "+Token)
+	// send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	if resp.StatusCode == 200 || resp.StatusCode == 201 {
+		fmt.Println("Success")
+	} else {
+		fmt.Println("Failed")
+		return nil
+	}
+	return resp.Body
 }
 
-func UserAPIConfig() string {
+func AuthPostRequest(route string, body []byte) int {
 	env, err := LoadConfig(".")
 	if err != nil {
-		fmt.Println("cannot load configuration")
+		fmt.Println("Could not load config")
 	}
-	userUrl := env.SERVER + "/api/users"
-	return userUrl
-}
 
-func ProducerAPIConfig() string {
-	env, err := LoadConfig(".")
-	if err != nil {
-		fmt.Println("cannot load configuration")
-	}
-	producerUrl := env.SERVER + "/api/producer"
-	return producerUrl
-}
+	Token = env.APIKEY
 
-func OrderAPIConfig() string {
-	env, err := LoadConfig(".")
+	req, err := http.NewRequest("POST", env.SERVER+"/"+route, bytes.NewBuffer(body))
 	if err != nil {
-		fmt.Println("cannot load configuration")
+		panic(err)
 	}
-	orderUrl := env.SERVER + "/api/orders"
-	return orderUrl
-}
+	req.Header.Add("Authorization", "Bearer "+Token)
+	req.Header.Set("Content-Type", "application/json")
 
-func CustomerOrderAPIConfig() string {
-	env, err := LoadConfig(".")
+	// send the request
+	client := &http.Client{}
+	resp, err := client.Do(req)
 	if err != nil {
-		fmt.Println("cannot load configuration")
+		panic(err)
 	}
-	orderUrl := env.SERVER + "/api/orders/customers"
-	return orderUrl
-}
+	if resp.StatusCode == 200 || resp.StatusCode == 201 {
+		fmt.Println("Success")
+	} else {
+		fmt.Println("Failed")
+		return resp.StatusCode
+	}
 
-// Call producer API and return the list of all producers
-func FetchProducers() {
-	apiUrl := ProducerAPIConfig()
-	res, err := http.Get(apiUrl)
-	if err != nil {
-		fmt.Println(err)
-	}
-	defer res.Body.Close()
-	if err := json.NewDecoder(res.Body).Decode(&Producers); err != nil {
-		fmt.Println(err)
-	}
-}
-
-// Call producer API and return producer matching ID
-func FetchIndividualProducer(id string) io.ReadCloser {
-	apiUrl := ProducerAPIConfig() + "/" + id
-	res, err := http.Get(apiUrl)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return res.Body
-}
-
-func BottleAPIConfig() string {
-	env, err := LoadConfig(".")
-	if err != nil {
-		fmt.Println("cannot load configuration")
-	}
-	bottleUrl := env.SERVER + "/api/bottle"
-	return bottleUrl
-}
-
-func LoginAPIConfig(email string, password string) string {
-	env, err := LoadConfig(".")
-	if err != nil {
-		fmt.Println("cannot load configuration")
-	}
-	bottleUrl := env.SERVER + "/api/authentication/login?email=" + email + "&password=" + password
-	return bottleUrl
-}
-
-func UpdateBottleAPI() string {
-	env, err := LoadConfig(".")
-	if err != nil {
-		fmt.Println("cannot load configuration")
-	}
-	bottleUrl := env.SERVER + "/api/updatebottle/"
-	return bottleUrl
-}
-
-func UpdateProducerAPI() string {
-	env, err := LoadConfig(".")
-	if err != nil {
-		fmt.Println("cannot load configuration")
-	}
-	bottleUrl := env.SERVER + "/api/updateproducer/"
-	return bottleUrl
-}
-
-// Call producer API and return producer matching ID
-func FetchIndividualBottle(id string) io.ReadCloser {
-	apiUrl := BottleAPIConfig() + "/" + id
-	res, err := http.Get(apiUrl)
-	if err != nil {
-		fmt.Println(err)
-	}
-	return res.Body
-}
-
-// Retrieve a list of bottles from an API endpoint
-// The list of bottles is unmarshalled from the response body and stored in the bottles variable.
-func FetchBottles() {
-	res, err := http.Get(BottleAPIConfig())
-	if err != nil {
-		fmt.Println(err)
-		fmt.Println(err)
-	}
-	defer res.Body.Close()
-	if err := json.NewDecoder(res.Body).Decode(&Bottles); err != nil {
-		fmt.Println(err)
-	}
+	return resp.StatusCode
 }

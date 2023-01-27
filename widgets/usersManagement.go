@@ -1,7 +1,6 @@
 package widgets
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -11,7 +10,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
 	"negosud-gui/data"
-	"net/http"
 	"strconv"
 )
 
@@ -34,16 +32,13 @@ var UsersColumns = []rtable.ColAttr{
 	{ColName: "Role", Header: "Rôle", WidthPercent: 120},
 }
 
-func displayUsers(w fyne.Window) fyne.CanvasObject {
+func displayUsers(_ fyne.Window) fyne.CanvasObject {
 	// retrieve structs from data package
 	Users := data.Users
-	apiUrl := data.UserAPIConfig()
 
-	res, err := http.Get(apiUrl)
-	if err != nil {
-		fmt.Println(err)
-	}
-	if err := json.NewDecoder(res.Body).Decode(&Users); err != nil {
+	response := data.AuthGetRequest("users")
+
+	if err := json.NewDecoder(response).Decode(&Users); err != nil {
 		fmt.Println(err)
 	}
 
@@ -63,7 +58,7 @@ func displayUsers(w fyne.Window) fyne.CanvasObject {
 }
 
 // addUserForm to add an authorized user
-func addUserForm(w fyne.Window) fyne.CanvasObject {
+func addUserForm(_ fyne.Window) fyne.CanvasObject {
 
 	nameLabel := widget.NewLabelWithStyle("Nom", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	name := widget.NewEntry()
@@ -91,21 +86,23 @@ func addUserForm(w fyne.Window) fyne.CanvasObject {
 			{Text: "", Widget: roleUser},
 		},
 		OnSubmit: func() {
-			email := emailInput.Text
-			password := passwordInput.Text
-			apiUrl := data.LoginAPIConfig(email, password)
-			resp, err := http.Post(apiUrl, "application/json", bytes.NewBufferString(email))
+			user := &data.User{
+				Name:     name.Text,
+				Email:    emailInput.Text,
+				Password: passwordInput.Text,
+				Role:     roleUser.Text,
+			}
+			// convert struct to json
+			jsonValue, err := json.Marshal(user)
 			if err != nil {
-				fyne.CurrentApp().SendNotification(&fyne.Notification{
-					Content: "Error on login form submitting: " + err.Error(),
-				})
-				return
+				fmt.Println(err)
 			}
-			if resp.StatusCode == 204 {
-				fmt.Println("Could not log in")
-				return
+			// send json to api
+			postData := data.AuthPostRequest("users", jsonValue)
+			if postData != 201|200 {
+				fmt.Println("Error on user creation")
 			}
-			fmt.Println("User is connected")
+			fmt.Println("User created")
 		},
 		SubmitText: "Envoyer",
 		CancelText: "",

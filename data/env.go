@@ -1,8 +1,6 @@
 package data
 
 import (
-	"fyne.io/fyne/v2"
-	"fyne.io/fyne/v2/dialog"
 	"github.com/spf13/viper"
 )
 
@@ -11,8 +9,8 @@ import (
 // define and load env. variables contained in app.env
 
 type Config struct {
-	SERVER  string `mapstructure:"SERVER"`
-	API_KEY string `mapstructure:"API_KEY"`
+	SERVER string `mapstructure:"SERVER"`
+	APIKEY string `mapstructure:"APIKEY"`
 }
 
 func LoadConfig(path string) (config Config, err error) {
@@ -28,28 +26,4 @@ func LoadConfig(path string) (config Config, err error) {
 	err = viper.Unmarshal(&config)
 
 	return
-}
-
-// ----------------------------- DIALOGS --------------------------------
-
-// grouping all information dialogs needed in the application
-
-func FailureDialog(w fyne.Window) {
-	dialog.ShowInformation("Échec", "Échec de l'opération", w)
-}
-
-func BottleSuccessDialog(w fyne.Window) {
-	dialog.ShowInformation("Succès", "Nouvelle bouteille ajoutée", w)
-}
-
-func BottleFailureDialog(w fyne.Window) {
-	dialog.ShowInformation("Échec", "Impossible d'ajouter la nouvelle bouteille", w)
-}
-
-func ProducerSuccessDialog(w fyne.Window) {
-	dialog.ShowInformation("Succès", "Nouveau producteur ajouté", w)
-}
-
-func ProducerFailureDialog(w fyne.Window) {
-	dialog.ShowInformation("Échec", "Impossible d'ajouter le nouveau producteur", w)
 }

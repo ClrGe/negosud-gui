@@ -15,14 +15,14 @@ import (
 
 const currentTab = "currentTab"
 
-var currentPage fyne.Window
+var window fyne.Window
 
 // main sets up the window configuration and behaviour
 func main() {
-	app := app.NewWithID("negosud")
-	app.Settings().SetTheme(theme.LightTheme())
+	a := app.NewWithID("negosud")
+	a.Settings().SetTheme(theme.LightTheme())
 
-	w := app.NewWindow("NEGOSUD")
+	w := a.NewWindow("NEGOSUD")
 
 	content := container.NewMax(loginForm(w))
 	negosudLogo, _ := fyne.LoadResourceFromPath("media/logo.png")
@@ -34,7 +34,7 @@ func main() {
 	w.ShowAndRun()
 }
 
-// loginForm to perform an authentication to access the API
+// loginForm to authenticate and receive a token
 func loginForm(w fyne.Window) fyne.CanvasObject {
 	appLogo := canvas.NewImageFromFile("media/logo.png")
 	appLogo.FillMode = canvas.ImageFillContain
@@ -61,17 +61,17 @@ func loginForm(w fyne.Window) fyne.CanvasObject {
 			{Text: "", Widget: passwordInput},
 		},
 		OnSubmit: func() {
-			app := fyne.CurrentApp()
+			a := fyne.CurrentApp()
 			content := container.NewMax(homePage(w))
-			currentPage = w
+			window = w
 			changePage := func(c widgets.Component) {
 				if fyne.CurrentDevice().IsMobile() {
-					newPage := app.NewWindow(c.Title)
-					currentPage = newPage
-					newPage.SetContent(c.View(currentPage))
+					newPage := a.NewWindow(c.Title)
+					window = newPage
+					newPage.SetContent(c.View(window))
 					newPage.Show()
 					newPage.SetOnClosed(func() {
-						currentPage = w
+						window = w
 						return
 					})
 				}
@@ -81,9 +81,9 @@ func loginForm(w fyne.Window) fyne.CanvasObject {
 			page := container.NewBorder(container.NewVBox(widget.NewSeparator()), nil, nil, nil, content)
 			// responsive
 			if fyne.CurrentDevice().IsMobile() {
-				w.SetContent(makeNavigation(changePage, false))
+				w.SetContent(Navigation(changePage, false))
 			} else {
-				split := container.NewHSplit(makeNavigation(changePage, true), page)
+				split := container.NewHSplit(Navigation(changePage, true), page)
 				split.Offset = 0.2
 				w.SetContent(split)
 			}
@@ -122,9 +122,9 @@ func homePage(_ fyne.Window) fyne.CanvasObject {
 	))
 }
 
-// makeNavigation implements the left-side navigation panel with layout defined in widgets/navigationLayout
-func makeNavigation(setTab func(component widgets.Component), loadPrevious bool) fyne.CanvasObject {
-	app := fyne.CurrentApp()
+// Navigation implements the left-side navigation panel with layout defined in widgets/navigationLayout
+func Navigation(setTab func(component widgets.Component), loadPrevious bool) fyne.CanvasObject {
+	a := fyne.CurrentApp()
 	arborescence := &widget.Tree{
 		ChildUIDs: func(uid string) []string {
 			return widgets.ComponentIndex[uid]
@@ -144,13 +144,13 @@ func makeNavigation(setTab func(component widgets.Component), loadPrevious bool)
 		},
 		OnSelected: func(uid string) {
 			if t, ok := widgets.Components[uid]; ok {
-				app.Preferences().SetString(currentTab, uid)
+				a.Preferences().SetString(currentTab, uid)
 				setTab(t)
 			}
 		},
 	}
 
-	// close app when hitting button
+	// close a when hitting button
 	disconnectUser := widget.NewButton("Déconnexion", func() {
 		fmt.Println("user disconnected")
 		fyne.CurrentApp().Quit()
