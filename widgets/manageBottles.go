@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -12,8 +13,10 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
 	"negosud-gui/data"
+	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 var BindBottle []binding.DataMap
@@ -35,7 +38,7 @@ var BottlesColumns = []rtable.ColAttr{
 
 	{ColName: "ID", Header: "ID", WidthPercent: 40},
 	{ColName: "FullName", Header: "Nom", WidthPercent: 100},
-	{ColName: "Label", Header: "Label", WidthPercent: 50},
+	{ColName: "WineType", Header: "Type", WidthPercent: 100},
 	{ColName: "Year", Header: "Année", WidthPercent: 50},
 }
 
@@ -112,12 +115,14 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 	// UPDATE FORM
 
 	// declare form elements
+	idLabel := widget.NewLabel("ID")
+	idBottle := widget.NewEntry()
 	nameLabel := widget.NewLabel("Nom")
 	nameBottle := widget.NewEntry()
 	detailsLabel := widget.NewLabel("Description")
 	detailsBottle := widget.NewMultiLineEntry()
 	labelLabel := widget.NewLabel("Label")
-	labelBottle := widget.NewEntry()
+	typeBottle := widget.NewEntry()
 	volumeLabel := widget.NewLabel("Volume (cL)")
 	volumeBottle := widget.NewEntry()
 	alcoholLabel := widget.NewLabel("Alcool (%)")
@@ -134,7 +139,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 
 	resultApi := data.AuthGetRequest("bottle")
 	if err := json.NewDecoder(resultApi).Decode(&BottleData); err != nil {
-		log(source, err.Error())
+		log(true, source, err.Error())
 		fmt.Println(err)
 	}
 
@@ -185,7 +190,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 		if err != nil {
 			fmt.Println(err.Error())
-			log(source, err.Error())
+			log(true, source, err.Error())
 
 			return
 		}
@@ -194,7 +199,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 		_, err = rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
 		if err != nil {
 			fmt.Println(err.Error())
-			log(source, err.Error())
+			log(true, source, err.Error())
 			return
 		} else {
 			instructions.Hidden = true
@@ -205,15 +210,17 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			resultApi := data.AuthGetRequest("bottle/" + identifier)
 			if err := json.NewDecoder(resultApi).Decode(&Individual); err != nil {
 				fmt.Println(err)
-				log(source, err.Error())
+				log(true, source, err.Error())
 			} else {
 				productImg.Hidden = false
 			}
 			// Fill form fields with fetched data
+			id := strconv.Itoa(Individual.ID)
+			idBottle.SetText(id)
 			nameBottle.SetText(Individual.FullName)
 			details := strings.Replace(Individual.Description, "\\n", "\n", -1)
 			detailsBottle.SetText(details)
-			labelBottle.SetText(Individual.Label)
+			typeBottle.SetText(Individual.WineType)
 			volumeBottle.SetText(strconv.Itoa(Individual.Volume))
 			yearBottle.SetText(strconv.Itoa(Individual.YearProduced))
 			priceBottle.SetText(strconv.Itoa(Individual.CurrentPrice))
@@ -221,8 +228,8 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			// Display details
 			productTitle.SetText("Nom: " + Individual.FullName)
 			productDesc.SetText("Description: " + details)
-			productLab.SetText("Label: " + Individual.Label)
-			productYear.SetText("Année: " + strconv.Itoa(Individual.YearProduced))
+			productLab.SetText("Type : " + Individual.WineType)
+			productYear.SetText("Année : " + strconv.Itoa(Individual.YearProduced))
 			productVol.SetText("Volume : " + strconv.Itoa(Individual.Volume) + " cL")
 			productPr.SetText("Prix HT : " + strconv.Itoa(Individual.CurrentPrice) + " €")
 			productAlc.SetText("Alcool : " + strconv.Itoa(Individual.AlcoholPercentage) + " %")
@@ -232,12 +239,14 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 	updateForm := &widget.Form{
 		BaseWidget: widget.BaseWidget{},
 		Items: []*widget.FormItem{
+			{Text: "", Widget: idLabel},
+			{Text: "", Widget: idBottle},
 			{Text: "", Widget: nameLabel},
 			{Text: "", Widget: nameBottle},
 			{Text: "", Widget: detailsLabel},
 			{Text: "", Widget: detailsBottle},
 			{Text: "", Widget: labelLabel},
-			{Text: "", Widget: labelBottle},
+			{Text: "", Widget: typeBottle},
 			{Text: "", Widget: volumeLabel},
 			{Text: "", Widget: volumeBottle},
 			{Text: "", Widget: alcoholLabel},
@@ -250,33 +259,39 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			{Text: "", Widget: pictureBottle},
 		},
 		OnSubmit: func() {
+			idB, _ := strconv.ParseInt(idBottle.Text, 10, 0)
 			vol, _ := strconv.ParseInt(volumeBottle.Text, 10, 0)
 			alc, _ := strconv.ParseInt(alcoholBottle.Text, 10, 0)
 			year, _ := strconv.ParseInt(yearBottle.Text, 10, 0)
 			pr, _ := strconv.ParseInt(priceBottle.Text, 10, 0)
-
+			who, _ := os.Hostname()
+			t, _ := time.Parse("2023-01-27T22:48:02.646Z", time.Now().String())
 			bottle := &data.Bottle{
+				ID:                int(idB),
 				FullName:          nameBottle.Text,
 				Description:       detailsBottle.Text,
-				Label:             labelBottle.Text,
+				WineType:          typeBottle.Text,
 				Volume:            int(vol),
 				AlcoholPercentage: int(alc),
+				CreatedAt:         t,
+				UpdatedAt:         t,
 				YearProduced:      int(year),
+				CreatedBy:         who,
+				UpdatedBy:         who,
 				CurrentPrice:      int(pr),
 			}
 			// Convert to JSON
 			jsonValue, err := json.Marshal(bottle)
 			if err != nil {
-				log(source, err.Error())
+				log(true, source, err.Error())
 				fmt.Println(err)
 			}
+			fmt.Print(bytes.NewBuffer(jsonValue))
 			// Send data to API
-			postData := data.AuthPostRequest("bottle/"+identifier, jsonValue)
-			if postData != 201|200 {
-				message := "Error on bottle " + identifier + " update : StatusCode " + strconv.Itoa(postData)
-				fmt.Println("Error on update")
-				log(source, message)
-				return
+			postData := data.AuthPostRequest("Bottle/UpdateBottle/"+identifier, bytes.NewBuffer(jsonValue))
+			if postData != 200 {
+				message := "Error on bottle " + identifier + " update " + " StatusCode " + strconv.Itoa(postData)
+				log(true, source, message)
 			}
 			fmt.Println("Bottle updated")
 		},
@@ -290,7 +305,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 	// LAYOUT
 
 	image := container.NewBorder(container.NewVBox(productImg), nil, nil, nil)
-	textProduct := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 300), productDetails))
+	textProduct := container.NewCenter(container.NewGridWrap(fyne.NewSize(200, 300), productDetails))
 
 	layoutDetailsTab := container.NewBorder(image, nil, nil, nil, textProduct, instructions)
 	layoutUpdateForm := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 750), updateForm))
@@ -319,7 +334,7 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 	descriptionLabel := widget.NewLabel("Description")
 	descriptionBottle := widget.NewMultiLineEntry()
 	labelLabel := widget.NewLabel("Label")
-	labelBottle := widget.NewEntry()
+	typeBottle := widget.NewEntry()
 	yearLabel := widget.NewLabel("Année")
 	yearBottle := widget.NewEntry()
 	volumeLabel := widget.NewLabel("Volume (cL)")
@@ -339,7 +354,7 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 				{Text: "", Widget: descriptionLabel},
 				{Text: "", Widget: descriptionBottle},
 				{Text: "", Widget: labelLabel},
-				{Text: "", Widget: labelBottle},
+				{Text: "", Widget: typeBottle},
 				{Text: "", Widget: yearLabel},
 				{Text: "", Widget: yearBottle},
 				{Text: "", Widget: volumeLabel},
@@ -353,10 +368,6 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 			},
 			OnSubmit: func() {
 				// Convert strings to ints to match Bottle struct types
-				volume, err := strconv.Atoi(volumeBottle.Text)
-				if err != nil {
-					return
-				}
 				year, err := strconv.Atoi(yearBottle.Text)
 				if err != nil {
 					return
@@ -370,10 +381,9 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 					return
 				}
 				// extract the value from the input widget and set the corresponding field in the Producer struct
-				bottle := &data.Bottle{
+				bottle := &data.PartialBottle{
 					FullName:          nameBottle.Text,
-					Label:             labelBottle.Text,
-					Volume:            volume,
+					WineType:          typeBottle.Text,
 					YearProduced:      year,
 					AlcoholPercentage: alcohol,
 					CurrentPrice:      price,
@@ -382,15 +392,15 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 				// encode the value as JSON and send it to the API.
 				jsonValue, err := json.Marshal(bottle)
 				if err != nil {
-					log(source, err.Error())
+					log(true, source, err.Error())
 					fmt.Println(err)
 					return
 				}
-				postData := data.AuthPostRequest("bottle", jsonValue)
+				postData := data.AuthPostRequest("bottle", bytes.NewBuffer(jsonValue))
 				if postData != 201|200 {
 					fmt.Println("Error while sending data to API")
 					message := "Error while creating new Bottle. StatusCode " + strconv.Itoa(postData)
-					log(source, message)
+					log(true, source, message)
 					return
 				}
 				fmt.Println("New product added with success")

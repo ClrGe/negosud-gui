@@ -1,6 +1,7 @@
 package widgets
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -10,7 +11,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
 	"negosud-gui/data"
-	"strconv"
 )
 
 var BindUser []binding.DataMap
@@ -34,20 +34,21 @@ var UsersColumns = []rtable.ColAttr{
 
 func displayUsers(_ fyne.Window) fyne.CanvasObject {
 	// retrieve structs from data package
-	Users := data.Users
-
-	response := data.AuthGetRequest("users")
-
-	if err := json.NewDecoder(response).Decode(&Users); err != nil {
-		fmt.Println(err)
-	}
-
-	for i := 0; i < len(Users); i++ {
-		t := Users[i]
-		id := strconv.Itoa(t.Id)
-		Users[i].ID = id
-		BindUser = append(BindUser, binding.BindStruct(&Users[i]))
-	}
+	//Users := data.Users
+	//source := "WIDGETS.USERS "
+	//response := data.AuthGetRequest("users")
+	//
+	//if err := json.NewDecoder(response).Decode(&Users); err != nil {
+	//	log(true, source, err.Error())
+	//	fmt.Println(err)
+	//}
+	//
+	//for i := 0; i < len(Users); i++ {
+	//	t := Users[i]
+	//	id := strconv.Itoa(t.Id)
+	//	Users[i].ID = id
+	//	BindUser = append(BindUser, binding.BindStruct(&Users[i]))
+	//}
 	tableOptions := &rtable.TableOptions{
 		RefWidth: "========================================",
 		ColAttrs: UsersColumns,
@@ -98,7 +99,7 @@ func addUserForm(_ fyne.Window) fyne.CanvasObject {
 				fmt.Println(err)
 			}
 			// send json to api
-			postData := data.AuthPostRequest("users", jsonValue)
+			postData := data.AuthPostRequest("users", bytes.NewBuffer(jsonValue))
 			if postData != 201|200 {
 				fmt.Println("Error on user creation")
 			}
