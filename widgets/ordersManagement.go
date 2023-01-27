@@ -1,7 +1,6 @@
 package widgets
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -10,7 +9,6 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
 	"negosud-gui/data"
-	"net/http"
 	"strconv"
 )
 
@@ -40,15 +38,11 @@ var OrdersColumns = []rtable.ColAttr{
 }
 
 // Display the list of orders fetched from API in a table
-func displayOrders(w fyne.Window) fyne.CanvasObject {
+func displayOrders(_ fyne.Window) fyne.CanvasObject {
 	Orders := data.Orders
 
-	apiUrl := data.OrderAPIConfig()
-	res, err := http.Get(apiUrl)
-	if err != nil {
-		fmt.Println(err)
-	}
-	if err := json.NewDecoder(res.Body).Decode(&Orders); err != nil {
+	response := data.AuthGetRequest("orders")
+	if err := json.NewDecoder(response).Decode(&Orders); err != nil {
 		fmt.Println(err)
 	}
 
@@ -74,7 +68,7 @@ func displayOrders(w fyne.Window) fyne.CanvasObject {
 }
 
 // form to place a new order to a producer
-func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
+func producerOrdersForm(_ fyne.Window) fyne.CanvasObject {
 	nameLabel := widget.NewLabelWithStyle("Nom du producteur", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	nameProducer := widget.NewEntry()
 	nameProducer.SetPlaceHolder("Jean Bon")
@@ -87,8 +81,6 @@ func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
 	commentLabel := widget.NewLabelWithStyle("Commentaire (facultatif)", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	comment := widget.NewMultiLineEntry()
 	comment.SetPlaceHolder("Votre commentaire...")
-
-	apiUrl := data.OrderAPIConfig()
 
 	form := &widget.Form{
 		Items: []*widget.FormItem{
@@ -111,17 +103,12 @@ func producerOrdersForm(w fyne.Window) fyne.CanvasObject {
 				Comment:  comment.Text,
 			}
 			// encode the value as JSON and send it to the API.
-			bottleJsonValue, _ := json.Marshal(newOrder)
-			bottleResp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(bottleJsonValue))
-			if err != nil {
-				fmt.Println("error while encoding response")
-				return
+			jsonValue, _ := json.Marshal(newOrder)
+			postData := data.AuthPostRequest("orders", jsonValue)
+			if postData != 201|200 {
+				fmt.Println("Error while posting data to API")
 			}
-			if bottleResp.StatusCode == 204 {
-				fmt.Println(bottleJsonValue)
-				return
-			}
-			fmt.Println("New order placed with success")
+			fmt.Println("Order placed successfully !")
 		},
 		SubmitText: "Envoyer",
 	}
