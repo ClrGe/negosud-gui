@@ -1,7 +1,6 @@
 package widgets
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -11,15 +10,15 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/rohanthewiz/rerr"
 	"github.com/rohanthewiz/rtable"
 	"negosud-gui/data"
-	"net/http"
 	"strconv"
 	"strings"
 )
 
 var BindProducer []binding.DataMap
+var log = data.ErrorLogger
+var source = "WIDGETS.PRODUCER "
 
 // makeProducerTabs function creates a new set of tabs
 func makeProducerTabs(_ fyne.Window) fyne.CanvasObject {
@@ -39,7 +38,7 @@ var ProducerColumns = []rtable.ColAttr{
 }
 
 // displayAndUpdateProducers implements a dynamic table bound to an editing form
-func displayAndUpdateProducers(win fyne.Window) fyne.CanvasObject {
+func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 	// retrieve structs from data package
 	Individual := data.Individual
 	ProducerData := data.ProducerData
@@ -76,14 +75,10 @@ func displayAndUpdateProducers(win fyne.Window) fyne.CanvasObject {
 	deleteBtn := widget.NewButtonWithIcon("Supprimer ce producteur", theme.WarningIcon(),
 		func() {})
 
-	// retrieve API url and fetch bottle data
-	apiUrl := data.ProducerAPIConfig()
-	res, err := http.Get(apiUrl)
-	if err != nil {
+	resultApi := data.AuthGetRequest("producer")
+	if err := json.NewDecoder(resultApi).Decode(&ProducerData); err != nil {
 		fmt.Println(err)
-	}
-	if err := json.NewDecoder(res.Body).Decode(&ProducerData); err != nil {
-		fmt.Println(err)
+		log(source, err.Error())
 	}
 
 	for i := 0; i < len(ProducerData); i++ {
@@ -122,35 +117,45 @@ func displayAndUpdateProducers(win fyne.Window) fyne.CanvasObject {
 			return
 		}
 		//Handle non-header row clicked
-		identifier, err = rtable.GetStrCellValue(cell, tableOptions)
+		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 		if err != nil {
-			fmt.Println(rerr.StringFromErr(err))
+			fmt.Println(err.Error())
+			log(source, err.Error())
 			return
 		}
 		// Printout body cells
 		rowBinding := tableOptions.Bindings[cell.Row-1]
-		_, err := rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
+		_, err = rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
 		if err != nil {
-			fmt.Println(rerr.StringFromErr(err))
+			fmt.Println(err.Error())
+			log(source, err.Error())
+
 			return
 		} else {
 			instructions.Hidden = true
 		}
 		fmt.Println("-->", identifier)
-		// Fetch individual producer to fill form
-		resultApi := data.FetchIndividualProducer(identifier)
-		if err := json.NewDecoder(resultApi).Decode(&Individual); err != nil {
-			fmt.Println(err)
+		// Prevent app crash if other row than ID is clicked
+		i, err := strconv.Atoi(identifier)
+		if err == nil {
+			fmt.Println(i)
+			// Fetch individual producer to fill form
+			response := data.AuthGetRequest("producer/" + identifier)
+			if err := json.NewDecoder(response).Decode(&Individual); err != nil {
+				log(source, err.Error())
+				fmt.Println(err)
+			} else {
+				productImg.Hidden = false
+			}
+			// Fill form fields with fetched data
+			nameProducer.SetText(Individual.Name)
+			details := strings.Replace(Individual.Details, "\\n", "\n", -1)
+			detailsProducer.SetText(details)
+			productTitle.SetText(Individual.Name)
+			productDesc.SetText(details)
 		} else {
-			productImg.Hidden = false
+			log(source, err.Error())
 		}
-		// Fill form fields with fetched data
-		nameProducer.SetText(Individual.Name)
-		details := string(Individual.Details)
-		details = strings.Replace(Individual.Details, "\\n", "\n", -1)
-		detailsProducer.SetText(details)
-		productTitle.SetText(Individual.Name)
-		productDesc.SetText(details)
 	}
 	updateForm := &widget.Form{
 		BaseWidget: widget.BaseWidget{},
@@ -168,17 +173,14 @@ func displayAndUpdateProducers(win fyne.Window) fyne.CanvasObject {
 				Details: detailsProducer.Text,
 			}
 			jsonValue, _ := json.Marshal(producer)
-			updateEndpoint := data.UpdateProducerAPI()
-			resp, err := http.Post(updateEndpoint+identifier, "application/json", bytes.NewBuffer(jsonValue))
-			if err != nil {
-				fmt.Println("Could not send form")
-				return
+			postData := data.AuthPostRequest("producer"+identifier, jsonValue)
+			if postData != 201|200 {
+				fmt.Println("Error on update")
+				message := "Error on producer " + identifier + " update"
+				log(source, message)
+			} else {
+				fmt.Println("Success on update")
 			}
-			if resp.StatusCode == 204 {
-				fmt.Println("Response : no content (204)")
-				return
-			}
-			fmt.Println("Producer updated")
 		},
 		OnCancel: func() {
 			fmt.Println("Canceled")
@@ -207,9 +209,7 @@ func displayAndUpdateProducers(win fyne.Window) fyne.CanvasObject {
 }
 
 // Form to add and send a new producer to the API endpoint (POST)
-func addNewProducer(w fyne.Window) fyne.CanvasObject {
-	apiUrl := data.ProducerAPIConfig()
-
+func addNewProducer(_ fyne.Window) fyne.CanvasObject {
 	nameLabel := widget.NewLabel("Nom")
 	nameProducer := widget.NewEntry()
 	detailsLabel := widget.NewLabel("Description")
@@ -234,16 +234,18 @@ func addNewProducer(w fyne.Window) fyne.CanvasObject {
 				Name:    nameProducer.Text,
 				Details: detailsProducer.Text,
 			}
-			jsonValue, _ := json.Marshal(producer)
-			resp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(jsonValue))
+			// convert producer struct to json
+			jsonValue, err := json.Marshal(&producer)
 			if err != nil {
-				fyne.CurrentApp().SendNotification(&fyne.Notification{
-					Content: "Error creating producer: " + err.Error(),
-				})
+				fmt.Println(err)
+				log(source, err.Error())
 				return
 			}
-			if resp.StatusCode == 204 {
-				fmt.Println("Could not send form")
+			postData := data.AuthPostRequest("producer", jsonValue)
+			if postData != 200|201 {
+				message := "StatusCode " + strconv.Itoa(postData)
+				log(source, message)
+				fmt.Println(message)
 				return
 			}
 			fmt.Println("New producer added with success")

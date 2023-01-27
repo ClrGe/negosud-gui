@@ -1,7 +1,6 @@
 package widgets
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"fyne.io/fyne/v2"
@@ -11,10 +10,8 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/rohanthewiz/rerr"
 	"github.com/rohanthewiz/rtable"
 	"negosud-gui/data"
-	"net/http"
 	"strconv"
 	"strings"
 )
@@ -35,6 +32,7 @@ func makeBottlesTabs(_ fyne.Window) fyne.CanvasObject {
 
 // BottlesColumns defines the header row for the table
 var BottlesColumns = []rtable.ColAttr{
+
 	{ColName: "ID", Header: "ID", WidthPercent: 40},
 	{ColName: "FullName", Header: "Nom", WidthPercent: 100},
 	{ColName: "Label", Header: "Label", WidthPercent: 50},
@@ -42,7 +40,8 @@ var BottlesColumns = []rtable.ColAttr{
 }
 
 // displayAndUpdateBottle implements a dynamic table bound to an editing form
-func displayAndUpdateBottle(w fyne.Window) fyne.CanvasObject {
+func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
+	var source = "WIDGETS.BOTTLE "
 
 	// retrieve structs from data package
 	Individual := data.IndBottle
@@ -133,15 +132,9 @@ func displayAndUpdateBottle(w fyne.Window) fyne.CanvasObject {
 	deleteBtn := widget.NewButtonWithIcon("Supprimer ce produit", theme.WarningIcon(), func() { fmt.Print("Deleting producer") })
 	deleteBtn.Resize(fyne.NewSize(600, 50))
 
-	// retrieve API url and fetch bottle data
-	apiUrl := data.BottleAPIConfig()
-
-	res, err := http.Get(apiUrl)
-	res.Header.Add("Bearer", data.Token)
-	if err != nil {
-		fmt.Println(err)
-	}
-	if err := json.NewDecoder(res.Body).Decode(&BottleData); err != nil {
+	resultApi := data.AuthGetRequest("bottle")
+	if err := json.NewDecoder(resultApi).Decode(&BottleData); err != nil {
+		log(source, err.Error())
 		fmt.Println(err)
 	}
 
@@ -189,44 +182,51 @@ func displayAndUpdateBottle(w fyne.Window) fyne.CanvasObject {
 			return
 		}
 		//Handle non-header row clicked
-		identifier, err = rtable.GetStrCellValue(cell, tableOptions)
+		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 		if err != nil {
-			fmt.Println(rerr.StringFromErr(err))
+			fmt.Println(err.Error())
+			log(source, err.Error())
+
 			return
 		}
 		// Printout body cells
 		rowBinding := tableOptions.Bindings[cell.Row-1]
-		_, err := rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
+		_, err = rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
 		if err != nil {
-			fmt.Println(rerr.StringFromErr(err))
+			fmt.Println(err.Error())
+			log(source, err.Error())
 			return
 		} else {
 			instructions.Hidden = true
 		}
-		// Fetch individual bottle API to fill form
-		resultApi := data.FetchIndividualBottle(identifier)
-		if err := json.NewDecoder(resultApi).Decode(&Individual); err != nil {
-			fmt.Println(err)
-		} else {
-			productImg.Hidden = false
+		// Prevent app crash if other row than ID is clicked
+		_, err = strconv.Atoi(identifier)
+		if err == nil {
+			resultApi := data.AuthGetRequest("bottle/" + identifier)
+			if err := json.NewDecoder(resultApi).Decode(&Individual); err != nil {
+				fmt.Println(err)
+				log(source, err.Error())
+			} else {
+				productImg.Hidden = false
+			}
+			// Fill form fields with fetched data
+			nameBottle.SetText(Individual.FullName)
+			details := strings.Replace(Individual.Description, "\\n", "\n", -1)
+			detailsBottle.SetText(details)
+			labelBottle.SetText(Individual.Label)
+			volumeBottle.SetText(strconv.Itoa(Individual.Volume))
+			yearBottle.SetText(strconv.Itoa(Individual.YearProduced))
+			priceBottle.SetText(strconv.Itoa(Individual.CurrentPrice))
+			alcoholBottle.SetText(strconv.Itoa(Individual.AlcoholPercentage))
+			// Display details
+			productTitle.SetText("Nom: " + Individual.FullName)
+			productDesc.SetText("Description: " + details)
+			productLab.SetText("Label: " + Individual.Label)
+			productYear.SetText("Année: " + strconv.Itoa(Individual.YearProduced))
+			productVol.SetText("Volume : " + strconv.Itoa(Individual.Volume) + " cL")
+			productPr.SetText("Prix HT : " + strconv.Itoa(Individual.CurrentPrice) + " €")
+			productAlc.SetText("Alcool : " + strconv.Itoa(Individual.AlcoholPercentage) + " %")
 		}
-		// Fill form fields with fetched data
-		nameBottle.SetText(Individual.FullName)
-		details := strings.Replace(Individual.Description, "\\n", "\n", -1)
-		detailsBottle.SetText(details)
-		labelBottle.SetText(Individual.Label)
-		volumeBottle.SetText(strconv.Itoa(Individual.Volume))
-		yearBottle.SetText(strconv.Itoa(Individual.YearProduced))
-		priceBottle.SetText(strconv.Itoa(Individual.CurrentPrice))
-		alcoholBottle.SetText(strconv.Itoa(Individual.AlcoholPercentage))
-		// Display details
-		productTitle.SetText("Nom: " + Individual.FullName)
-		productDesc.SetText("Description: " + details)
-		productLab.SetText("Label: " + Individual.Label)
-		productYear.SetText("Année: " + strconv.Itoa(Individual.YearProduced))
-		productVol.SetText("Volume : " + strconv.Itoa(Individual.Volume) + " cL")
-		productPr.SetText("Prix HT : " + strconv.Itoa(Individual.CurrentPrice) + " €")
-		productAlc.SetText("Alcool : " + strconv.Itoa(Individual.AlcoholPercentage) + " %")
 	}
 
 	updateForm := &widget.Form{
@@ -250,10 +250,10 @@ func displayAndUpdateBottle(w fyne.Window) fyne.CanvasObject {
 			{Text: "", Widget: pictureBottle},
 		},
 		OnSubmit: func() {
-			vol, err := strconv.ParseInt(volumeBottle.Text, 10, 0)
-			alc, err := strconv.ParseInt(alcoholBottle.Text, 10, 0)
-			year, err := strconv.ParseInt(yearBottle.Text, 10, 0)
-			pr, err := strconv.ParseInt(priceBottle.Text, 10, 0)
+			vol, _ := strconv.ParseInt(volumeBottle.Text, 10, 0)
+			alc, _ := strconv.ParseInt(alcoholBottle.Text, 10, 0)
+			year, _ := strconv.ParseInt(yearBottle.Text, 10, 0)
+			pr, _ := strconv.ParseInt(priceBottle.Text, 10, 0)
 
 			bottle := &data.Bottle{
 				FullName:          nameBottle.Text,
@@ -264,16 +264,18 @@ func displayAndUpdateBottle(w fyne.Window) fyne.CanvasObject {
 				YearProduced:      int(year),
 				CurrentPrice:      int(pr),
 			}
-			jsonValue, _ := json.Marshal(bottle)
-			updateEndpoint := data.UpdateBottleAPI()
-			resp, err := http.Post(updateEndpoint+identifier, "application/json", bytes.NewBuffer(jsonValue))
-
+			// Convert to JSON
+			jsonValue, err := json.Marshal(bottle)
 			if err != nil {
-				fmt.Println("Could not send form")
-				return
+				log(source, err.Error())
+				fmt.Println(err)
 			}
-			if resp.StatusCode == 204 {
-				fmt.Println("Response : no content (204)")
+			// Send data to API
+			postData := data.AuthPostRequest("bottle/"+identifier, jsonValue)
+			if postData != 201|200 {
+				message := "Error on bottle " + identifier + " update : StatusCode " + strconv.Itoa(postData)
+				fmt.Println("Error on update")
+				log(source, message)
 				return
 			}
 			fmt.Println("Bottle updated")
@@ -309,9 +311,8 @@ func displayAndUpdateBottle(w fyne.Window) fyne.CanvasObject {
 }
 
 // Form to add and send a new bottle to the API endpoint (POST /api/producer)
-func addNewBottle(w fyne.Window) fyne.CanvasObject {
-
-	apiUrl := data.BottleAPIConfig()
+func addNewBottle(_ fyne.Window) fyne.CanvasObject {
+	var source = "WIDGETS.BOTTLE "
 
 	nameLabel := widget.NewLabel("Nom du produit")
 	nameBottle := widget.NewEntry()
@@ -379,17 +380,20 @@ func addNewBottle(w fyne.Window) fyne.CanvasObject {
 					Description:       descriptionBottle.Text,
 				}
 				// encode the value as JSON and send it to the API.
-				bottleJsonValue, _ := json.Marshal(bottle)
-				bottleResp, err := http.Post(apiUrl, "application/json", bytes.NewBuffer(bottleJsonValue))
+				jsonValue, err := json.Marshal(bottle)
 				if err != nil {
-					fmt.Println("error while encoding response")
+					log(source, err.Error())
+					fmt.Println(err)
 					return
 				}
-				if bottleResp.StatusCode == 204 {
-					fmt.Println(bottleJsonValue)
+				postData := data.AuthPostRequest("bottle", jsonValue)
+				if postData != 201|200 {
+					fmt.Println("Error while sending data to API")
+					message := "Error while creating new Bottle. StatusCode " + strconv.Itoa(postData)
+					log(source, message)
 					return
 				}
-				fmt.Println("New bottle added with success")
+				fmt.Println("New product added with success")
 			},
 			SubmitText: "Envoyer",
 		}

@@ -9,7 +9,7 @@ import (
 )
 
 // contactForm implements a form to contact support (email developers)
-func contactForm(w fyne.Window) fyne.CanvasObject {
+func contactForm(_ fyne.Window) fyne.CanvasObject {
 
 	var yPos, widthForm, heightFields float32
 	yPos = 0
@@ -49,7 +49,7 @@ func contactForm(w fyne.Window) fyne.CanvasObject {
 	return mainContainer
 }
 
-func displayFAQ(w fyne.Window) fyne.CanvasObject {
+func displayFAQ(_ fyne.Window) fyne.CanvasObject {
 
 	questions := widget.NewAccordion(
 		&widget.AccordionItem{
