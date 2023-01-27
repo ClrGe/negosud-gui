@@ -10,7 +10,6 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
-	"github.com/rohanthewiz/rerr"
 	"github.com/rohanthewiz/rtable"
 	"negosud-gui/data"
 	"strconv"
@@ -33,6 +32,7 @@ func makeBottlesTabs(_ fyne.Window) fyne.CanvasObject {
 
 // BottlesColumns defines the header row for the table
 var BottlesColumns = []rtable.ColAttr{
+
 	{ColName: "ID", Header: "ID", WidthPercent: 40},
 	{ColName: "FullName", Header: "Nom", WidthPercent: 100},
 	{ColName: "Label", Header: "Label", WidthPercent: 50},
@@ -41,6 +41,7 @@ var BottlesColumns = []rtable.ColAttr{
 
 // displayAndUpdateBottle implements a dynamic table bound to an editing form
 func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
+	var source = "WIDGETS.BOTTLE "
 
 	// retrieve structs from data package
 	Individual := data.IndBottle
@@ -133,6 +134,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 
 	resultApi := data.AuthGetRequest("bottle")
 	if err := json.NewDecoder(resultApi).Decode(&BottleData); err != nil {
+		log(source, err.Error())
 		fmt.Println(err)
 	}
 
@@ -182,14 +184,17 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 		//Handle non-header row clicked
 		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 		if err != nil {
-			fmt.Println(rerr.StringFromErr(err))
+			fmt.Println(err.Error())
+			log(source, err.Error())
+
 			return
 		}
 		// Printout body cells
 		rowBinding := tableOptions.Bindings[cell.Row-1]
 		_, err = rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
 		if err != nil {
-			fmt.Println(rerr.StringFromErr(err))
+			fmt.Println(err.Error())
+			log(source, err.Error())
 			return
 		} else {
 			instructions.Hidden = true
@@ -200,6 +205,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			resultApi := data.AuthGetRequest("bottle/" + identifier)
 			if err := json.NewDecoder(resultApi).Decode(&Individual); err != nil {
 				fmt.Println(err)
+				log(source, err.Error())
 			} else {
 				productImg.Hidden = false
 			}
@@ -261,13 +267,15 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			// Convert to JSON
 			jsonValue, err := json.Marshal(bottle)
 			if err != nil {
+				log(source, err.Error())
 				fmt.Println(err)
 			}
 			// Send data to API
 			postData := data.AuthPostRequest("bottle/"+identifier, jsonValue)
 			if postData != 201|200 {
-				fmt.Println("Error while sending data to API")
-				fmt.Println("StatusCode " + strconv.Itoa(postData))
+				message := "Error on bottle " + identifier + " update : StatusCode " + strconv.Itoa(postData)
+				fmt.Println("Error on update")
+				log(source, message)
 				return
 			}
 			fmt.Println("Bottle updated")
@@ -304,6 +312,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 
 // Form to add and send a new bottle to the API endpoint (POST /api/producer)
 func addNewBottle(_ fyne.Window) fyne.CanvasObject {
+	var source = "WIDGETS.BOTTLE "
 
 	nameLabel := widget.NewLabel("Nom du produit")
 	nameBottle := widget.NewEntry()
@@ -373,13 +382,15 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 				// encode the value as JSON and send it to the API.
 				jsonValue, err := json.Marshal(bottle)
 				if err != nil {
+					log(source, err.Error())
 					fmt.Println(err)
 					return
 				}
 				postData := data.AuthPostRequest("bottle", jsonValue)
 				if postData != 201|200 {
 					fmt.Println("Error while sending data to API")
-					fmt.Println("StatusCode " + strconv.Itoa(postData))
+					message := "Error while creating new Bottle. StatusCode " + strconv.Itoa(postData)
+					log(source, message)
 					return
 				}
 				fmt.Println("New product added with success")

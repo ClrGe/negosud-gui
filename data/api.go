@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 )
 
@@ -67,4 +68,34 @@ func AuthPostRequest(route string, body []byte) int {
 	}
 
 	return resp.StatusCode
+}
+
+func loginAndSaveToken(body []byte) string {
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Print(err, "Error loading config")
+	}
+
+	var token string
+
+	req, err := http.NewRequest("POST", env.SERVER+"/api/authentication/login", nil)
+	if err != nil {
+		fmt.Print(err, "Error creating request")
+	}
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err == nil {
+		fmt.Print(err, "Error sending request")
+	}
+
+	body, err = ioutil.ReadAll(resp.Body)
+	token = string(body)
+
+	if err != nil {
+		fmt.Print(err, "Error retrieving token from response")
+	}
+	defer resp.Body.Close()
+
+	SaveConfig("APIKEY", token)
+	return token
 }

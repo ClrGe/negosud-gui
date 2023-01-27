@@ -27,3 +27,11 @@ func LoadConfig(path string) (config Config, err error) {
 
 	return
 }
+
+func SaveConfig(key string, value string) {
+	viper.Set(key, value)
+	viper.WriteConfig()
+
+	return
+
+}
