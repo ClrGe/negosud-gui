@@ -19,6 +19,7 @@ func makeCusOrdersTabs(_ fyne.Window) fyne.CanvasObject {
 		container.NewTabItem("Historique des commandes clients", displayCustomersOrders(nil)),
 		container.NewTabItem("Support clients", displayCustomersMessages(nil)),
 	)
+
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
 
@@ -61,6 +62,7 @@ func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 		Bindings: BindCustomerOrder,
 	}
 	table := rtable.CreateTable(tableOptions)
+	
 	return table
 }
 

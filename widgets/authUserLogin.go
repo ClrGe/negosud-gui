@@ -70,7 +70,6 @@ func LoginForm(w fyne.Window) fyne.CanvasObject {
 			}
 		},
 		OnCancel: func() {
-			// close app when clicking on cancel button
 			fyne.CurrentApp().Quit()
 		},
 		SubmitText: "Envoyer",
@@ -84,5 +83,6 @@ func LoginForm(w fyne.Window) fyne.CanvasObject {
 	formContainer := container.NewWithoutLayout(form)
 	layoutPage := container.NewVBox(spacer, spacer, appLogo, widget.NewSeparator(), text, widget.NewSeparator(), formContainer)
 	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(1550, 800), layoutPage))
+
 	return mainContainer
 }
