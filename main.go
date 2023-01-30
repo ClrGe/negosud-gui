@@ -24,5 +24,7 @@ func main() {
 	//w.Resize(fyne.NewSize(1920, 1080))
 
 	w.SetContent(content)
+	w.SetFullScreen(true)
+
 	w.ShowAndRun()
 }
