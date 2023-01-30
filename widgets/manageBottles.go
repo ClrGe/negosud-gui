@@ -303,6 +303,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 	rightContainer := container.NewBorder(nil, nil, nil, nil, individualTabs)
 	mainContainer.Add(leftContainer)
 	mainContainer.Add(rightContainer)
+
 	return mainContainer
 }
 
