@@ -1,8 +1,6 @@
 package widgets
 
 import (
-	"encoding/json"
-	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
@@ -37,11 +35,11 @@ var CustomersOrdersColumns = []rtable.ColAttr{
 func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 	CustomerOrders := data.CustomerOrders
 
-	response := data.AuthGetRequest("customers-orders")
+	//response := data.AuthGetRequest("customers-orders")
 
-	if err := json.NewDecoder(response).Decode(&CustomerOrders); err != nil {
-		fmt.Println(err)
-	}
+	//if err := json.NewDecoder(response).Decode(&CustomerOrders); err != nil {
+	//fmt.Println(err)
+	//}
 
 	for i := 0; i < len(CustomerOrders); i++ {
 		BindCustomerOrder = append(BindCustomerOrder, binding.BindStruct(&CustomerOrders[i]))
