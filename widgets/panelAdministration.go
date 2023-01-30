@@ -41,7 +41,7 @@ func displayDocuments(_ fyne.Window) fyne.CanvasObject {
 func displayStatistics(_ fyne.Window) fyne.CanvasObject {
 	image := canvas.NewImageFromFile("media/stat2.png")
 	image.FillMode = canvas.ImageFillContain
-	image.SetMinSize(fyne.NewSize(1280, 720))
+	image.SetMinSize(fyne.NewSize(900, 600))
 
 	return container.NewCenter(container.NewVBox(
 		image,
@@ -69,7 +69,7 @@ func websiteStatus(_ fyne.Window) fyne.CanvasObject {
 func displayStats(_ fyne.Window) fyne.CanvasObject {
 	image := canvas.NewImageFromFile("media/stat2.png")
 	image.FillMode = canvas.ImageFillContain
-	image.SetMinSize(fyne.NewSize(1280, 720))
+	image.SetMinSize(fyne.NewSize(900, 600))
 	return container.NewCenter(container.NewVBox(
 		image,
 		widget.NewLabelWithStyle("Statistiques du site ecommerce (à implémenter)", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),

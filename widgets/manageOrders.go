@@ -42,10 +42,10 @@ var OrdersColumns = []rtable.ColAttr{
 func displayOrders(_ fyne.Window) fyne.CanvasObject {
 	Orders := data.Orders
 
-	response := data.AuthGetRequest("orders")
-	if err := json.NewDecoder(response).Decode(&Orders); err != nil {
-		fmt.Println(err)
-	}
+	//response := data.AuthGetRequest("orders")
+	//if err := json.NewDecoder(response).Decode(&Orders); err != nil {
+	//	fmt.Println(err)
+	//}
 
 	for i := 0; i < len(Orders); i++ {
 		id := strconv.Itoa(Orders[i].Id)
