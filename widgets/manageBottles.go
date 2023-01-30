@@ -40,6 +40,7 @@ var BottlesColumns = []rtable.ColAttr{
 	{ColName: "FullName", Header: "Nom", WidthPercent: 80},
 	{ColName: "WineType", Header: "Type", WidthPercent: 30},
 	{ColName: "Year", Header: "Année", WidthPercent: 50},
+	{ColName: "quantity", Header: "Quantité", WidthPercent: 50},
 }
 
 // displayAndUpdateBottle implements a dynamic table bound to an editing form
