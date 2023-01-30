@@ -4,6 +4,10 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"negosud-gui/data"
+	"strconv"
+	"strings"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -12,9 +16,6 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
-	"negosud-gui/data"
-	"strconv"
-	"strings"
 )
 
 var BindProducer []binding.DataMap
@@ -81,6 +82,8 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 		fmt.Println(err)
 		log(true, source, err.Error())
 	}
+
+	BindProducer = nil
 
 	for i := 0; i < len(ProducerData); i++ {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
@@ -242,7 +245,7 @@ func addNewProducer(_ fyne.Window) fyne.CanvasObject {
 				log(true, source, err.Error())
 				return
 			}
-			postData := data.AuthPostRequest("producer", bytes.NewBuffer(jsonValue))
+			postData := data.AuthPostRequest("Producer/AddProducer", bytes.NewBuffer(jsonValue))
 			if postData != 200|201 {
 				message := "StatusCode " + strconv.Itoa(postData)
 				log(true, source, message)

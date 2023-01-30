@@ -3,12 +3,13 @@ package widgets
 import (
 	"encoding/json"
 	"fmt"
+	"negosud-gui/data"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
-	"negosud-gui/data"
 )
 
 var BindCustomerOrder []binding.DataMap
@@ -42,6 +43,8 @@ func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 	if err := json.NewDecoder(response).Decode(&CustomerOrders); err != nil {
 		fmt.Println(err)
 	}
+
+	BindCustomerOrder = nil
 
 	for i := 0; i < len(CustomerOrders); i++ {
 		BindCustomerOrder = append(BindCustomerOrder, binding.BindStruct(&CustomerOrders[i]))

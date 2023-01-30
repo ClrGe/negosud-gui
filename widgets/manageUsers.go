@@ -4,24 +4,26 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"negosud-gui/data"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
-	"negosud-gui/data"
 )
 
 var BindUser []binding.DataMap
+var Table *widget.Table
+var Tabs *container.AppTabs
 
 // makeUsersTabs function creates a new set of tabs
 func makeUsersTabs(_ fyne.Window) fyne.CanvasObject {
-	tabs := container.NewAppTabs(
-		container.NewTabItem("Liste des utilisateurs", displayUsers(nil)),
-		container.NewTabItem("Ajouter un utilisateur", addUserForm(nil)),
-	)
-	return container.NewBorder(nil, nil, nil, nil, tabs)
+	userTableTab := container.NewTabItem("Liste des utilisateurs", displayUsers(nil))
+	addUserFormTab := container.NewTabItem("Ajouter un utilisateur", addUserForm(nil))
+	Tabs = container.NewAppTabs(userTableTab, addUserFormTab)
+	return container.NewBorder(nil, nil, nil, nil, Tabs)
 }
 
 // UsersColumns defines the header row for the table
@@ -32,35 +34,36 @@ var UsersColumns = []rtable.ColAttr{
 	{ColName: "Role", Header: "Rôle", WidthPercent: 120},
 }
 
+func getUsers() {
+	//retrieve structs from data package
+	BindUser = nil
+	Users := data.Users
+	source := "WIDGETS.USERS "
+	response := data.AuthGetRequest("User")
+
+	if err := json.NewDecoder(response).Decode(&Users); err != nil {
+		log(true, source, err.Error())
+		fmt.Println(err)
+	}
+
+	for i := 0; i < len(Users); i++ {
+		BindUser = append(BindUser, binding.BindStruct(&Users[i]))
+	}
+}
+
 func displayUsers(_ fyne.Window) fyne.CanvasObject {
-	// retrieve structs from data package
-	//Users := data.Users
-	//source := "WIDGETS.USERS "
-	//response := data.AuthGetRequest("users")
-	//
-	//if err := json.NewDecoder(response).Decode(&Users); err != nil {
-	//	log(true, source, err.Error())
-	//	fmt.Println(err)
-	//}
-	//
-	//for i := 0; i < len(Users); i++ {
-	//	t := Users[i]
-	//	id := strconv.Itoa(t.Id)
-	//	Users[i].ID = id
-	//	BindUser = append(BindUser, binding.BindStruct(&Users[i]))
-	//}
+	getUsers()
 	tableOptions := &rtable.TableOptions{
 		RefWidth: "========================================",
 		ColAttrs: UsersColumns,
 		Bindings: BindUser,
 	}
-	table := rtable.CreateTable(tableOptions)
-	return table
+	Table = rtable.CreateTable(tableOptions)
+	return Table
 }
 
 // addUserForm to add an authorized user
 func addUserForm(_ fyne.Window) fyne.CanvasObject {
-
 	nameLabel := widget.NewLabelWithStyle("Nom", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	name := widget.NewEntry()
 	name.SetPlaceHolder("Jean Bon")
@@ -91,19 +94,24 @@ func addUserForm(_ fyne.Window) fyne.CanvasObject {
 				Name:     name.Text,
 				Email:    emailInput.Text,
 				Password: passwordInput.Text,
-				Role:     roleUser.Text,
+				//Role:     roleUser.Text,
 			}
 			// convert struct to json
 			jsonValue, err := json.Marshal(user)
 			if err != nil {
+				log(true, source, err.Error())
 				fmt.Println(err)
+				return
 			}
-			// send json to api
-			postData := data.AuthPostRequest("users", bytes.NewBuffer(jsonValue))
+			fmt.Print(bytes.NewBuffer(jsonValue))
+			// Send data to API
+			postData := data.AuthPostRequest("User/AddUser", bytes.NewBuffer(jsonValue))
 			if postData != 201|200 {
 				fmt.Println("Error on user creation")
+				return
 			}
 			fmt.Println("User created")
+			getUsers()
 		},
 		SubmitText: "Envoyer",
 		CancelText: "",

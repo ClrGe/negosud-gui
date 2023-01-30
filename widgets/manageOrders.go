@@ -4,13 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"negosud-gui/data"
+	"strconv"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
-	"negosud-gui/data"
-	"strconv"
 )
 
 // TODO : ADD FUNCTIONNALITY "ORDER AGAIN" ON THE LIST OF ORDERS
@@ -46,6 +47,8 @@ func displayOrders(_ fyne.Window) fyne.CanvasObject {
 	if err := json.NewDecoder(response).Decode(&Orders); err != nil {
 		fmt.Println(err)
 	}
+
+	BindOrder = nil
 
 	for i := 0; i < len(Orders); i++ {
 		id := strconv.Itoa(Orders[i].Id)
