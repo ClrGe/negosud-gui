@@ -1,6 +1,8 @@
 package widgets
 
 import (
+	"encoding/json"
+	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
@@ -35,11 +37,20 @@ var CustomersOrdersColumns = []rtable.ColAttr{
 func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 	CustomerOrders := data.CustomerOrders
 
-	//response := data.AuthGetRequest("customers-orders")
+	response := data.AuthGetRequest("customers-orders")
+	if response == nil {
+		message := "Request body returned empty"
+		fmt.Println(message)
+		data.Logger(false, "WIDGETS.CUSTOMER-ORDERS", message)
+		return widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
+	}
 
-	//if err := json.NewDecoder(response).Decode(&CustomerOrders); err != nil {
-	//fmt.Println(err)
-	//}
+	if err := json.NewDecoder(response).Decode(&CustomerOrders); err != nil {
+		fmt.Println(err)
+		data.Logger(true, "WIDGETS.CUSTOMER-ORDERS", err.Error())
+
+		return widget.NewLabel("Erreur de décodage du json")
+	}
 
 	for i := 0; i < len(CustomerOrders); i++ {
 		BindCustomerOrder = append(BindCustomerOrder, binding.BindStruct(&CustomerOrders[i]))

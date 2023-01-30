@@ -42,10 +42,17 @@ var OrdersColumns = []rtable.ColAttr{
 func displayOrders(_ fyne.Window) fyne.CanvasObject {
 	Orders := data.Orders
 
-	//response := data.AuthGetRequest("orders")
-	//if err := json.NewDecoder(response).Decode(&Orders); err != nil {
-	//	fmt.Println(err)
-	//}
+	response := data.AuthGetRequest("orders")
+	if response == nil {
+		message := "Request body returned empty"
+		fmt.Println(message)
+		data.Logger(false, "WIDGETS.ORDERS", message)
+		return widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
+	}
+	if err := json.NewDecoder(response).Decode(&Orders); err != nil {
+		data.Logger(true, "WIDGETS.ORDERS", err.Error())
+		fmt.Println(err)
+	}
 
 	for i := 0; i < len(Orders); i++ {
 		id := strconv.Itoa(Orders[i].Id)
@@ -107,9 +114,13 @@ func producerOrdersForm(_ fyne.Window) fyne.CanvasObject {
 			jsonValue, _ := json.Marshal(newOrder)
 			postData := data.AuthPostRequest("orders", bytes.NewBuffer(jsonValue))
 			if postData != 201|200 {
-				fmt.Println("Error while posting data to API")
+				message := "Could not place order"
+				fmt.Println(message)
+				data.Logger(false, "WIDGETS.ORDERS", message)
+
 			}
-			fmt.Println("Order placed successfully !")
+			message := "Order placed successfully"
+			data.Logger(false, "WIDGETS.ORDERS", message)
 		},
 		SubmitText: "Envoyer",
 	}
