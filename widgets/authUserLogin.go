@@ -43,7 +43,7 @@ func LoginForm(w fyne.Window) fyne.CanvasObject {
 				text.SetText("Identifiants incorrects !")
 			} else {
 				a := fyne.CurrentApp()
-				Content = container.NewMax(homePage(w))
+				content := container.NewMax(homePage(w))
 				window := w
 				changePage := func(c Component) {
 					if fyne.CurrentDevice().IsMobile() {
@@ -56,10 +56,10 @@ func LoginForm(w fyne.Window) fyne.CanvasObject {
 							return
 						})
 					}
-					Content.Objects = []fyne.CanvasObject{c.View(w)}
-					Content.Refresh()
+					content.Objects = []fyne.CanvasObject{c.View(w)}
+					content.Refresh()
 				}
-				page := container.NewBorder(container.NewVBox(widget.NewSeparator()), nil, nil, nil, Content)
+				page := container.NewBorder(container.NewVBox(widget.NewSeparator()), nil, nil, nil, content)
 				// responsive
 				if fyne.CurrentDevice().IsMobile() {
 					w.SetContent(Navigation(changePage, false))

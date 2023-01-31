@@ -9,12 +9,8 @@ import (
 	"fyne.io/fyne/v2/widget"
 )
 
-var Window fyne.Window
-var Content *fyne.Container
-
 // homePage with logo and message
-func homePage(w fyne.Window) fyne.CanvasObject {
-	Window = w
+func homePage(_ fyne.Window) fyne.CanvasObject {
 	logo := canvas.NewImageFromFile("media/logo-large.png")
 	logo.FillMode = canvas.ImageFillContain
 	if fyne.CurrentDevice().IsMobile() {
