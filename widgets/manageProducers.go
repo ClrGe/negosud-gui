@@ -28,7 +28,7 @@ var ProducerContactTab *container.TabItem
 // ProducerColumns defines the header row for the table
 var ProducerColumns = []rtable.ColAttr{
 	{ColName: "ID", Header: "ID", WidthPercent: 50},
-	{ColName: "Name", Header: "Nom", WidthPercent: 120},
+	{ColName: "Name", Header: "Nom", WidthPercent: 90},
 	{ColName: "CreatedBy", Header: "Crée par", WidthPercent: 50},
 }
 
@@ -93,10 +93,15 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 	deleteBtn := widget.NewButtonWithIcon("Supprimer ce producteur", theme.WarningIcon(),
 		func() {})
 
-	resultApi := data.AuthGetRequest("producer")
-	if err := json.NewDecoder(resultApi).Decode(&ProducerData); err != nil {
+	response := data.AuthGetRequest("producer")
+	if response == nil {
+		fmt.Println("No result returned")
+		return widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
+	}
+	if err := json.NewDecoder(response).Decode(&ProducerData); err != nil {
 		fmt.Println(err)
 		log(true, source, err.Error())
+		return widget.NewLabel("Erreur de décodage du json")
 	}
 
 	BindProducer = nil

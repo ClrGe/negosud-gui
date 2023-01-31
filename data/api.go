@@ -2,11 +2,11 @@ package data
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"net/url"
 	"os"
 )
 
@@ -94,9 +94,10 @@ func LoginAndSaveToken(email string, password string) int {
 	env, err := LoadConfig(".")
 	if err != nil {
 		fmt.Print(err, "Error loading config")
+		Logger(true, "ConfigFile", err.Error())
 	}
 
-	var response int
+	var responseCode int
 	var token string
 	var server string
 
@@ -105,38 +106,51 @@ func LoginAndSaveToken(email string, password string) int {
 	} else {
 		server = env.SERVER_PROD
 	}
-	// escape special characters in email and password
-	email = url.QueryEscape(email)
-	password = url.QueryEscape(password)
-	hostname, _ := os.Hostname()
-	url := server + "/authentication/login?email=" + email + "&password=" + password
 
-	req, err := http.NewRequest("POST", url, nil)
+	hostname, _ := os.Hostname()
+	url := server + "/authentication/login"
+
+	userInfo := &User{
+		Email:    email,
+		Password: password,
+	}
+
+	jsonValue, err := json.Marshal(userInfo)
+	if err != nil {
+		Logger(true, "LOGIN Method", err.Error())
+		fmt.Println(err)
+	}
+
+	requestPost, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 	if err != nil {
 		fmt.Print(err, "Error creating request")
 	}
+	requestPost.Header.Set("Content-Type", "application/json")
+
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	responsePost, err := client.Do(requestPost)
+
 	if err != nil {
 		Logger(true, "LOGIN", err.Error())
 		fmt.Print(err, "Error sending request")
 	}
-	if resp.StatusCode != 200 {
+
+	responseCode = responsePost.StatusCode
+
+	if responsePost.StatusCode != 200 {
 		message := "Login failed from origin " + hostname + "\n"
 		Logger(true, "LOGIN ", message)
-		response = resp.StatusCode
-		return response
+		return responseCode
 	}
 	Logger(false, "LOGIN", "Login successful from origin "+hostname+"\n")
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(responsePost.Body)
 	token = string(body)
 
 	if err != nil {
 		fmt.Print(err, "Error retrieving token from response")
 	}
-	defer resp.Body.Close()
+	defer responsePost.Body.Close()
 	SaveConfig("KEY", token)
 
-	response = resp.StatusCode
-	return response
+	return responseCode
 }
