@@ -21,22 +21,38 @@ import (
 var BindProducer []binding.DataMap
 var log = data.Logger
 var source = "WIDGETS.PRODUCER "
-
-// makeProducerTabs function creates a new set of tabs
-func makeProducerTabs(_ fyne.Window) fyne.CanvasObject {
-	tabs := container.NewAppTabs(
-		container.NewTabItem("Liste des producteurs", displayAndUpdateProducers(nil)),
-		container.NewTabItem("Ajouter un producteur", addNewProducer(nil)),
-		container.NewTabItem("Contact producteurs", contactProducers(nil)),
-	)
-	return container.NewBorder(nil, nil, nil, nil, tabs)
-}
+var ProducerListTab *container.TabItem
+var ProducerAddFormTab *container.TabItem
+var ProducerContactTab *container.TabItem
 
 // ProducerColumns defines the header row for the table
 var ProducerColumns = []rtable.ColAttr{
 	{ColName: "ID", Header: "ID", WidthPercent: 50},
 	{ColName: "Name", Header: "Nom", WidthPercent: 120},
 	{ColName: "CreatedBy", Header: "Crée par", WidthPercent: 50},
+}
+
+func createProducersTabs() *container.AppTabs {
+	ProducerListTab = container.NewTabItem("Liste des producteurs", displayAndUpdateProducers(nil))
+	ProducerAddFormTab = container.NewTabItem("Ajouter un producteur", addNewProducer(nil))
+	ProducerContactTab = container.NewTabItem("Contact producteurs", contactProducers(nil))
+	return container.NewAppTabs(
+		ProducerListTab,
+		ProducerAddFormTab,
+		ProducerContactTab,
+	)
+}
+
+// makeProducerPage function creates a new set of tabs
+func makeProducerPage(_ fyne.Window) fyne.CanvasObject {
+	return container.NewBorder(nil, nil, nil, nil, createProducersTabs())
+}
+
+func refreshProducersTableOnAdd() {
+	tabs := createProducersTabs()
+	tabs.Select(ProducerAddFormTab)
+	Content.Objects = []fyne.CanvasObject{container.NewBorder(nil, nil, nil, nil, tabs)}
+	Content.Refresh()
 }
 
 // displayAndUpdateProducers implements a dynamic table bound to an editing form
@@ -253,6 +269,7 @@ func addNewProducer(_ fyne.Window) fyne.CanvasObject {
 				return
 			}
 			fmt.Println("New producer added with success")
+			refreshProducersTableOnAdd()
 		},
 		SubmitText: "Envoyer",
 	}

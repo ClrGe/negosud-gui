@@ -21,18 +21,11 @@ import (
 )
 
 var BindBottle []binding.DataMap
-
-// makeBottlesTabs creates a new set of tabs for bottles management
-func makeBottlesTabs(_ fyne.Window) fyne.CanvasObject {
-	tabs := container.NewAppTabs(
-		container.NewTabItem("Liste des produits", displayAndUpdateBottle(nil)),
-		container.NewTabItem("Ajouter un produit", addNewBottle(nil)),
-		container.NewTabItem("En stock", displayStock(nil)),
-		container.NewTabItem("En rupture de stock", displayInventory(nil)),
-		container.NewTabItem("Historique des inventaires", displayInventory(nil)),
-	)
-	return container.NewBorder(nil, nil, nil, nil, tabs)
-}
+var ProductListTab *container.TabItem
+var ProductAddFormTab *container.TabItem
+var ProductStockTab *container.TabItem
+var ProductOutOfStockTab *container.TabItem
+var ProductInventoryTab *container.TabItem
 
 // BottlesColumns defines the header row for the table
 var BottlesColumns = []rtable.ColAttr{
@@ -41,6 +34,33 @@ var BottlesColumns = []rtable.ColAttr{
 	{ColName: "FullName", Header: "Nom", WidthPercent: 100},
 	{ColName: "WineType", Header: "Type", WidthPercent: 100},
 	{ColName: "Year", Header: "Année", WidthPercent: 50},
+}
+
+func createBottlesTabs() *container.AppTabs {
+	ProductListTab = container.NewTabItem("Liste des produits", displayAndUpdateBottle(nil))
+	ProductAddFormTab = container.NewTabItem("Ajouter un produit", addNewBottle(nil))
+	ProductStockTab = container.NewTabItem("En stock", displayStock(nil))
+	ProductOutOfStockTab = container.NewTabItem("En rupture de stock", displayInventory(nil))
+	ProductInventoryTab = container.NewTabItem("Historique des inventaires", displayInventory(nil))
+	return container.NewAppTabs(
+		ProductListTab,
+		ProductAddFormTab,
+		ProductStockTab,
+		ProductOutOfStockTab,
+		ProductInventoryTab,
+	)
+}
+
+// makeBottlesPage creates a new set of tabs for bottles management
+func makeBottlesPage(_ fyne.Window) fyne.CanvasObject {
+	return container.NewBorder(nil, nil, nil, nil, createBottlesTabs())
+}
+
+func refreshBottlesTableOnAdd() {
+	tabs := createBottlesTabs()
+	tabs.Select(ProductAddFormTab)
+	Content.Objects = []fyne.CanvasObject{container.NewBorder(nil, nil, nil, nil, tabs)}
+	Content.Refresh()
 }
 
 // displayAndUpdateBottle implements a dynamic table bound to an editing form
@@ -413,6 +433,7 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 					return
 				}
 				fmt.Println("New product added with success")
+				refreshBottlesTableOnAdd()
 			},
 			SubmitText: "Envoyer",
 		}
