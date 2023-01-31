@@ -15,16 +15,8 @@ import (
 )
 
 var BindUser []binding.DataMap
-var Table *widget.Table
-var Tabs *container.AppTabs
-
-// makeUsersTabs function creates a new set of tabs
-func makeUsersTabs(_ fyne.Window) fyne.CanvasObject {
-	userTableTab := container.NewTabItem("Liste des utilisateurs", displayUsers(nil))
-	addUserFormTab := container.NewTabItem("Ajouter un utilisateur", addUserForm(nil))
-	Tabs = container.NewAppTabs(userTableTab, addUserFormTab)
-	return container.NewBorder(nil, nil, nil, nil, Tabs)
-}
+var UserTableTab *container.TabItem
+var AddUserFormTab *container.TabItem
 
 // UsersColumns defines the header row for the table
 var UsersColumns = []rtable.ColAttr{
@@ -34,7 +26,24 @@ var UsersColumns = []rtable.ColAttr{
 	{ColName: "Role", Header: "Rôle", WidthPercent: 120},
 }
 
-func getUsers() {
+// makeUsersTabs function creates a new set of tabs
+func makeUsersTabs(_ fyne.Window) fyne.CanvasObject {
+	UserTableTab = container.NewTabItem("Liste des utilisateurs", displayUsers(nil))
+	AddUserFormTab = container.NewTabItem("Ajouter un utilisateur", addUserForm(nil))
+	tabs := container.NewAppTabs(UserTableTab, AddUserFormTab)
+	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
+
+// refresh user page after added a new user
+func refreshOnAdd() fyne.CanvasObject {
+	UserTableTab = container.NewTabItem("Liste des utilisateurs", displayUsers(nil))
+	AddUserFormTab = container.NewTabItem("Ajouter un utilisateur", addUserForm(nil))
+	tabs := container.NewAppTabs(UserTableTab, AddUserFormTab)
+	tabs.Select(AddUserFormTab)
+	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
+
+func displayUsers(_ fyne.Window) fyne.CanvasObject {
 	//retrieve structs from data package
 	BindUser = nil
 	Users := data.Users
@@ -49,17 +58,13 @@ func getUsers() {
 	for i := 0; i < len(Users); i++ {
 		BindUser = append(BindUser, binding.BindStruct(&Users[i]))
 	}
-}
-
-func displayUsers(_ fyne.Window) fyne.CanvasObject {
-	getUsers()
 	tableOptions := &rtable.TableOptions{
 		RefWidth: "========================================",
 		ColAttrs: UsersColumns,
 		Bindings: BindUser,
 	}
-	Table = rtable.CreateTable(tableOptions)
-	return Table
+	table := rtable.CreateTable(tableOptions)
+	return table
 }
 
 // addUserForm to add an authorized user
@@ -111,7 +116,9 @@ func addUserForm(_ fyne.Window) fyne.CanvasObject {
 				return
 			}
 			fmt.Println("User created")
-			getUsers()
+			// Refresh after add
+			Content.Objects = []fyne.CanvasObject{refreshOnAdd()}
+			Content.Refresh()
 		},
 		SubmitText: "Envoyer",
 		CancelText: "",

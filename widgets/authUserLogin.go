@@ -1,13 +1,14 @@
 package widgets
 
 import (
+	"image/color"
+	"negosud-gui/data"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/widget"
-	"image/color"
-	"negosud-gui/data"
 )
 
 // LoginForm to authenticate and receive a token
@@ -42,7 +43,7 @@ func LoginForm(w fyne.Window) fyne.CanvasObject {
 				text.SetText("Identifiants incorrects !")
 			} else {
 				a := fyne.CurrentApp()
-				content := container.NewMax(homePage(w))
+				Content = container.NewMax(homePage(w))
 				window := w
 				changePage := func(c Component) {
 					if fyne.CurrentDevice().IsMobile() {
@@ -55,10 +56,10 @@ func LoginForm(w fyne.Window) fyne.CanvasObject {
 							return
 						})
 					}
-					content.Objects = []fyne.CanvasObject{c.View(w)}
-					content.Refresh()
+					Content.Objects = []fyne.CanvasObject{c.View(w)}
+					Content.Refresh()
 				}
-				page := container.NewBorder(container.NewVBox(widget.NewSeparator()), nil, nil, nil, content)
+				page := container.NewBorder(container.NewVBox(widget.NewSeparator()), nil, nil, nil, Content)
 				// responsive
 				if fyne.CurrentDevice().IsMobile() {
 					w.SetContent(Navigation(changePage, false))
