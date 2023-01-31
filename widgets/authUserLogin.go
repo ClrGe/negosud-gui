@@ -65,25 +65,25 @@ func LoginForm(w fyne.Window) fyne.CanvasObject {
 					w.SetContent(Navigation(changePage, false))
 				} else {
 					split := container.NewHSplit(Navigation(changePage, true), page)
-					split.Offset = 0.2
+					split.Offset = 0.25
 					w.SetContent(split)
 				}
 			}
 		},
 		OnCancel: func() {
-			// close app when clicking on cancel button
 			fyne.CurrentApp().Quit()
 		},
 		SubmitText: "Envoyer",
 		CancelText: "Quitter",
 	}
-	form.Resize(fyne.NewSize(800, 400))
+	form.Resize(fyne.NewSize(400, 400))
 	form.Move(fyne.NewPos(555, 50))
 
 	// LAYOUT
 	spacer := widget.NewLabel("")
 	formContainer := container.NewWithoutLayout(form)
 	layoutPage := container.NewVBox(spacer, spacer, appLogo, widget.NewSeparator(), text, widget.NewSeparator(), formContainer)
-	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(1900, 800), layoutPage))
+	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(1550, 800), layoutPage))
+
 	return mainContainer
 }

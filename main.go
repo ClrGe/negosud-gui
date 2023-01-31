@@ -1,11 +1,12 @@
 package main
 
 import (
+	"negosud-gui/widgets"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/theme"
-	"negosud-gui/widgets"
 )
 
 var window fyne.Window
@@ -21,8 +22,9 @@ func main() {
 	negosudLogo, _ := fyne.LoadResourceFromPath("media/logo.png")
 
 	w.SetIcon(negosudLogo)
-	w.Resize(fyne.NewSize(1920, 1080))
+
 	w.SetContent(content)
+	//w.SetFullScreen(true)
 
 	w.ShowAndRun()
 }

@@ -16,7 +16,7 @@ type User struct {
 	FirstName string `json:"firstName"`
 	Email     string `json:"email"`
 	Password  string `json:"password"`
-	//Role     string `json:"createdBy"`
+	//Role     string `json:"role"`
 }
 
 // ############################################

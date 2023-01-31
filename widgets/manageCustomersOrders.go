@@ -20,6 +20,7 @@ func makeCusOrdersTabs(_ fyne.Window) fyne.CanvasObject {
 		container.NewTabItem("Historique des commandes clients", displayCustomersOrders(nil)),
 		container.NewTabItem("Support clients", displayCustomersMessages(nil)),
 	)
+
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
 
@@ -39,9 +40,18 @@ func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 	CustomerOrders := data.CustomerOrders
 
 	response := data.AuthGetRequest("customers-orders")
+	if response == nil {
+		message := "Request body returned empty"
+		fmt.Println(message)
+		data.Logger(false, "WIDGETS.CUSTOMER-ORDERS", message)
+		return widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
+	}
 
 	if err := json.NewDecoder(response).Decode(&CustomerOrders); err != nil {
 		fmt.Println(err)
+		data.Logger(true, "WIDGETS.CUSTOMER-ORDERS", err.Error())
+
+		return widget.NewLabel("Erreur de décodage du json")
 	}
 
 	BindCustomerOrder = nil
@@ -55,6 +65,7 @@ func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 		Bindings: BindCustomerOrder,
 	}
 	table := rtable.CreateTable(tableOptions)
+	
 	return table
 }
 
