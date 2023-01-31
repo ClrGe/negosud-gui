@@ -40,6 +40,10 @@ var (
 			makeUsersTabs,
 			true,
 		},
+		"storageLocations_management": {"Gestion des emplacements de stock",
+			makeStorageLocationTabs,
+			true,
+		},
 		"producers_management": {"Gestion des producteurs",
 			makeProducerTabs,
 			true,
@@ -87,7 +91,7 @@ var (
 	}
 
 	ComponentIndex = map[string][]string{
-		"":            {"home", "producers_management", "bottles_management", "orders_tab", "admin_tab", "support_tab"},
+		"":            {"home", "storageLocations_management", "producers_management", "bottles_management", "orders_tab", "admin_tab", "support_tab"},
 		"support_tab": {"faq_tab", "contact_tab"},
 		"orders_tab":  {"orders_producers", "orders_customers"},
 		"admin_tab":   {"users_management", "documents_tab", "statistics_tab", "website_management"},

@@ -124,3 +124,29 @@ type CustomerOrder struct {
 	Date     string
 	Status   string
 }
+
+// ############################################
+// ################## STORAGE LOCATIONS ###################
+// ############################################
+
+var StorageLocations []StorageLocation
+var IndStorageLocation StorageLocation
+var StorageLocationData []PartialStorageLocation
+
+// StorageLocation struct holds information about a user
+type StorageLocation struct {
+	ID                     int         `json:"id"`
+	Name                   string      `json:"name"`
+	CreatedAt              time.Time   `json:"createdAt"`
+	UpdatedAt              time.Time   `json:"updatedAt"`
+	CreatedBy              string      `json:"createdBy"`
+	UpdatedBy              string      `json:"updatedBy"`
+	BottleStorageLocations interface{} `json:"Bottles"`
+}
+
+// PartialStorageLocation holds only the necessary data for the table (= needs string only)
+type PartialStorageLocation struct {
+	Id   int `json:"id"`
+	ID   string
+	Name string `json:"name"`
+}

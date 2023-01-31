@@ -14,19 +14,15 @@ import (
 	"github.com/rohanthewiz/rtable"
 	"negosud-gui/data"
 	"strconv"
-	"strings"
 )
 
 var BindStorageLocation []binding.DataMap
-var log = data.Logger
-var source = "WIDGETS.STORAGELOCATION "
 
 // makeStorageLocationTabs function creates a new set of tabs
 func makeStorageLocationTabs(_ fyne.Window) fyne.CanvasObject {
 	tabs := container.NewAppTabs(
-		container.NewTabItem("Liste des producteurs", displayAndUpdateStorageLocations(nil)),
-		container.NewTabItem("Ajouter un producteur", addNewStorageLocation(nil)),
-		container.NewTabItem("Contact producteurs", contactStorageLocations(nil)),
+		container.NewTabItem("Liste des emplacements", displayAndUpdateStorageLocations(nil)),
+		container.NewTabItem("Ajouter un emplacement", addNewStorageLocation(nil)),
 	)
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
@@ -41,7 +37,7 @@ var StorageLocationColumns = []rtable.ColAttr{
 // displayAndUpdateStorageLocations implements a dynamic table bound to an editing form
 func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 	// retrieve structs from data package
-	Individual := data.Individual
+	StorageLocation := data.IndStorageLocation
 	StorageLocationData := data.StorageLocationData
 
 	var identifier string
@@ -68,15 +64,11 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 	// declare form elements
 	nameLabel := widget.NewLabel("Nom")
 	nameStorageLocation := widget.NewEntry()
-	detailsLabel := widget.NewLabel("Description")
-	detailsStorageLocation := widget.NewMultiLineEntry()
-	pictureLabel := widget.NewLabel("Image")
-	pictureStorageLocation := widget.NewButtonWithIcon("Ajouter une image", theme.FileImageIcon(), func() { fmt.Print("Image was sent") })
 
-	deleteBtn := widget.NewButtonWithIcon("Supprimer ce producteur", theme.WarningIcon(),
+	deleteBtn := widget.NewButtonWithIcon("Supprimer cet emplacement", theme.WarningIcon(),
 		func() {})
 
-	response := data.AuthGetRequest("ptorageLocation")
+	response := data.AuthGetRequest("storageLocation")
 	if response == nil {
 		fmt.Println("No result returned")
 		return widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
@@ -93,7 +85,7 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 		id := strconv.Itoa(t.Id)
 		StorageLocationData[i].ID = id
 
-		// binding ptorageLocation data
+		// binding storageLocation data
 		BindStorageLocation = append(BindStorageLocation, binding.BindStruct(&StorageLocationData[i]))
 	}
 
@@ -114,12 +106,12 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 		}
 		// Handle header row clicked
 		if cell.Row == 0 { // fmt.Println("-->", tblOpts.ColAttrs[cell.Col].Header)
-			// Add a row
-			BindStorageLocation = append(BindStorageLocation,
-				binding.BindStruct(&data.StorageLocation{Name: "Belle Ambiance",
-					Details: "brown", CreatedBy: "170"}))
-			tableOptions.Bindings = BindStorageLocation
-			table.Refresh()
+			//// Add a row
+			//BindStorageLocation = append(BindStorageLocation,
+			//	binding.BindStruct(&data.StorageLocation{Name: "Belle Ambiance",
+			//		Details: "brown", CreatedBy: "170"}))
+			//tableOptions.Bindings = BindStorageLocation
+			//table.Refresh()
 			return
 		}
 		//Handle non-header row clicked
@@ -128,7 +120,10 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 			fmt.Println(err.Error())
 			log(true, source, err.Error())
 			return
+		} else {
+			table.Select(widget.TableCellID{cell.Row, 0})
 		}
+
 		// Printout body cells
 		rowBinding := tableOptions.Bindings[cell.Row-1]
 		_, err = rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
@@ -145,20 +140,17 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 		i, err := strconv.Atoi(identifier)
 		if err == nil {
 			fmt.Println(i)
-			// Fetch individual ptorageLocation to fill form
-			response := data.AuthGetRequest("ptorageLocation/" + identifier)
-			if err := json.NewDecoder(response).Decode(&Individual); err != nil {
+			// Fetch individual storageLocation to fill form
+			response := data.AuthGetRequest("storageLocation/" + identifier)
+			if err := json.NewDecoder(response).Decode(&StorageLocation); err != nil {
 				log(true, source, err.Error())
 				fmt.Println(err)
 			} else {
 				productImg.Hidden = false
 			}
 			// Fill form fields with fetched data
-			nameStorageLocation.SetText(Individual.Name)
-			details := strings.Replace(Individual.Details, "\\n", "\n", -1)
-			detailsStorageLocation.SetText(details)
-			productTitle.SetText(Individual.Name)
-			productDesc.SetText(details)
+			nameStorageLocation.SetText(StorageLocation.Name)
+			productTitle.SetText(StorageLocation.Name)
 		} else {
 			log(true, source, err.Error())
 		}
@@ -168,21 +160,17 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 		Items: []*widget.FormItem{
 			{Text: "", Widget: nameLabel},
 			{Text: "", Widget: nameStorageLocation},
-			{Text: "", Widget: detailsLabel},
-			{Text: "", Widget: detailsStorageLocation},
-			{Text: "", Widget: pictureLabel},
-			{Text: "", Widget: pictureStorageLocation},
 		},
 		OnSubmit: func() {
-			ptorageLocation := &data.StorageLocation{
-				Name:    nameStorageLocation.Text,
-				Details: detailsStorageLocation.Text,
+			storageLocation := &data.StorageLocation{
+				ID:   StorageLocation.ID,
+				Name: nameStorageLocation.Text,
 			}
-			jsonValue, _ := json.Marshal(ptorageLocation)
-			postData := data.AuthPostRequest("ptorageLocation"+identifier, bytes.NewBuffer(jsonValue))
+			jsonValue, _ := json.Marshal(storageLocation)
+			postData := data.AuthPostRequest("StorageLocation/UpdateStorageLocation", bytes.NewBuffer(jsonValue))
 			if postData != 201|200 {
 				fmt.Println("Error on update")
-				message := "Error on ptorageLocation " + identifier + " update"
+				message := "Error on storageLocation " + identifier + " update"
 				log(true, source, message)
 			} else {
 				fmt.Println("Success on update")
@@ -202,8 +190,8 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 
 	// Define layout
 	individualTabs := container.NewAppTabs(
-		container.NewTabItem("Détails du producteur", layoutDetailsTab),
-		container.NewTabItem("Modifier le producteur", layoutWithDelete),
+		container.NewTabItem("Détails de l'emplacement", layoutDetailsTab),
+		container.NewTabItem("Modifier l'emplacement", layoutWithDelete),
 	)
 	mainContainer := container.New(layout.NewGridLayout(2))
 	leftContainer := table
@@ -214,14 +202,10 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 	return mainContainer
 }
 
-// Form to add and send a new ptorageLocation to the API endpoint (POST)
+// Form to add and send a new storageLocation to the API endpoint (POST)
 func addNewStorageLocation(_ fyne.Window) fyne.CanvasObject {
 	nameLabel := widget.NewLabel("Nom")
 	nameStorageLocation := widget.NewEntry()
-	detailsLabel := widget.NewLabel("Description")
-	detailsStorageLocation := widget.NewMultiLineEntry()
-	pictureLabel := widget.NewLabel("Image")
-	pictureStorageLocation := widget.NewButtonWithIcon("Ajouter une image", theme.FileImageIcon(), func() { fmt.Print("Image was sent") })
 
 	title := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 
@@ -230,42 +214,30 @@ func addNewStorageLocation(_ fyne.Window) fyne.CanvasObject {
 			{Text: "", Widget: title},
 			{Text: "", Widget: nameLabel},
 			{Text: "", Widget: nameStorageLocation},
-			{Text: "", Widget: detailsLabel},
-			{Text: "", Widget: detailsStorageLocation},
-			{Text: "", Widget: pictureLabel},
-			{Text: "", Widget: pictureStorageLocation},
 		},
 		OnSubmit: func() {
-			ptorageLocation := &data.StorageLocation{
-				Name:    nameStorageLocation.Text,
-				Details: detailsStorageLocation.Text,
+			storageLocation := &data.StorageLocation{
+				Name: nameStorageLocation.Text,
 			}
-			// convert ptorageLocation struct to json
-			jsonValue, err := json.Marshal(&ptorageLocation)
+			// convert storageLocation struct to json
+			jsonValue, err := json.Marshal(&storageLocation)
 			if err != nil {
 				fmt.Println(err)
 				log(true, source, err.Error())
 				return
 			}
-			postData := data.AuthPostRequest("ptorageLocation", bytes.NewBuffer(jsonValue))
+			postData := data.AuthPostRequest("StorageLocation/AddStorageLocation", bytes.NewBuffer(jsonValue))
 			if postData != 200|201 {
 				message := "StatusCode " + strconv.Itoa(postData)
 				log(true, source, message)
 				fmt.Println(message)
 				return
 			}
-			fmt.Println("New ptorageLocation added with success")
+			fmt.Println("New storageLocation added with success")
 		},
 		SubmitText: "Envoyer",
 	}
 	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), form))
 
 	return mainContainer
-}
-
-func contactStorageLocations(_ fyne.Window) fyne.CanvasObject {
-	return container.NewCenter(container.NewVBox(
-		widget.NewLabelWithStyle("Messages échangés avec les producteurs (à implémenter)", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
-		widget.NewLabel(""),
-	))
 }

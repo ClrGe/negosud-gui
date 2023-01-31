@@ -23,7 +23,7 @@ func main() {
 	w.SetIcon(negosudLogo)
 
 	w.SetContent(content)
-	w.SetFullScreen(true)
+	//w.SetFullScreen(true)
 
 	w.ShowAndRun()
 }
