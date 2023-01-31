@@ -12,6 +12,7 @@ var Users []User
 
 // User struct holds information about a user
 type User struct {
+	ID        string `json:"-"`
 	Id        int    `json:"id"`
 	FirstName string `json:"firstName"`
 	Email     string `json:"email"`

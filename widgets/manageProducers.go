@@ -194,11 +194,12 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 		},
 		OnSubmit: func() {
 			producer := &data.Producer{
+				ID:      Producer.ID,
 				Name:    nameProducer.Text,
 				Details: detailsProducer.Text,
 			}
 			jsonValue, _ := json.Marshal(producer)
-			postData := data.AuthPostRequest("producer"+identifier, bytes.NewBuffer(jsonValue))
+			postData := data.AuthPostRequest("Producer/UpdateProducer/"+identifier, bytes.NewBuffer(jsonValue))
 			if postData != 201|200 {
 				fmt.Println("Error on update")
 				message := "Error on producer " + identifier + " update"

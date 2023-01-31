@@ -274,6 +274,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			who, _ := os.Hostname()
 			t, _ := time.Parse("2023-01-27T22:48:02.646Z", time.Now().String())
 			bottle := &data.Bottle{
+				ID:                Bottle.ID,
 				FullName:          nameBottle.Text,
 				Description:       detailsBottle.Text,
 				WineType:          typeBottle.Text,

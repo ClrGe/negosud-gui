@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"negosud-gui/data"
+	"strconv"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -58,6 +59,7 @@ func displayUsers(_ fyne.Window) fyne.CanvasObject {
 	}
 
 	for i := 0; i < len(Users); i++ {
+		Users[i].ID = strconv.Itoa(Users[i].Id)
 		BindUser = append(BindUser, binding.BindStruct(&Users[i]))
 	}
 	tableOptions := &rtable.TableOptions{
