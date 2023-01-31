@@ -94,9 +94,10 @@ func LoginAndSaveToken(email string, password string) int {
 	env, err := LoadConfig(".")
 	if err != nil {
 		fmt.Print(err, "Error loading config")
+		Logger(true, "ConfigFile", err.Error())
 	}
 
-	var response int
+	var responseCode int
 	var token string
 	var server string
 
@@ -120,78 +121,36 @@ func LoginAndSaveToken(email string, password string) int {
 		fmt.Println(err)
 	}
 
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
+	requestPost, err := http.NewRequest("POST", url, bytes.NewBuffer(jsonValue))
 	if err != nil {
 		fmt.Print(err, "Error creating request")
 	}
-	req.Header.Set("Content-Type", "application/json")
+	requestPost.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
-	resp, err := client.Do(req)
+	responsePost, err := client.Do(requestPost)
 
 	if err != nil {
 		Logger(true, "LOGIN", err.Error())
 		fmt.Print(err, "Error sending request")
 	}
 
-	if resp.StatusCode != 200 {
+	responseCode = responsePost.StatusCode
+
+	if responsePost.StatusCode != 200 {
 		message := "Login failed from origin " + hostname + "\n"
-		fmt.Print(bytes.NewBuffer(jsonValue))
-		fmt.Print(err)
 		Logger(true, "LOGIN ", message)
-		response = resp.StatusCode
-		return response
+		return responseCode
 	}
 	Logger(false, "LOGIN", "Login successful from origin "+hostname+"\n")
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := ioutil.ReadAll(responsePost.Body)
 	token = string(body)
 
 	if err != nil {
 		fmt.Print(err, "Error retrieving token from response")
 	}
-	defer resp.Body.Close()
+	defer responsePost.Body.Close()
 	SaveConfig("KEY", token)
 
-	response = resp.StatusCode
-	return response
+	return responseCode
 }
-
-//func SendInReqBody(route string, body *bytes.Buffer) int {
-//	env, err := LoadConfig(".")
-//	if err != nil {
-//		fmt.Println("Could not load config")
-//	}
-//
-//	Token = env.KEY
-//	var server string
-//
-//	if env.ENV == "dev" {
-//		server = env.SERVER_DEV
-//	} else {
-//		server = env.SERVER_PROD
-//	}
-//
-//	url := server + "/" + route
-//
-//	req, err := http.NewRequest("POST", url, body)
-//	if err != nil {
-//		panic(err)
-//	}
-//	req.Header.Add("Authorization", "Bearer "+Token)
-//	req.Header.Set("Content-Type", "application/json")
-//
-//	// send the request
-//	client := &http.Client{}
-//	resp, err := client.Do(req)
-//	if err != nil {
-//		panic(err)
-//	}
-//	if resp.StatusCode == 200 || resp.StatusCode == 201 {
-//		fmt.Println("Success")
-//	} else {
-//		fmt.Println("Failed")
-//		return resp.StatusCode
-//	}
-//
-//	return resp.StatusCode
-//}

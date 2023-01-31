@@ -37,22 +37,6 @@ func LoginForm(w fyne.Window) fyne.CanvasObject {
 		OnSubmit: func() {
 			data.LoginAndSaveToken(emailInput.Text, passwordInput.Text)
 
-			//user := &data.User{
-			//	Email:    emailInput.Text,
-			//	Password: passwordInput.Text,
-			//}
-			// encode the value as JSON and send it to the API.
-			////jsonValue, err := json.Marshal(user)
-			//if err != nil {
-			//	log(true, source, err.Error())
-			//	fmt.Println(err)
-			//	return
-			//}
-			//loginReqBody := data.LoginAndSaveToken(user.Email, user.Password)
-
-			//if loginReqBody != 200 {
-			//	data.Logger(true, "LOGINREQBODY", "aie")
-			//}
 			if data.LoginAndSaveToken(emailInput.Text, passwordInput.Text) != 200 {
 				data.Logger(false, "LOGIN ", "Failed : Incorrect email or password")
 				text.SetText("Identifiants incorrects !")
