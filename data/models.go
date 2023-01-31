@@ -12,10 +12,10 @@ var Users []User
 
 // User struct holds information about a user
 type User struct {
-	Id       int    `json:"id"`
-	Name     string `json:"firstName"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Id        int    `json:"id"`
+	FirstName string `json:"firstName"`
+	Email     string `json:"email"`
+	Password  string `json:"password"`
 	//Role     string `json:"createdBy"`
 }
 
@@ -23,7 +23,7 @@ type User struct {
 // ############### PRODUCERS ##################
 // ############################################
 
-var Individual Producer
+var IndProducer Producer
 var ProducerData []PartialProducer
 
 // Producer struct holds information about a producer

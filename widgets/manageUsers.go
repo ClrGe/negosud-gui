@@ -98,9 +98,9 @@ func addUserForm(_ fyne.Window) fyne.CanvasObject {
 		},
 		OnSubmit: func() {
 			user := &data.User{
-				Name:     name.Text,
-				Email:    emailInput.Text,
-				Password: passwordInput.Text,
+				FirstName: name.Text,
+				Email:     emailInput.Text,
+				Password:  passwordInput.Text,
 				//Role:     roleUser.Text,
 			}
 			// convert struct to json
@@ -114,6 +114,7 @@ func addUserForm(_ fyne.Window) fyne.CanvasObject {
 			// Send data to API
 			postData := data.AuthPostRequest("User/AddUser", bytes.NewBuffer(jsonValue))
 			if postData != 201|200 {
+				log(true, source, "Error on user creation"+string(jsonValue))
 				fmt.Println("Error on user creation")
 				return
 			}

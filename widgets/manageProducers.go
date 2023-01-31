@@ -58,7 +58,7 @@ func refreshProducersTableOnAdd() {
 // displayAndUpdateProducers implements a dynamic table bound to an editing form
 func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 	// retrieve structs from data package
-	Individual := data.Individual
+	Producer := data.IndProducer
 	ProducerData := data.ProducerData
 
 	var identifier string
@@ -161,17 +161,17 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 			fmt.Println(i)
 			// Fetch individual producer to fill form
 			response := data.AuthGetRequest("producer/" + identifier)
-			if err := json.NewDecoder(response).Decode(&Individual); err != nil {
+			if err := json.NewDecoder(response).Decode(&Producer); err != nil {
 				log(true, source, err.Error())
 				fmt.Println(err)
 			} else {
 				productImg.Hidden = false
 			}
 			// Fill form fields with fetched data
-			nameProducer.SetText(Individual.Name)
-			details := strings.Replace(Individual.Details, "\\n", "\n", -1)
+			nameProducer.SetText(Producer.Name)
+			details := strings.Replace(Producer.Details, "\\n", "\n", -1)
 			detailsProducer.SetText(details)
-			productTitle.SetText(Individual.Name)
+			productTitle.SetText(Producer.Name)
 			productDesc.SetText(details)
 		} else {
 			log(true, source, err.Error())
