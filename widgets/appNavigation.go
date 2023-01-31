@@ -42,7 +42,7 @@ var (
 			true,
 		},
 		"users_management": {"Gestion des utilisateurs",
-			makeUsersTabs,
+			makeUsersPage,
 			true,
 		},
 		"producers_management": {"Gestion des producteurs",

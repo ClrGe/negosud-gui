@@ -26,19 +26,20 @@ var UsersColumns = []rtable.ColAttr{
 	{ColName: "Role", Header: "Rôle", WidthPercent: 120},
 }
 
-// makeUsersTabs function creates a new set of tabs
-func makeUsersTabs(_ fyne.Window) fyne.CanvasObject {
+func createUsersTabs() *container.AppTabs {
 	UserTableTab = container.NewTabItem("Liste des utilisateurs", displayUsers(nil))
 	AddUserFormTab = container.NewTabItem("Ajouter un utilisateur", addUserForm(nil))
-	tabs := container.NewAppTabs(UserTableTab, AddUserFormTab)
-	return container.NewBorder(nil, nil, nil, nil, tabs)
+	return container.NewAppTabs(UserTableTab, AddUserFormTab)
+}
+
+// makeUsersPage function creates a new set of tabs
+func makeUsersPage(_ fyne.Window) fyne.CanvasObject {
+	return container.NewBorder(nil, nil, nil, nil, createUsersTabs())
 }
 
 // refresh user page after added a new user
-func refreshOnAdd() fyne.CanvasObject {
-	UserTableTab = container.NewTabItem("Liste des utilisateurs", displayUsers(nil))
-	AddUserFormTab = container.NewTabItem("Ajouter un utilisateur", addUserForm(nil))
-	tabs := container.NewAppTabs(UserTableTab, AddUserFormTab)
+func refreshUsersTableOnAdd() fyne.CanvasObject {
+	tabs := createUsersTabs()
 	tabs.Select(AddUserFormTab)
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
@@ -117,7 +118,7 @@ func addUserForm(_ fyne.Window) fyne.CanvasObject {
 			}
 			fmt.Println("User created")
 			// Refresh after add
-			Content.Objects = []fyne.CanvasObject{refreshOnAdd()}
+			Content.Objects = []fyne.CanvasObject{refreshUsersTableOnAdd()}
 			Content.Refresh()
 		},
 		SubmitText: "Envoyer",
