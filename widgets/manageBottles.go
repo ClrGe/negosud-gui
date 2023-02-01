@@ -22,7 +22,7 @@ import (
 
 var BindBottle []binding.DataMap
 
-var BottleRefreshMethod func()
+var BottleTableRefreshMethod func()
 
 // BottlesColumns defines the header row for the table
 var BottlesColumns = []rtable.ColAttr{
@@ -46,7 +46,7 @@ func makeBottlesPage(_ fyne.Window) fyne.CanvasObject {
 	)
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == bottleListTab {
-			BottleRefreshMethod()
+			BottleTableRefreshMethod()
 		}
 	}
 	return container.NewBorder(nil, nil, nil, nil, tabs)
@@ -184,7 +184,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 	}
 
 	table := rtable.CreateTable(tableOptions)
-	BottleRefreshMethod = func() {
+	BottleTableRefreshMethod = func() {
 		getBottles()
 		tableOptions.Bindings = BindBottle
 		table.Refresh()
@@ -303,7 +303,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 				log(true, source, message)
 			}
 			fmt.Println("Bottle updated")
-			BottleRefreshMethod()
+			BottleTableRefreshMethod()
 		},
 		OnCancel: func() {
 			fmt.Println("Canceled")
@@ -404,7 +404,7 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 					return
 				}
 				fmt.Println("New product added with success")
-				BottleRefreshMethod()
+				BottleTableRefreshMethod()
 			},
 			SubmitText: "Envoyer",
 		}

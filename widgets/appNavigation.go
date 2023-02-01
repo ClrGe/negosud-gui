@@ -2,12 +2,15 @@ package widgets
 
 import (
 	"fmt"
+	"negosud-gui/data"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 )
+
+var log = data.Logger
 
 // homePage with logo and message
 func homePage(_ fyne.Window) fyne.CanvasObject {

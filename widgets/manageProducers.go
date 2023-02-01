@@ -19,8 +19,7 @@ import (
 )
 
 var BindProducer []binding.DataMap
-var ProducerRefreshMethod func()
-var log = data.Logger
+var ProducerTableRefreshMethod func()
 
 // ProducerColumns defines the header row for the table
 var ProducerColumns = []rtable.ColAttr{
@@ -39,7 +38,7 @@ func makeProducerPage(_ fyne.Window) fyne.CanvasObject {
 	)
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == producerListTab {
-			ProducerRefreshMethod()
+			ProducerTableRefreshMethod()
 		}
 	}
 	return container.NewBorder(nil, nil, nil, nil, tabs)
@@ -124,7 +123,7 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 		Bindings: BindProducer,
 	}
 	table := rtable.CreateTable(tableOptions)
-	ProducerRefreshMethod = func() {
+	ProducerTableRefreshMethod = func() {
 		getProducers()
 		tableOptions.Bindings = BindProducer
 		table.Refresh()
@@ -214,7 +213,7 @@ func displayAndUpdateProducers(_ fyne.Window) fyne.CanvasObject {
 				return
 			}
 			fmt.Println("Success on update")
-			ProducerRefreshMethod()
+			ProducerTableRefreshMethod()
 		},
 		OnCancel: func() {
 			fmt.Println("Canceled")
@@ -284,7 +283,7 @@ func addNewProducer(_ fyne.Window) fyne.CanvasObject {
 				return
 			}
 			fmt.Println("New producer added with success")
-			ProducerRefreshMethod()
+			ProducerTableRefreshMethod()
 		},
 		SubmitText: "Envoyer",
 	}

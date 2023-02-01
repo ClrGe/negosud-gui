@@ -17,7 +17,7 @@ import (
 
 var BindUser []binding.DataMap
 
-var UserRefreshMethod func()
+var UserTableRefreshMethod func()
 
 // UsersColumns defines the header row for the table
 var UsersColumns = []rtable.ColAttr{
@@ -36,7 +36,7 @@ func makeUsersPage(_ fyne.Window) fyne.CanvasObject {
 	)
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == userListTab {
-			UserRefreshMethod()
+			UserTableRefreshMethod()
 		}
 	}
 	return container.NewBorder(nil, nil, nil, nil, tabs)
@@ -68,7 +68,7 @@ func displayUsers(_ fyne.Window) fyne.CanvasObject {
 		Bindings: BindUser,
 	}
 	userTable := rtable.CreateTable(userTableOptions)
-	UserRefreshMethod = func() {
+	UserTableRefreshMethod = func() {
 		getUsers()
 		userTableOptions.Bindings = BindUser
 		userTable.Refresh()
