@@ -65,7 +65,7 @@ func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 		Bindings: BindCustomerOrder,
 	}
 	table := rtable.CreateTable(tableOptions)
-	
+
 	return table
 }
 
