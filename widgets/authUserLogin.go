@@ -1,13 +1,14 @@
 package widgets
 
 import (
+	"image/color"
+	"negosud-gui/data"
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/widget"
-	"image/color"
-	"negosud-gui/data"
 )
 
 // LoginForm to authenticate and receive a token
