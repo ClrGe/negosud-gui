@@ -8,7 +8,7 @@ import (
 // ################## USERS ###################
 // ############################################
 
-var UsersList []User
+var Users []User
 
 // User struct holds information about a user
 type User struct {
@@ -72,7 +72,9 @@ type Bottle struct {
 	UpdatedBy         string      `json:"updatedBy"`
 	BottleLocations   interface{} `json:"bottleLocations"`
 	BottleGrapes      interface{} `json:"bottleGrapes"`
+	BottleSuppliers   interface{} `json:"bottleSuppliers"`
 	Producer          interface{} `json:"producer"`
+	Supplier          interface{} `json:"supplier"`
 }
 
 // PartialBottle holds only the necessary data for the table (= needs string only)
@@ -122,4 +124,29 @@ type CustomerOrder struct {
 	Producer string
 	Date     string
 	Status   string
+}
+
+// ############################################
+// ################# STORAGELOCATION ##########
+// ############################################
+
+var StorageLocationData []PartialStorageLocation
+var UniqueStorageLocation StorageLocation
+
+// StorageLocation struct holds information about a bottle of wine.
+type StorageLocation struct {
+	ID                     string      `json:"-"`
+	Id                     int         `json:"id"`
+	Name                   string      `json:"name"`
+	CreatedAt              interface{} `json:"createdAt"`
+	UpdatedAt              interface{} `json:"updatedAt"`
+	CreatedBy              string      `json:"createdBy"`
+	UpdatedBy              string      `json:"updatedBy"`
+	BottleStorageLocations interface{} `json:"bottleStorageLocations"`
+}
+
+// StorageLocation struct holds information about a bottle of wine.
+type PartialStorageLocation struct {
+	ID   string `json:"-"`
+	Name string `json:"name"`
 }

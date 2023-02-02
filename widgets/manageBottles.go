@@ -166,7 +166,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 	// declare form elements
 	nameBottle := widget.NewEntry()
 	detailsBottle := widget.NewMultiLineEntry()
-	typeBottle := widget.NewSelectEntry([]string{"Red", "White", "Rosé", "Dessert", "Sparkling"})
+	typeBottle := widget.NewSelectEntry([]string{"Rouge", "Blanc", "Rosé", "Dessert", "Pétillant"})
 	volumeBottle := widget.NewEntry()
 	alcoholBottle := widget.NewEntry()
 	yearBottle := widget.NewEntry()
@@ -242,16 +242,16 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			typeBottle.SetPlaceHolder(Bottle.WineType)
 			volumeBottle.SetText(strconv.Itoa(Bottle.Volume))
 			yearBottle.SetText(strconv.Itoa(Bottle.YearProduced))
-			priceBottle.SetText(strconv.Itoa(Bottle.CurrentPrice))
-			alcoholBottle.SetText(strconv.Itoa(Bottle.AlcoholPercentage))
+			priceBottle.SetText(fmt.Sprintf("%f", Bottle.CurrentPrice))
+			alcoholBottle.SetText(fmt.Sprintf("%f", Bottle.AlcoholPercentage))
 			// Display details
 			productTitle.SetText("Nom: " + Bottle.FullName)
 			productDesc.SetText("Description: " + details)
 			productLab.SetText("Type : " + Bottle.WineType)
 			productYear.SetText("Année : " + strconv.Itoa(Bottle.YearProduced))
 			productVol.SetText("Volume : " + strconv.Itoa(Bottle.Volume) + " cL")
-			productPr.SetText("Prix HT : " + strconv.Itoa(Bottle.CurrentPrice) + " €")
-			productAlc.SetText("Alcool : " + strconv.Itoa(Bottle.AlcoholPercentage) + " %")
+			productPr.SetText("Prix HT : " + fmt.Sprintf("%f", Bottle.CurrentPrice) + " €")
+			productAlc.SetText("Alcool : " + fmt.Sprintf("%f", Bottle.AlcoholPercentage) + " %")
 		}
 	}
 
@@ -383,8 +383,8 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 					FullName:          nameBottle.Text,
 					WineType:          typeBottle.Text,
 					YearProduced:      year,
-					AlcoholPercentage: alcohol,
-					CurrentPrice:      price,
+					AlcoholPercentage: float32(alcohol),
+					CurrentPrice:      float32(price),
 					Volume:            volume,
 					Description:       descriptionBottle.Text,
 				}

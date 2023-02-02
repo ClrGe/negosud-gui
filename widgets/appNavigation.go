@@ -90,7 +90,7 @@ var (
 			true,
 		},
 		"new_bottle_tab": {"NewBottle",
-			makeNewBottleTabs,
+			makeBottles,
 			true,
 		},
 	}
