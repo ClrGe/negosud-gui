@@ -32,6 +32,7 @@ var StorageLocationColumns = []rtable.ColAttr{
 	{ColName: "ID", Header: "ID", WidthPercent: 50},
 	{ColName: "Name", Header: "Nom", WidthPercent: 90},
 	{ColName: "CreatedBy", Header: "Crée par", WidthPercent: 50},
+	{ColName: "CreatedAt", Header: "Crée le", WidthPercent: 50},
 }
 
 // displayAndUpdateStorageLocations implements a dynamic table bound to an editing form
@@ -45,7 +46,7 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 	yPos = 200
 	heightFields = 50
 
-	// DETAILS PRODUCER
+	// DETAILS STORAGELOCATION
 	// declare elements (empty or hidden until an identifier in the table gets clicked on)
 	instructions := widget.NewLabelWithStyle("Cliquez sur un identifiant dans le tableau pour afficher les détails", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
 	instructions.Resize(fyne.NewSize(widthForm, heightFields))
@@ -115,13 +116,23 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 			return
 		}
 		//Handle non-header row clicked
-		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
-		if err != nil {
-			fmt.Println(err.Error())
-			log(true, source, err.Error())
-			return
+		var identifier string
+		var err error
+		if cell.Col == 0 {
+			identifier, err = rtable.GetStrCellValue(cell, tableOptions)
+			if err != nil {
+				fmt.Println(err.Error())
+				log(true, source, err.Error())
+				return
+			}
 		} else {
-			table.Select(widget.TableCellID{cell.Row, 0})
+			identifier, err = rtable.GetStrCellValue(widget.TableCellID{cell.Row, 0}, tableOptions)
+			if err != nil {
+				fmt.Println(err.Error())
+				log(true, source, err.Error())
+				return
+			}
+			//table.Select(widget.TableCellID{cell.Row, 0})
 		}
 
 		// Printout body cells

@@ -146,7 +146,11 @@ type StorageLocation struct {
 
 // PartialStorageLocation holds only the necessary data for the table (= needs string only)
 type PartialStorageLocation struct {
-	Id   int `json:"id"`
-	ID   string
-	Name string `json:"name"`
+	Id        int `json:"id"`
+	ID        string
+	Name      string `json:"name"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+	UpdatedBy string `json:"updatedBy"`
 }
