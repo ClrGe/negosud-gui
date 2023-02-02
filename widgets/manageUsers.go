@@ -4,25 +4,19 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"negosud-gui/data"
+	"strconv"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
-	"negosud-gui/data"
 )
 
 var BindUser []binding.DataMap
 
-// makeUsersTabs function creates a new set of tabs
-func makeUsersTabs(_ fyne.Window) fyne.CanvasObject {
-	tabs := container.NewAppTabs(
-		container.NewTabItem("Liste des utilisateurs", displayUsers(nil)),
-		container.NewTabItem("Ajouter un utilisateur", addUserForm(nil)),
-	)
-	return container.NewBorder(nil, nil, nil, nil, tabs)
-}
+var UserTableRefreshMethod func()
 
 // UsersColumns defines the header row for the table
 var UsersColumns = []rtable.ColAttr{
@@ -32,35 +26,58 @@ var UsersColumns = []rtable.ColAttr{
 	{ColName: "Role", Header: "Rôle", WidthPercent: 120},
 }
 
+// makeUsersPage function creates a new set of tabs
+func makeUsersPage(_ fyne.Window) fyne.CanvasObject {
+	userListTab := container.NewTabItem("Liste des utilisateurs", displayUsers(nil))
+	tabs := container.NewAppTabs(
+		userListTab,
+		container.NewTabItem("Ajouter un utilisateur", addUserForm(nil)),
+	)
+	tabs.OnSelected = func(ti *container.TabItem) {
+		if ti == userListTab {
+			UserTableRefreshMethod()
+		}
+	}
+	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
+
+func getUsers() {
+	//retrieve structs from data package
+	BindUser = nil
+	Users := data.Users
+	source := "WIDGETS.USERS "
+	response := data.AuthGetRequest("User")
+
+	if err := json.NewDecoder(response).Decode(&Users); err != nil {
+		log(true, source, err.Error())
+		fmt.Println(err)
+	}
+
+	for i := 0; i < len(Users); i++ {
+		Users[i].ID = strconv.Itoa(Users[i].Id)
+		BindUser = append(BindUser, binding.BindStruct(&Users[i]))
+	}
+}
+
 func displayUsers(_ fyne.Window) fyne.CanvasObject {
-	// retrieve structs from data package
-	//UsersList := data.UsersList
-	//source := "WIDGETS.USERS "
-	//response := data.AuthGetRequest("users")
-	//
-	//if err := json.NewDecoder(response).Decode(&UsersList); err != nil {
-	//	log(true, source, err.Error())
-	//	fmt.Println(err)
-	//}
-	//
-	//for i := 0; i < len(UsersList); i++ {
-	//	t := UsersList[i]
-	//	id := strconv.Itoa(t.Id)
-	//	UsersList[i].ID = id
-	//	BindUser = append(BindUser, binding.BindStruct(&UsersList[i]))
-	//}
-	tableOptions := &rtable.TableOptions{
+	getUsers()
+	userTableOptions := &rtable.TableOptions{
 		RefWidth: "========================================",
 		ColAttrs: UsersColumns,
 		Bindings: BindUser,
 	}
-	table := rtable.CreateTable(tableOptions)
-	return table
+	userTable := rtable.CreateTable(userTableOptions)
+	UserTableRefreshMethod = func() {
+		getUsers()
+		userTableOptions.Bindings = BindUser
+		userTable.Refresh()
+	}
+	return userTable
 }
 
 // addUserForm to add an authorized user
 func addUserForm(_ fyne.Window) fyne.CanvasObject {
-
+	source := "WIDGETS.USERS "
 	nameLabel := widget.NewLabelWithStyle("Nom", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
 	name := widget.NewEntry()
 	name.SetPlaceHolder("Jean Bon")
@@ -88,22 +105,29 @@ func addUserForm(_ fyne.Window) fyne.CanvasObject {
 		},
 		OnSubmit: func() {
 			user := &data.User{
-				Name:     name.Text,
-				Email:    emailInput.Text,
-				Password: passwordInput.Text,
-				Role:     roleUser.Text,
+				FirstName: name.Text,
+				Email:     emailInput.Text,
+				Password:  passwordInput.Text,
+				//Role:     roleUser.Text,
 			}
 			// convert struct to json
 			jsonValue, err := json.Marshal(user)
 			if err != nil {
+				log(true, source, err.Error())
 				fmt.Println(err)
+				return
 			}
-			// send json to api
-			postData := data.AuthPostRequest("users", bytes.NewBuffer(jsonValue))
+			fmt.Print(bytes.NewBuffer(jsonValue))
+			// Send data to API
+			postData := data.AuthPostRequest("User/AddUser", bytes.NewBuffer(jsonValue))
 			if postData != 201|200 {
+				log(true, source, "Error on user creation"+string(jsonValue))
 				fmt.Println("Error on user creation")
+				return
 			}
 			fmt.Println("User created")
+			// Refresh after add
+			//UserRefreshMethod()
 		},
 		SubmitText: "Envoyer",
 		CancelText: "",
