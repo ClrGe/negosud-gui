@@ -50,7 +50,8 @@ var (
 		},
 		"orders_tab": {"Commandes",
 			makeOrdersTabs,
-			true},
+			true,
+		},
 		"orders_producers": {"Commandes fournisseurs",
 			makeOrdersTabs,
 			true,
@@ -84,10 +85,14 @@ var (
 			makeStatsTabs,
 			true,
 		},
+		"new_bottle_tab": {"NewBottle",
+			makeNewBottleTabs,
+			true,
+		},
 	}
 
 	ComponentIndex = map[string][]string{
-		"":            {"home", "producers_management", "bottles_management", "orders_tab", "admin_tab", "support_tab"},
+		"":            {"home", "producers_management", "bottles_management", "orders_tab", "admin_tab", "support_tab", "new_bottle_tab"},
 		"support_tab": {"faq_tab", "contact_tab"},
 		"orders_tab":  {"orders_producers", "orders_customers"},
 		"admin_tab":   {"users_management", "documents_tab", "statistics_tab", "website_management"},

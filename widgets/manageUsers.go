@@ -34,20 +34,20 @@ var UsersColumns = []rtable.ColAttr{
 
 func displayUsers(_ fyne.Window) fyne.CanvasObject {
 	// retrieve structs from data package
-	//Users := data.Users
+	//UsersList := data.UsersList
 	//source := "WIDGETS.USERS "
 	//response := data.AuthGetRequest("users")
 	//
-	//if err := json.NewDecoder(response).Decode(&Users); err != nil {
+	//if err := json.NewDecoder(response).Decode(&UsersList); err != nil {
 	//	log(true, source, err.Error())
 	//	fmt.Println(err)
 	//}
 	//
-	//for i := 0; i < len(Users); i++ {
-	//	t := Users[i]
+	//for i := 0; i < len(UsersList); i++ {
+	//	t := UsersList[i]
 	//	id := strconv.Itoa(t.Id)
-	//	Users[i].ID = id
-	//	BindUser = append(BindUser, binding.BindStruct(&Users[i]))
+	//	UsersList[i].ID = id
+	//	BindUser = append(BindUser, binding.BindStruct(&UsersList[i]))
 	//}
 	tableOptions := &rtable.TableOptions{
 		RefWidth: "========================================",

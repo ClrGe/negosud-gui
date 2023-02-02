@@ -8,7 +8,7 @@ import (
 // ################## USERS ###################
 // ############################################
 
-var Users []User
+var UsersList []User
 
 // User struct holds information about a user
 type User struct {
@@ -54,7 +54,6 @@ type PartialProducer struct {
 
 var BottleData []PartialBottle
 var IndBottle Bottle
-var Bottles []Bottle
 
 // Bottle struct holds information about a bottle of wine.
 type Bottle struct {
@@ -65,8 +64,8 @@ type Bottle struct {
 	Volume            int         `json:"volume"`
 	Picture           string      `json:"picture"`
 	YearProduced      int         `json:"yearProduced"`
-	AlcoholPercentage int         `json:"alcoholPercentage"`
-	CurrentPrice      int         `json:"currentPrice"`
+	AlcoholPercentage float32     `json:"alcoholPercentage"`
+	CurrentPrice      float32     `json:"currentPrice"`
 	CreatedAt         time.Time   `json:"createdAt"`
 	UpdatedAt         time.Time   `json:"updatedAt"`
 	CreatedBy         string      `json:"createdBy"`

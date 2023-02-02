@@ -21,9 +21,9 @@ func main() {
 	negosudLogo, _ := fyne.LoadResourceFromPath("media/logo.png")
 
 	w.SetIcon(negosudLogo)
-
 	w.SetContent(content)
-	w.SetFullScreen(true)
+	w.CenterOnScreen()
+	w.SetMaster()
 
 	w.ShowAndRun()
 }
