@@ -51,7 +51,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 	// retrieve structs from data package
 	Individual := data.IndBottle
 	BottleData := data.BottleData
-	storageLocationForm := data.UniqueStorageLocation
+	storageLocationForm := data.IndStorageLocation
 
 	var identifier string
 	var yPos, heightFields, widthForm float32
@@ -260,15 +260,15 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 				UpdatedBy:         who,
 				CurrentPrice:      float32(price),
 			}
-			quantity, _ := strconv.ParseInt(quantityBottle.Text, 10, 0)
-			storageLocation := &data.StorageLocation{
-				Name:                   storageLocationData.Text,
-				CreatedAt:              nil,
-				UpdatedAt:              nil,
-				CreatedBy:              "",
-				UpdatedBy:              "",
-				BottleStorageLocations: nil,
-			}
+			//quantity, _ := strconv.ParseInt(quantityBottle.Text, 10, 0)
+			//storageLocation := &data.StorageLocation{
+			//	Name:                   storageLocationData.Text,
+			//	CreatedAt:              nil,
+			//	UpdatedAt:              nil,
+			//	CreatedBy:              "",
+			//	UpdatedBy:              "",
+			//	BottleStorageLocations: nil,
+			//}
 			// Convert to JSON
 			jsonValue, err := json.Marshal(bottle)
 			if err != nil {
@@ -395,7 +395,7 @@ func displayTestInventory(_ fyne.Window) fyne.CanvasObject {
 
 func getAllLocationName() []data.PartialStorageLocation {
 	var source = "WIDGETS Test bottle Get Locations "
-	storageLocationData := data.StorageLocationData
+	storageLocationData := data.StorageLocationsData
 	response := data.AuthGetRequest("StorageLocation")
 	if response == nil {
 		fmt.Println("No result returned")
