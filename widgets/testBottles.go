@@ -247,35 +247,44 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			price, _ := strconv.ParseFloat(priceBottle.Text, 32)
 			who, _ := os.Hostname()
 			timeOfCreationOrUpdate, _ := time.Parse("2023-01-27T22:48:02.646Z", time.Now().String())
-			bottle := &data.Bottle{
-				FullName:          nameBottle.Text,
-				Description:       detailsBottle.Text,
-				WineType:          wineTypeBottle.Text,
-				Volume:            int(volume),
-				AlcoholPercentage: float32(alcohol),
-				CreatedAt:         timeOfCreationOrUpdate,
-				UpdatedAt:         timeOfCreationOrUpdate,
-				YearProduced:      int(year),
-				CreatedBy:         who,
-				UpdatedBy:         who,
-				CurrentPrice:      float32(price),
+
+			quantity, _ := strconv.ParseInt(quantityBottle.Text, 10, 0)
+
+			bottleStorageLocation := make([]data.BottleStorageLocation, 0)
+			storageLocation := data.IndStorageLocation
+
+			for i := 0; i < 1; i++ {
+				storageLocation.Name = storageLocationData.Text
+				dataToSent := data.BottleStorageLocation{
+					StorageLocation: storageLocation,
+					Quantity:        int(quantity),
+				}
+				bottleStorageLocation = append(bottleStorageLocation, dataToSent)
 			}
-			//quantity, _ := strconv.ParseInt(quantityBottle.Text, 10, 0)
-			//storageLocation := &data.StorageLocation{
-			//	Name:                   storageLocationData.Text,
-			//	CreatedAt:              nil,
-			//	UpdatedAt:              nil,
-			//	CreatedBy:              "",
-			//	UpdatedBy:              "",
-			//	BottleStorageLocations: nil,
-			//}
+
+			bottle := &data.Bottle{
+				FullName:               nameBottle.Text,
+				Description:            detailsBottle.Text,
+				WineType:               wineTypeBottle.Text,
+				Volume:                 int(volume),
+				AlcoholPercentage:      float32(alcohol),
+				CreatedAt:              timeOfCreationOrUpdate,
+				UpdatedAt:              timeOfCreationOrUpdate,
+				YearProduced:           int(year),
+				CreatedBy:              who,
+				UpdatedBy:              who,
+				CurrentPrice:           float32(price),
+				BottleStorageLocations: bottleStorageLocation,
+			}
+
 			// Convert to JSON
 			jsonValue, err := json.Marshal(bottle)
 			if err != nil {
 				log(true, source, err.Error())
 				fmt.Println(err)
 			}
-			fmt.Print(bytes.NewBuffer(jsonValue))
+			jsonbuffered := bytes.NewBuffer(jsonValue)
+			fmt.Print(jsonbuffered)
 			// Send data to API
 			postData := data.AuthPostRequest("Bottle/UpdateBottle/"+identifier, bytes.NewBuffer(jsonValue))
 			if postData != 200 {
