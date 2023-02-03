@@ -51,7 +51,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 	// retrieve structs from data package
 	Individual := data.IndBottle
 	BottleData := data.BottleData
-	storageLocation := data.UniqueStorageLocation
+	storageLocationForm := data.UniqueStorageLocation
 
 	var identifier string
 	var yPos, heightFields, widthForm float32
@@ -209,7 +209,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			details := strings.Replace(Individual.Description, "\\n", "\n", -1)
 			detailsBottle.SetText(details)
 			wineTypeBottle.SetPlaceHolder(Individual.WineType)
-			storageLocationData.SetPlaceHolder(storageLocation.Name)
+			storageLocationData.SetPlaceHolder(storageLocationForm.Name)
 
 			volumeBottle.SetText(strconv.Itoa(Individual.Volume))
 			yearBottle.SetText(strconv.Itoa(Individual.YearProduced))
@@ -259,6 +259,15 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 				CreatedBy:         who,
 				UpdatedBy:         who,
 				CurrentPrice:      float32(price),
+			}
+			quantity, _ := strconv.ParseInt(quantityBottle.Text, 10, 0)
+			storageLocation := &data.StorageLocation{
+				Name:                   storageLocationData.Text,
+				CreatedAt:              nil,
+				UpdatedAt:              nil,
+				CreatedBy:              "",
+				UpdatedBy:              "",
+				BottleStorageLocations: nil,
 			}
 			// Convert to JSON
 			jsonValue, err := json.Marshal(bottle)
