@@ -45,7 +45,7 @@ var (
 			true,
 		},
 		"storageLocations_management": {"Gestion des emplacements de stock",
-			makeStorageLocationTabs,
+			makeStorageLocationPage,
 			true,
 		},
 		"producers_management": {"Gestion des producteurs",

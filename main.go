@@ -26,5 +26,7 @@ func main() {
 	w.SetContent(content)
 	//w.SetFullScreen(true)
 
+	w.CenterOnScreen()
+
 	w.ShowAndRun()
 }
