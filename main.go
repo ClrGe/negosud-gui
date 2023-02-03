@@ -25,5 +25,7 @@ func main() {
 	w.CenterOnScreen()
 	w.SetMaster()
 
+	w.CenterOnScreen()
+
 	w.ShowAndRun()
 }
