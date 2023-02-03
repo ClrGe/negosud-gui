@@ -33,7 +33,7 @@ func makeBottles(_ fyne.Window) fyne.CanvasObject {
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
 
-// BottlesColumns defines the header row for the table
+// NewBottlesColumns  defines the header row for the table
 var NewBottlesColumns = []rtable.ColAttr{
 
 	{ColName: "ID", Header: "ID", WidthPercent: 40},
@@ -103,8 +103,9 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 	productAlc.Move(fyne.NewPos(0, yPos-100))
 
 	location := getAllLocationName()
-	locationName := make([]string, len(location))
+	locationName := make([]string, 0)
 	for i := 0; i < len(location); i++ {
+		location[i].ID = strconv.Itoa(location[i].Id)
 		name := location[i].Name
 		locationName = append(locationName, name)
 	}
@@ -114,6 +115,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 	nameBottle := widget.NewEntry()
 	wineTypeBottle := widget.NewSelectEntry([]string{"Rouge", "Blanc", "Rosé", "Digestif", "Pétillant"})
 	storageLocationData := widget.NewSelectEntry(locationName)
+	quantityBottle := widget.NewEntry()
 	volumeBottle := widget.NewEntry()
 	alcoholBottle := widget.NewEntry()
 	yearBottle := widget.NewEntry()
@@ -169,16 +171,10 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			fmt.Println("*-> Column out of limits")
 			return
 		}
-		// Handle header row clicked
-		if cell.Row == 0 { // fmt.Println("-->", tblOpts.ColAttrs[cell.Col].Header)
-			// Add a row
-			BindProducer = append(BindProducer,
-				binding.BindStruct(&data.Producer{Name: "Belle Ambiance",
-					Details: "brown", CreatedBy: "170"}))
-			tableOptions.Bindings = BindProducer
-			table.Refresh()
-			return
-		}
+
+		//if cell.Row > 1 && cell.Row < len(bindingbottle) {
+		//
+		//}
 		//Handle non-header row clicked
 		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 		if err != nil {
@@ -187,6 +183,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 
 			return
 		}
+
 		// Printout body cells
 		rowBinding := tableOptions.Bindings[cell.Row-1]
 		_, err = rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
@@ -213,6 +210,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			detailsBottle.SetText(details)
 			wineTypeBottle.SetPlaceHolder(Individual.WineType)
 			storageLocationData.SetPlaceHolder(storageLocation.Name)
+
 			volumeBottle.SetText(strconv.Itoa(Individual.Volume))
 			yearBottle.SetText(strconv.Itoa(Individual.YearProduced))
 			priceBottle.SetText(fmt.Sprintf("%f", Individual.CurrentPrice))
@@ -233,6 +231,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 		Items: []*widget.FormItem{
 			{Text: "Nom", Widget: nameBottle},
 			{Text: "Emplacement", Widget: storageLocationData},
+			{Text: "Quantité", Widget: quantityBottle},
 			{Text: "Description", Widget: detailsBottle},
 			{Text: "Type", Widget: wineTypeBottle},
 			{Text: "Vol. (cL)", Widget: volumeBottle},
@@ -279,7 +278,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 		OnCancel: func() {
 			fmt.Println("Canceled")
 		},
-		SubmitText: "Envoyer",
+		SubmitText: "Mettre à jour",
 		CancelText: "Annuler",
 	}
 

@@ -189,7 +189,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 		table.Refresh()
 	}
 	table.OnSelected = func(cell widget.TableCellID) {
-		if cell.Row < 0 || cell.Row > len(BindBottle) { // 1st col is header
+		if cell.Row < 1 || cell.Row > len(BindBottle) { // 1st col is header
 			fmt.Println("*-> Row out of limits")
 			return
 		}
@@ -197,16 +197,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			fmt.Println("*-> Column out of limits")
 			return
 		}
-		// Handle header row clicked
-		if cell.Row == 0 { // fmt.Println("-->", tblOpts.ColAttrs[cell.Col].Header)
-			// Add a row
-			BindProducer = append(BindProducer,
-				binding.BindStruct(&data.Producer{Name: "Belle Ambiance",
-					Details: "brown", CreatedBy: "170"}))
-			tableOptions.Bindings = BindProducer
-			table.Refresh()
-			return
-		}
+
 		//Handle non-header row clicked
 		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 		if err != nil {

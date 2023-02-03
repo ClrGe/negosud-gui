@@ -148,5 +148,6 @@ type StorageLocation struct {
 // StorageLocation struct holds information about a bottle of wine.
 type PartialStorageLocation struct {
 	ID   string `json:"-"`
+	Id   int    `json:"id"`
 	Name string `json:"name"`
 }
