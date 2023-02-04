@@ -75,7 +75,6 @@ type Bottle struct {
 	BottleGrapes           interface{}             `json:"bottleGrapes"`
 	BottleSuppliers        interface{}             `json:"bottleSuppliers"`
 	Producer               interface{}             `json:"producer"`
-	Supplier               interface{}             `json:"supplier"`
 }
 
 // PartialBottle holds only the necessary data for the table (= needs string only)
@@ -86,14 +85,14 @@ type PartialBottle struct {
 	Volume            string
 	Alcohol           string
 	Year              string
-	FullName          string `json:"fullName"`
-	Description       string `json:"description"`
-	WineType          string `json:"wineType"`
-	VolumeInt         int    `json:"volume"`
-	Picture           string `json:"picture"`
-	YearProduced      int    `json:"yearProduced"`
-	AlcoholPercentage int    `json:"alcoholPercentage"`
-	CurrentPrice      int    `json:"currentPrice"`
+	FullName          string  `json:"fullName"`
+	Description       string  `json:"description"`
+	WineType          string  `json:"wineType"`
+	VolumeInt         int     `json:"volume"`
+	Picture           string  `json:"picture"`
+	YearProduced      int     `json:"yearProduced"`
+	AlcoholPercentage float32 `json:"alcoholPercentage"`
+	CurrentPrice      int     `json:"currentPrice"`
 }
 
 // ############################################
@@ -167,8 +166,8 @@ var BottleStorageLocationData []PartialBottleStorageLocation
 
 // BottleStorageLocation struct holds information about a user
 type BottleStorageLocation struct {
-	ID              int             `json:"id"`
-	Bottle          Bottle          `json:"Bottle"`
+	ID int `json:"id"`
+	//Bottle          Bottle          `json:"Bottle"`
 	StorageLocation StorageLocation `json:"StorageLocation"`
 	Quantity        int             `json:"Quantity"`
 	CreatedAt       interface{}     `json:"createdAt"`

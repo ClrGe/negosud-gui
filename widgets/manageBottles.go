@@ -75,13 +75,13 @@ func getBottles() bool {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
 		id := strconv.Itoa(BottleData[i].Id)
 		v := strconv.Itoa(BottleData[i].VolumeInt)
-		a := strconv.Itoa(BottleData[i].AlcoholPercentage)
+		alcoholPercentage := fmt.Sprintf("%f", BottleData[i].AlcoholPercentage)
 		p := strconv.Itoa(BottleData[i].CurrentPrice)
 		y := strconv.Itoa(BottleData[i].YearProduced)
 		BottleData[i].Price = p
 		BottleData[i].Year = y
 		BottleData[i].Volume = v
-		BottleData[i].Alcohol = a
+		BottleData[i].Alcohol = alcoholPercentage
 		BottleData[i].ID = id
 
 		// binding bottle data

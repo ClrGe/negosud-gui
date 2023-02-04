@@ -142,7 +142,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
 		id := strconv.Itoa(BottleData[i].Id)
 		volume := strconv.Itoa(BottleData[i].VolumeInt)
-		alcoholPercentage := strconv.Itoa(BottleData[i].AlcoholPercentage)
+		alcoholPercentage := fmt.Sprintf("%f", BottleData[i].AlcoholPercentage)
 		price := strconv.Itoa(BottleData[i].CurrentPrice)
 		year := strconv.Itoa(BottleData[i].YearProduced)
 		BottleData[i].Price = price
@@ -172,15 +172,10 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			return
 		}
 
-		//if cell.Row > 1 && cell.Row < len(bindingbottle) {
-		//
-		//}
-		//Handle non-header row clicked
 		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 		if err != nil {
 			fmt.Println(err.Error())
 			log(true, source, err.Error())
-
 			return
 		}
 
@@ -194,6 +189,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 		} else {
 			instructions.Hidden = true
 		}
+
 		// Prevent app crash if other row than ID is clicked
 		_, err = strconv.Atoi(identifier)
 		if err == nil {
@@ -215,14 +211,6 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			yearBottle.SetText(strconv.Itoa(Individual.YearProduced))
 			priceBottle.SetText(fmt.Sprintf("%f", Individual.CurrentPrice))
 			alcoholBottle.SetText(fmt.Sprintf("%f", Individual.AlcoholPercentage))
-			// Display details
-			productTitle.SetText("Nom: " + Individual.FullName)
-			productDesc.SetText("Description: " + details)
-			productLab.SetText("Type : " + Individual.WineType)
-			productYear.SetText("Année : " + strconv.Itoa(Individual.YearProduced))
-			productVol.SetText("Volume : " + strconv.Itoa(Individual.Volume) + " cL")
-			productPr.SetText("Prix HT : " + fmt.Sprintf("%f", Individual.CurrentPrice) + " €")
-			productAlc.SetText("Alcool : " + fmt.Sprintf("%f", Individual.AlcoholPercentage) + " %")
 		}
 	}
 
@@ -255,6 +243,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 
 			for i := 0; i < 1; i++ {
 				storageLocation.Name = storageLocationData.Text
+				storageLocation.ID =
 				dataToSent := data.BottleStorageLocation{
 					StorageLocation: storageLocation,
 					Quantity:        int(quantity),
@@ -263,6 +252,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			}
 
 			bottle := &data.Bottle{
+				ID:                     Individual.ID,
 				FullName:               nameBottle.Text,
 				Description:            detailsBottle.Text,
 				WineType:               wineTypeBottle.Text,
@@ -290,8 +280,9 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			if postData != 200 {
 				message := "Error on bottle " + identifier + " update " + " StatusCode " + strconv.Itoa(postData)
 				log(true, source, message)
+			} else if postData == 200 {
+				fmt.Println("Bottle updated")
 			}
-			fmt.Println("Bottle updated")
 		},
 		OnCancel: func() {
 			fmt.Println("Canceled")
@@ -361,7 +352,7 @@ func addNewTestBottle(_ fyne.Window) fyne.CanvasObject {
 					FullName:          nameBottle.Text,
 					WineType:          typeBottle.Text,
 					YearProduced:      year,
-					AlcoholPercentage: alcohol,
+					AlcoholPercentage: float32(alcohol),
 					CurrentPrice:      price,
 					Description:       descriptionBottle.Text,
 				}
