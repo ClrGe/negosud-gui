@@ -35,7 +35,6 @@ func makeBottles(_ fyne.Window) fyne.CanvasObject {
 
 // NewBottlesColumns  defines the header row for the table
 var NewBottlesColumns = []rtable.ColAttr{
-
 	{ColName: "ID", Header: "ID", WidthPercent: 40},
 	{ColName: "FullName", Header: "Nom", WidthPercent: 80},
 	{ColName: "WineType", Header: "Type", WidthPercent: 30},
@@ -104,9 +103,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 
 	location := getAllLocationName()
 	locationName := make([]string, 0)
-	for i := 0; i < len(location); i++ {
-		location[i].ID = strconv.Itoa(location[i].Id)
-		name := location[i].Name
+	for name := range location {
 		locationName = append(locationName, name)
 	}
 
@@ -143,7 +140,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 		id := strconv.Itoa(BottleData[i].Id)
 		volume := strconv.Itoa(BottleData[i].VolumeInt)
 		alcoholPercentage := fmt.Sprintf("%f", BottleData[i].AlcoholPercentage)
-		price := strconv.Itoa(BottleData[i].CurrentPrice)
+		price := fmt.Sprintf("%f", BottleData[i].CurrentPrice)
 		year := strconv.Itoa(BottleData[i].YearProduced)
 		BottleData[i].Price = price
 		BottleData[i].Year = year
@@ -234,7 +231,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			year, _ := strconv.ParseInt(yearBottle.Text, 10, 0)
 			price, _ := strconv.ParseFloat(priceBottle.Text, 32)
 			who, _ := os.Hostname()
-			timeOfCreationOrUpdate, _ := time.Parse("2023-01-27T22:48:02.646Z", time.Now().String())
+			timeOfCreationOrUpdate, _ := time.Parse("2006-01-02 15:04:05", time.Now().String())
 
 			quantity, _ := strconv.ParseInt(quantityBottle.Text, 10, 0)
 
@@ -243,7 +240,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 
 			for i := 0; i < 1; i++ {
 				storageLocation.Name = storageLocationData.Text
-				storageLocation.ID =
+				storageLocation.ID = location[storageLocationData.Text]
 				dataToSent := data.BottleStorageLocation{
 					StorageLocation: storageLocation,
 					Quantity:        int(quantity),
@@ -353,7 +350,7 @@ func addNewTestBottle(_ fyne.Window) fyne.CanvasObject {
 					WineType:          typeBottle.Text,
 					YearProduced:      year,
 					AlcoholPercentage: float32(alcohol),
-					CurrentPrice:      price,
+					CurrentPrice:      float32(price),
 					Description:       descriptionBottle.Text,
 				}
 				// encode the value as JSON and send it to the API.
@@ -393,7 +390,7 @@ func displayTestInventory(_ fyne.Window) fyne.CanvasObject {
 	))
 }
 
-func getAllLocationName() []data.PartialStorageLocation {
+func getAllLocationName() map[string]int {
 	var source = "WIDGETS Test bottle Get Locations "
 	storageLocationData := data.StorageLocationsData
 	response := data.AuthGetRequest("StorageLocation")
@@ -406,5 +403,10 @@ func getAllLocationName() []data.PartialStorageLocation {
 		log(true, source, err.Error())
 		return nil
 	}
-	return storageLocationData
+
+	LocationNameIdMap := make(map[string]int)
+	for _, v := range storageLocationData {
+		LocationNameIdMap[v.Name] = v.Id
+	}
+	return LocationNameIdMap
 }

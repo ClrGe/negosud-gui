@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"negosud-gui/data"
-	"strconv"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/data/binding"
 	"fyne.io/fyne/v2/data/validation"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
+	"negosud-gui/data"
+	"strconv"
 )
 
 var BindUser []binding.DataMap

@@ -76,7 +76,7 @@ func getBottles() bool {
 		id := strconv.Itoa(BottleData[i].Id)
 		v := strconv.Itoa(BottleData[i].VolumeInt)
 		alcoholPercentage := fmt.Sprintf("%f", BottleData[i].AlcoholPercentage)
-		p := strconv.Itoa(BottleData[i].CurrentPrice)
+		p := fmt.Sprintf("%f", BottleData[i].CurrentPrice)
 		y := strconv.Itoa(BottleData[i].YearProduced)
 		BottleData[i].Price = p
 		BottleData[i].Year = y
@@ -264,7 +264,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			year, _ := strconv.ParseInt(yearBottle.Text, 10, 0)
 			pr, _ := strconv.ParseInt(priceBottle.Text, 10, 0)
 			who, _ := os.Hostname()
-			t, _ := time.Parse("2023-01-27T22:48:02.646Z", time.Now().String())
+			t, _ := time.Parse("2006-01-02 15:04:05", time.Now().String())
 			bottle := &data.Bottle{
 				ID:                Bottle.ID,
 				FullName:          nameBottle.Text,

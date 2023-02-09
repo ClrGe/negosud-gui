@@ -92,7 +92,7 @@ type PartialBottle struct {
 	Picture           string  `json:"picture"`
 	YearProduced      int     `json:"yearProduced"`
 	AlcoholPercentage float32 `json:"alcoholPercentage"`
-	CurrentPrice      int     `json:"currentPrice"`
+	CurrentPrice      float32 `json:"currentPrice"`
 }
 
 // ############################################
@@ -166,8 +166,8 @@ var BottleStorageLocationData []PartialBottleStorageLocation
 
 // BottleStorageLocation struct holds information about a user
 type BottleStorageLocation struct {
-	ID int `json:"id"`
-	//Bottle          Bottle          `json:"Bottle"`
+	ID              int             `json:"id"`
+	Bottle          Bottle          `json:"Bottle"`
 	StorageLocation StorageLocation `json:"StorageLocation"`
 	Quantity        int             `json:"Quantity"`
 	CreatedAt       interface{}     `json:"createdAt"`
