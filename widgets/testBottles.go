@@ -19,19 +19,8 @@ import (
 	"time"
 )
 
-var bindingbottle []binding.DataMap
-
-// makeBottles creates a new set of tabs for bottles management
-func makeBottles(_ fyne.Window) fyne.CanvasObject {
-	tabs := container.NewAppTabs(
-		container.NewTabItem("Liste des produits", displayAndUpdateNewBottle(nil)),
-		container.NewTabItem("Ajouter un produit", addNewTestBottle(nil)),
-		container.NewTabItem("En stock", displayTestStock(nil)),
-		container.NewTabItem("En rupture de stock", displayTestInventory(nil)),
-		container.NewTabItem("Historique des inventaires", displayTestInventory(nil)),
-	)
-	return container.NewBorder(nil, nil, nil, nil, tabs)
-}
+var bindingBottle []binding.DataMap
+var source = "WIDGETS.BOTTLE "
 
 // NewBottlesColumns  defines the header row for the table
 var NewBottlesColumns = []rtable.ColAttr{
@@ -42,30 +31,32 @@ var NewBottlesColumns = []rtable.ColAttr{
 	{ColName: "quantity", Header: "Quantité", WidthPercent: 50},
 	{ColName: "Location", Header: "Emplacement", WidthPercent: 50},
 }
+var identifier string
+
+// makeBottleTabs creates a new set of tabs for bottles management
+func makeBottleTabs(_ fyne.Window) fyne.CanvasObject {
+	tabs := container.NewAppTabs(
+		container.NewTabItem("Liste des produits", displayAndUpdateNewBottle(nil)),
+		container.NewTabItem("Ajouter un produit", addNewTestBottle(nil)),
+		container.NewTabItem("En stock", displayTestStock(nil)),
+		container.NewTabItem("En rupture de stock", displayTestInventory(nil)),
+		container.NewTabItem("Historique des inventaires", displayTestInventory(nil)),
+	)
+	return container.NewBorder(nil, nil, nil, nil, tabs)
+}
 
 // displayAndUpdateNewBottle implements a dynamic table bound to an editing form
 func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
-	var source = "WIDGETS.BOTTLE "
 
 	// retrieve structs from data package
-	Individual := data.IndBottle
-	BottleData := data.BottleData
+	IndividualBottle := data.IndBottle
+	BottleDataFomApi := data.Bottles
 	storageLocationForm := data.IndStorageLocation
 
-	var identifier string
-	var yPos, heightFields, widthForm float32
-
-	yPos = 180
-	heightFields = 35
-	widthForm = 600
-
-	// DETAILS PRODUCT
-	instructions := widget.NewLabelWithStyle("Cliquez sur un identifiant dans le tableau pour afficher les détails", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-	instructions.Resize(fyne.NewSize(widthForm, heightFields))
-	instructions.Move(fyne.NewPos(0, yPos-500))
-
+	// LAYOUT
 	productImg := canvas.NewImageFromFile("media/bouteille.jpeg")
 	productImg.FillMode = canvas.ImageFillContain
+
 	if fyne.CurrentDevice().IsMobile() {
 		productImg.SetMinSize(fyne.NewSize(250, 300))
 	} else {
@@ -73,55 +64,10 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 	}
 	productImg.Hidden = true
 
-	productTitle := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-	productTitle.Resize(fyne.NewSize(widthForm, heightFields))
-	productTitle.Move(fyne.NewPos(0, yPos-400))
-
-	productDesc := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-	productDesc.Resize(fyne.NewSize(widthForm, heightFields))
-	productDesc.Move(fyne.NewPos(0, yPos-350))
-
-	productLab := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-	productLab.Resize(fyne.NewSize(widthForm, heightFields))
-	productLab.Move(fyne.NewPos(0, yPos-300))
-
-	productVol := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-	productVol.Resize(fyne.NewSize(widthForm, heightFields))
-	productVol.Move(fyne.NewPos(0, yPos-250))
-
-	productYear := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-	productYear.Resize(fyne.NewSize(widthForm, heightFields))
-	productYear.Move(fyne.NewPos(0, yPos-200))
-
-	productPr := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-	productPr.Resize(fyne.NewSize(widthForm, heightFields))
-	productPr.Move(fyne.NewPos(0, yPos-150))
-
-	productAlc := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-	productAlc.Resize(fyne.NewSize(widthForm, heightFields))
-	productAlc.Move(fyne.NewPos(0, yPos-100))
-
 	location := getAllLocationName()
-	locationName := make([]string, 0)
-	for name := range location {
-		locationName = append(locationName, name)
-	}
+	locationName := GetLocationNameAsArray(location)
 
-	// UPDATE FORM
-	// declare form elements
-	nameBottle := widget.NewEntry()
-	wineTypeBottle := widget.NewSelectEntry([]string{"Rouge", "Blanc", "Rosé", "Digestif", "Pétillant"})
-	storageLocationData := widget.NewSelectEntry(locationName)
-	quantityBottle := widget.NewEntry()
-	volumeBottle := widget.NewEntry()
-	alcoholBottle := widget.NewEntry()
-	yearBottle := widget.NewEntry()
-	detailsBottle := widget.NewMultiLineEntry()
-	priceBottle := widget.NewEntry()
-	pictureBottle := widget.NewButtonWithIcon("Ajouter une image", theme.FileImageIcon(), func() { fmt.Print("Image was sent") })
-
-	deleteBtn := widget.NewButtonWithIcon("Supprimer ce produit", theme.WarningIcon(), func() { fmt.Print("Deleting producer") })
-	deleteBtn.Resize(fyne.NewSize(600, 50))
+	nameBottle, wineTypeBottle, storageLocationData, quantityBottle, volumeBottle, alcoholBottle, yearBottle, detailsBottle, priceBottle, pictureBottle := CreateUpdateFrom(locationName)
 
 	response := data.AuthGetRequest("bottle")
 	if response == nil {
@@ -130,87 +76,129 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 		data.Logger(false, source, message)
 		return widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
 	}
-	if err := json.NewDecoder(response).Decode(&BottleData); err != nil {
+	if err := json.NewDecoder(response).Decode(&BottleDataFomApi); err != nil {
 		log(true, source, err.Error())
 		fmt.Println(err)
 	}
 
-	for i := 0; i < len(BottleData); i++ {
+	BottleToDisplay := make([]data.PartialBottle, len(BottleDataFomApi))
+
+	for i := 0; i < len(BottleDataFomApi); i++ {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
-		id := strconv.Itoa(BottleData[i].Id)
-		volume := strconv.Itoa(BottleData[i].VolumeInt)
-		alcoholPercentage := fmt.Sprintf("%f", BottleData[i].AlcoholPercentage)
-		price := fmt.Sprintf("%f", BottleData[i].CurrentPrice)
-		year := strconv.Itoa(BottleData[i].YearProduced)
-		BottleData[i].Price = price
-		BottleData[i].Year = year
-		BottleData[i].Volume = volume
-		BottleData[i].Alcohol = alcoholPercentage
-		BottleData[i].ID = id
+		BottleToDisplay[i].Price = fmt.Sprintf("%f", BottleDataFomApi[i].CurrentPrice)
+		BottleToDisplay[i].FullName = BottleDataFomApi[i].FullName
+		BottleToDisplay[i].Year = strconv.Itoa(BottleDataFomApi[i].YearProduced)
+		BottleToDisplay[i].Volume = strconv.Itoa(BottleDataFomApi[i].Volume)
+		BottleToDisplay[i].Alcohol = fmt.Sprintf("%f", BottleDataFomApi[i].AlcoholPercentage)
+		BottleToDisplay[i].ID = strconv.Itoa(BottleDataFomApi[i].ID)
 
 		// binding bottle data
-		bindingbottle = append(bindingbottle, binding.BindStruct(&BottleData[i]))
+		bindingBottle = append(bindingBottle, binding.BindStruct(&BottleToDisplay[i]))
 	}
 
 	tableOptions := &rtable.TableOptions{
 		RefWidth: "========================================",
-		ColAttrs: BottlesColumns,
-		Bindings: bindingbottle,
+		ColAttrs: NewBottlesColumns,
+		Bindings: bindingBottle,
 	}
 
 	table := rtable.CreateTable(tableOptions)
 	table.OnSelected = func(cell widget.TableCellID) {
-		if cell.Row < 1 || cell.Row > len(bindingbottle) { // 1st col is header
-			fmt.Println("*-> Row out of limits")
-			return
-		}
-		if cell.Col < 0 || cell.Col >= len(BottlesColumns) {
-			fmt.Println("*-> Column out of limits")
-			return
-		}
-
-		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
-		if err != nil {
-			fmt.Println(err.Error())
-			log(true, source, err.Error())
-			return
-		}
-
-		// Printout body cells
-		rowBinding := tableOptions.Bindings[cell.Row-1]
-		_, err = rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
-		if err != nil {
-			fmt.Println(err.Error())
-			log(true, source, err.Error())
-			return
-		} else {
-			instructions.Hidden = true
-		}
-
-		// Prevent app crash if other row than ID is clicked
-		_, err = strconv.Atoi(identifier)
-		if err == nil {
-			resultApi := data.AuthGetRequest("bottle/" + identifier)
-			if err := json.NewDecoder(resultApi).Decode(&Individual); err != nil {
-				fmt.Println(err)
-				log(true, source, err.Error())
-			} else {
-				productImg.Hidden = false
-			}
-			// Fill form fields with fetched data
-			nameBottle.SetText(Individual.FullName)
-			details := strings.Replace(Individual.Description, "\\n", "\n", -1)
-			detailsBottle.SetText(details)
-			wineTypeBottle.SetPlaceHolder(Individual.WineType)
-			storageLocationData.SetPlaceHolder(storageLocationForm.Name)
-
-			volumeBottle.SetText(strconv.Itoa(Individual.Volume))
-			yearBottle.SetText(strconv.Itoa(Individual.YearProduced))
-			priceBottle.SetText(fmt.Sprintf("%f", Individual.CurrentPrice))
-			alcoholBottle.SetText(fmt.Sprintf("%f", Individual.AlcoholPercentage))
-		}
+		DisplaySelectedRow(cell, tableOptions, IndividualBottle, productImg, nameBottle, detailsBottle, wineTypeBottle, storageLocationData, storageLocationForm, volumeBottle, yearBottle, priceBottle, alcoholBottle)
 	}
 
+	updateForm := UpdateForm(nameBottle, storageLocationData, quantityBottle, detailsBottle, wineTypeBottle, volumeBottle, alcoholBottle, yearBottle, priceBottle, pictureBottle, location, IndividualBottle, identifier)
+
+	mainContainer := SetDesignOptions(updateForm, table)
+
+	return mainContainer
+}
+
+// DisplaySelectedRow Display selected row in the update form
+func DisplaySelectedRow(cell widget.TableCellID, tableOptions *rtable.TableOptions, IndividualBottle data.Bottle, productImg *canvas.Image, nameBottle *widget.Entry, detailsBottle *widget.Entry, wineTypeBottle *widget.SelectEntry, storageLocationData *widget.SelectEntry, storageLocationForm data.StorageLocation, volumeBottle *widget.Entry, yearBottle *widget.Entry, priceBottle *widget.Entry, alcoholBottle *widget.Entry) {
+	if cell.Row < 1 || cell.Row > len(bindingBottle) { // 1st col is header
+		fmt.Println("*-> Row out of limits")
+		return
+	}
+	if cell.Col < 0 || cell.Col >= len(BottlesColumns) {
+		fmt.Println("*-> Column out of limits")
+		return
+	}
+
+	identifier, err := rtable.GetStrCellValue(cell, tableOptions)
+	if err != nil {
+		fmt.Println(err.Error())
+		log(true, source, err.Error())
+		return
+	}
+
+	// Printout body cells
+	rowBinding := tableOptions.Bindings[cell.Row-1]
+	_, err = rowBinding.GetItem(tableOptions.ColAttrs[cell.Col].ColName)
+	if err != nil {
+		fmt.Println(err.Error())
+		log(true, source, err.Error())
+		return
+	}
+
+	// Prevent app crash if other row than ID is clicked
+	_, err = strconv.Atoi(identifier)
+	if err == nil {
+		resultApi := data.AuthGetRequest("bottle/" + identifier)
+		if err := json.NewDecoder(resultApi).Decode(&IndividualBottle); err != nil {
+			fmt.Println(err)
+			log(true, source, err.Error())
+		} else {
+			productImg.Hidden = false
+		}
+
+		FillUpdateForm(nameBottle, IndividualBottle, detailsBottle, wineTypeBottle, storageLocationData, storageLocationForm, volumeBottle, yearBottle, priceBottle, alcoholBottle)
+	}
+}
+
+// LAYOUT
+func SetDesignOptions(updateForm *widget.Form, table *widget.Table) *fyne.Container {
+	deleteBtn := widget.NewButtonWithIcon("Supprimer ce produit", theme.WarningIcon(), func() { fmt.Print("Deleting producer") })
+	deleteBtn.Resize(fyne.NewSize(600, 50))
+	layoutUpdateForm := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 200), updateForm))
+	layoutWithDelete := container.NewBorder(layoutUpdateForm, deleteBtn, nil, nil)
+
+	individualTabs := container.NewAppTabs(
+		container.NewTabItem("Modifier le produit", layoutWithDelete),
+	)
+	mainContainer := container.New(layout.NewGridLayout(2))
+	leftContainer := table
+	rightContainer := container.NewBorder(nil, nil, nil, nil, individualTabs)
+	mainContainer.Add(leftContainer)
+	mainContainer.Add(rightContainer)
+	return mainContainer
+}
+
+func GetLocationNameAsArray(location map[string]int) []string {
+	locationNameArray := make([]string, 0)
+	for name := range location {
+		locationNameArray = append(locationNameArray, name)
+	}
+	return locationNameArray
+}
+
+func CreateUpdateFrom(locationNameArray []string) (*widget.Entry, *widget.SelectEntry, *widget.SelectEntry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Button) {
+	// UPDATE FORM
+	// declare form elements
+	nameBottle := widget.NewEntry()
+	wineTypeBottle := widget.NewSelectEntry([]string{"Rouge", "Blanc", "Rosé", "Digestif", "Pétillant"})
+	storageLocationData := widget.NewSelectEntry(locationNameArray)
+	quantityBottle := widget.NewEntry()
+	volumeBottle := widget.NewEntry()
+	alcoholBottle := widget.NewEntry()
+	yearBottle := widget.NewEntry()
+	detailsBottle := widget.NewMultiLineEntry()
+	priceBottle := widget.NewEntry()
+	pictureBottle := widget.NewButtonWithIcon("Ajouter une image", theme.FileImageIcon(), func() { fmt.Print("Image was sent") })
+	return nameBottle, wineTypeBottle, storageLocationData, quantityBottle, volumeBottle, alcoholBottle, yearBottle, detailsBottle, priceBottle, pictureBottle
+}
+
+func UpdateForm(nameBottle *widget.Entry, storageLocationData *widget.SelectEntry, quantityBottle *widget.Entry, detailsBottle *widget.Entry, wineTypeBottle *widget.SelectEntry, volumeBottle *widget.Entry, alcoholBottle *widget.Entry, yearBottle *widget.Entry, priceBottle *widget.Entry, pictureBottle *widget.Button, location map[string]int, IndividualBottle data.Bottle, identifier string) *widget.Form {
 	updateForm := &widget.Form{
 		BaseWidget: widget.BaseWidget{},
 		Items: []*widget.FormItem{
@@ -232,9 +220,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			price, _ := strconv.ParseFloat(priceBottle.Text, 32)
 			who, _ := os.Hostname()
 			timeOfCreationOrUpdate, _ := time.Parse("2006-01-02 15:04:05", time.Now().String())
-
 			quantity, _ := strconv.ParseInt(quantityBottle.Text, 10, 0)
-
 			bottleStorageLocation := make([]data.BottleStorageLocation, 0)
 			storageLocation := data.IndStorageLocation
 
@@ -249,7 +235,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 			}
 
 			bottle := &data.Bottle{
-				ID:                     Individual.ID,
+				ID:                     IndividualBottle.ID,
 				FullName:               nameBottle.Text,
 				Description:            detailsBottle.Text,
 				WineType:               wineTypeBottle.Text,
@@ -264,22 +250,9 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 				BottleStorageLocations: bottleStorageLocation,
 			}
 
-			// Convert to JSON
-			jsonValue, err := json.Marshal(bottle)
-			if err != nil {
-				log(true, source, err.Error())
-				fmt.Println(err)
-			}
-			jsonbuffered := bytes.NewBuffer(jsonValue)
-			fmt.Print(jsonbuffered)
-			// Send data to API
-			postData := data.AuthPostRequest("Bottle/UpdateBottle/"+identifier, bytes.NewBuffer(jsonValue))
-			if postData != 200 {
-				message := "Error on bottle " + identifier + " update " + " StatusCode " + strconv.Itoa(postData)
-				log(true, source, message)
-			} else if postData == 200 {
-				fmt.Println("Bottle updated")
-			}
+			jsonValue := convertToJson(bottle)
+
+			updateBottle(identifier, jsonValue)
 		},
 		OnCancel: func() {
 			fmt.Println("Canceled")
@@ -287,27 +260,44 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 		SubmitText: "Mettre à jour",
 		CancelText: "Annuler",
 	}
+	return updateForm
+}
 
-	// LAYOUT
-	layoutUpdateForm := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 200), updateForm))
-	layoutWithDelete := container.NewBorder(layoutUpdateForm, deleteBtn, nil, nil)
+// Fill form fields with fetched data
+func FillUpdateForm(nameBottle *widget.Entry, IndividualBottle data.Bottle, detailsBottle *widget.Entry, wineTypeBottle *widget.SelectEntry, storageLocationData *widget.SelectEntry, storageLocationForm data.StorageLocation, volumeBottle *widget.Entry, yearBottle *widget.Entry, priceBottle *widget.Entry, alcoholBottle *widget.Entry) {
+	nameBottle.SetText(IndividualBottle.FullName)
+	detailsBottle.SetText(strings.Replace(IndividualBottle.Description, "\\n", "\n", -1))
+	wineTypeBottle.SetPlaceHolder(IndividualBottle.WineType)
+	storageLocationData.SetPlaceHolder(storageLocationForm.Name)
+	volumeBottle.SetText(strconv.Itoa(IndividualBottle.Volume))
+	yearBottle.SetText(strconv.Itoa(IndividualBottle.YearProduced))
+	priceBottle.SetText(fmt.Sprintf("%f", IndividualBottle.CurrentPrice))
+	alcoholBottle.SetText(fmt.Sprintf("%f", IndividualBottle.AlcoholPercentage))
+}
 
-	individualTabs := container.NewAppTabs(
-		container.NewTabItem("Modifier le produit", layoutWithDelete),
-	)
+// Send data to API
+func updateBottle(identifier string, jsonValue []byte) {
+	postData := data.AuthPostRequest("Bottle/UpdateBottle/"+identifier, bytes.NewBuffer(jsonValue))
+	if postData != 200 {
+		message := "Error on bottle " + identifier + " update " + " StatusCode " + strconv.Itoa(postData)
+		log(true, source, message)
+	} else if postData == 200 {
+		fmt.Println("Bottle updated")
+	}
+}
 
-	mainContainer := container.New(layout.NewGridLayout(2))
-	leftContainer := table
-	rightContainer := container.NewBorder(nil, nil, nil, nil, individualTabs)
-	mainContainer.Add(leftContainer)
-	mainContainer.Add(rightContainer)
-
-	return mainContainer
+// Convert to JSON
+func convertToJson(bottle *data.Bottle) []byte {
+	jsonValue, err := json.Marshal(bottle)
+	if err != nil {
+		log(true, source, err.Error())
+		fmt.Println(err)
+	}
+	return jsonValue
 }
 
 // Form to add and send a new bottle to the API endpoint (POST /api/producer)
 func addNewTestBottle(_ fyne.Window) fyne.CanvasObject {
-	var source = "WIDGETS.BOTTLE "
 
 	nameBottle := widget.NewEntry()
 	descriptionBottle := widget.NewMultiLineEntry()
@@ -391,7 +381,6 @@ func displayTestInventory(_ fyne.Window) fyne.CanvasObject {
 }
 
 func getAllLocationName() map[string]int {
-	var source = "WIDGETS Test bottle Get Locations "
 	storageLocationData := data.StorageLocationsData
 	response := data.AuthGetRequest("StorageLocation")
 	if response == nil {
