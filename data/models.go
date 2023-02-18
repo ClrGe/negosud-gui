@@ -65,17 +65,16 @@ type Bottle struct {
 	Volume                 int                     `json:"volume"`
 	Picture                string                  `json:"picture"`
 	YearProduced           int                     `json:"yearProduced"`
-	AlcoholPercentage      float32     `json:"alcoholPercentage"`
-	CurrentPrice      float32     `json:"currentPrice"`
-	CreatedAt         time.Time   `json:"createdAt"`
-	UpdatedAt         time.Time   `json:"updatedAt"`
-	CreatedBy         string      `json:"createdBy"`
-	UpdatedBy         string      `json:"updatedBy"`
+	AlcoholPercentage      float32                 `json:"alcoholPercentage"`
+	CurrentPrice           float32                 `json:"currentPrice"`
+	CreatedAt              time.Time               `json:"createdAt"`
+	UpdatedAt              time.Time               `json:"updatedAt"`
+	CreatedBy              string                  `json:"createdBy"`
+	UpdatedBy              string                  `json:"updatedBy"`
 	BottleStorageLocations []BottleStorageLocation `json:"bottleStorageLocations"`
-	BottleGrapes      interface{} `json:"bottleGrapes"`
-	BottleSuppliers   interface{} `json:"bottleSuppliers"`
-	Producer          interface{} `json:"producer"`
-	Supplier          interface{} `json:"supplier"`
+	BottleGrapes           interface{}             `json:"bottleGrapes"`
+	BottleSuppliers        interface{}             `json:"bottleSuppliers"`
+	Producer               interface{}             `json:"producer"`
 }
 
 // PartialBottle holds only the necessary data for the table (= needs string only)
@@ -86,14 +85,14 @@ type PartialBottle struct {
 	Volume            string
 	Alcohol           string
 	Year              string
-	FullName          string `json:"fullName"`
-	Description       string `json:"description"`
-	WineType          string `json:"wineType"`
-	VolumeInt         int    `json:"volume"`
-	Picture           string `json:"picture"`
-	YearProduced      int    `json:"yearProduced"`
-	AlcoholPercentage int    `json:"alcoholPercentage"`
-	CurrentPrice      int    `json:"currentPrice"`
+	FullName          string  `json:"fullName"`
+	Description       string  `json:"description"`
+	WineType          string  `json:"wineType"`
+	VolumeInt         int     `json:"volume"`
+	Picture           string  `json:"picture"`
+	YearProduced      int     `json:"yearProduced"`
+	AlcoholPercentage float32 `json:"alcoholPercentage"`
+	CurrentPrice      float32 `json:"currentPrice"`
 }
 
 // ############################################
@@ -183,6 +182,7 @@ type PartialBottleStorageLocation struct {
 	ID                  string
 	BottleName          string
 	StorageLocationName string
+	Quantity            int    `json:"Quantity"`
 	Name                string `json:"name"`
 	CreatedAt           string `json:"createdAt"`
 	UpdatedAt           string `json:"updatedAt"`

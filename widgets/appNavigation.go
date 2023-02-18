@@ -2,12 +2,11 @@ package widgets
 
 import (
 	"fmt"
-	"negosud-gui/data"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
+	"negosud-gui/data"
 )
 
 var log = data.Logger
@@ -94,7 +93,7 @@ var (
 			true,
 		},
 		"new_bottle_tab": {"NewBottle",
-			makeBottles,
+			makeBottleTabs,
 			true,
 		},
 	}
