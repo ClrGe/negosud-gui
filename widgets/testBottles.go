@@ -67,7 +67,7 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 	location := getAllLocationName()
 	locationName := GetLocationNameAsArray(location)
 
-	nameBottle, wineTypeBottle, storageLocationData, quantityBottle, volumeBottle, alcoholBottle, yearBottle, detailsBottle, priceBottle, pictureBottle := CreateUpdateFrom(locationName)
+	nameBottle, wineTypeBottle, storageLocationData, quantityBottle, volumeBottle, alcoholBottle, yearBottle, detailsBottle, priceBottle, pictureBottle := CreateUpdateForm(locationName)
 
 	response := data.AuthGetRequest("bottle")
 	if response == nil {
@@ -182,7 +182,7 @@ func GetLocationNameAsArray(location map[string]int) []string {
 	return locationNameArray
 }
 
-func CreateUpdateFrom(locationNameArray []string) (*widget.Entry, *widget.SelectEntry, *widget.SelectEntry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Button) {
+func CreateUpdateForm(locationNameArray []string) (*widget.Entry, *widget.SelectEntry, *widget.SelectEntry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Entry, *widget.Button) {
 	// UPDATE FORM
 	// declare form elements
 	nameBottle := widget.NewEntry()
