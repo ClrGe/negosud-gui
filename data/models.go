@@ -67,8 +67,8 @@ type Bottle struct {
 	YearProduced           int                     `json:"yearProduced"`
 	AlcoholPercentage      float32                 `json:"alcoholPercentage"`
 	CurrentPrice           float32                 `json:"currentPrice"`
-	CreatedAt              time.Time               `json:"createdAt"`
-	UpdatedAt              time.Time               `json:"updatedAt"`
+	CreatedAt              interface{}             `json:"createdAt"`
+	UpdatedAt              interface{}             `json:"updatedAt"`
 	CreatedBy              string                  `json:"createdBy"`
 	UpdatedBy              string                  `json:"updatedBy"`
 	BottleStorageLocations []BottleStorageLocation `json:"bottleStorageLocations"`

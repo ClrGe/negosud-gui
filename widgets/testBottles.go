@@ -85,11 +85,11 @@ func displayAndUpdateNewBottle(_ fyne.Window) fyne.CanvasObject {
 
 	for i := 0; i < len(BottleDataFomApi); i++ {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
-		BottleToDisplay[i].Price = fmt.Sprintf("%f", BottleDataFomApi[i].CurrentPrice)
+		BottleToDisplay[i].Price = fmt.Sprintf("%.2f", BottleDataFomApi[i].CurrentPrice)
 		BottleToDisplay[i].FullName = BottleDataFomApi[i].FullName
 		BottleToDisplay[i].Year = strconv.Itoa(BottleDataFomApi[i].YearProduced)
 		BottleToDisplay[i].Volume = strconv.Itoa(BottleDataFomApi[i].Volume)
-		BottleToDisplay[i].Alcohol = fmt.Sprintf("%f", BottleDataFomApi[i].AlcoholPercentage)
+		BottleToDisplay[i].Alcohol = fmt.Sprintf("%.2f", BottleDataFomApi[i].AlcoholPercentage)
 		BottleToDisplay[i].ID = strconv.Itoa(BottleDataFomApi[i].ID)
 
 		// binding bottle data
@@ -271,8 +271,8 @@ func FillUpdateForm(nameBottle *widget.Entry, IndividualBottle data.Bottle, deta
 	storageLocationData.SetPlaceHolder(storageLocationForm.Name)
 	volumeBottle.SetText(strconv.Itoa(IndividualBottle.Volume))
 	yearBottle.SetText(strconv.Itoa(IndividualBottle.YearProduced))
-	priceBottle.SetText(fmt.Sprintf("%f", IndividualBottle.CurrentPrice))
-	alcoholBottle.SetText(fmt.Sprintf("%f", IndividualBottle.AlcoholPercentage))
+	priceBottle.SetText(fmt.Sprintf("%.2f", IndividualBottle.CurrentPrice))
+	alcoholBottle.SetText(fmt.Sprintf("%.2f", IndividualBottle.AlcoholPercentage))
 }
 
 // Send data to API
