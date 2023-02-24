@@ -31,7 +31,6 @@ var NewBottlesColumns = []rtable.ColAttr{
 	{ColName: "quantity", Header: "Quantité", WidthPercent: 50},
 	{ColName: "Location", Header: "Emplacement", WidthPercent: 50},
 }
-var identifier string
 
 // makeBottleTabs creates a new set of tabs for bottles management
 func makeBottleTabs(_ fyne.Window) fyne.CanvasObject {

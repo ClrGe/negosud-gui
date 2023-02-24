@@ -10,6 +10,7 @@ import (
 )
 
 var log = data.Logger
+var identifier string
 
 // homePage with logo and message
 func homePage(_ fyne.Window) fyne.CanvasObject {
@@ -43,8 +44,16 @@ var (
 			makeUsersPage,
 			true,
 		},
-		"storageLocations_management": {"Gestion des emplacements de stock",
-			makeStorageLocationPage,
+		"storageLocations_tab": {"Gestion des emplacements de stock",
+			StorageLocation_MakePage,
+			true,
+		},
+		"storageLocations_management": {"Tous les emplacements de stock",
+			StorageLocation_MakePage,
+			true,
+		},
+		"storageLocations_management_nonEmpty": {"Emplacements non vides",
+			StorageLocation_MakePage,
 			true,
 		},
 		"producers_management": {"Gestion des producteurs",
@@ -99,10 +108,11 @@ var (
 	}
 
 	ComponentIndex = map[string][]string{
-		"":            {"home", "storageLocations_management", "producers_management", "bottles_management", "orders_tab", "admin_tab", "support_tab", "new_bottle_tab"},
-		"support_tab": {"faq_tab", "contact_tab"},
-		"orders_tab":  {"orders_producers", "orders_customers"},
-		"admin_tab":   {"users_management", "documents_tab", "statistics_tab", "website_management"},
+		"":                     {"home", "storageLocations_tab", "producers_management", "bottles_management", "orders_tab", "admin_tab", "support_tab", "new_bottle_tab"},
+		"storageLocations_tab": {"storageLocations_management"},
+		"support_tab":          {"faq_tab", "contact_tab"},
+		"orders_tab":           {"orders_producers", "orders_customers"},
+		"admin_tab":            {"users_management", "documents_tab", "statistics_tab", "website_management"},
 	}
 )
 

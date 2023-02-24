@@ -17,77 +17,125 @@ import (
 	"strconv"
 )
 
-var BindStorageLocation []binding.DataMap
-var StorageLocationTableRefreshMethod func()
-var BottleStorageLocationControls map[*controls.BottleStorageLocationItem]int
-var StorageLocationUpdateFormClearMethod func()
-var StorageLocationAddFormClearMethod func()
+type StorageLocation_Tab struct {
+	Tab *container.TabItem
 
-// makeStorageLocationPage function creates a new set of tabs
-func makeStorageLocationPage(_ fyne.Window) fyne.CanvasObject {
-	storageLocationListTab := container.NewTabItem("Liste des emplacements", displayAndUpdateStorageLocations(nil))
-	addStorageLocationTab := container.NewTabItem("Ajouter un emplacement", addNewStorageLocation(nil))
+	StorageLocation_Bind []binding.DataMap
+	Filter               func([]data.PartialStorageLocation) []data.PartialStorageLocation
+
+	StorageLocation_TableRefreshMethod    func()
+	StorageLocation_UpdateFormClearMethod func()
+}
+
+// var StorageLocation_Bind []binding.DataMap
+// var StorageLocation_TableRefreshMethod func()
+var StorageLocation_BottleStorageLocationControls map[*controls.BottleStorageLocationItem]int
+
+// var StorageLocation_UpdateFormClearMethod func()
+var StorageLocation_AddFormClearMethod func()
+
+var StorageLocationDefaultTab StorageLocation_Tab
+
+// StorageLocation_MakePage function creates a new set of tabs
+func StorageLocation_MakePage(_ fyne.Window) fyne.CanvasObject {
+
+	Tab1 := StorageLocation_Tab{}
+
+	storageLocationListTab := container.NewTabItem("Liste des emplacements", StorageLocation_DisplayAndUpdate(nil, &Tab1))
+	Tab1.Tab = storageLocationListTab
+
+	StorageLocationDefaultTab = Tab1
+
+	Tab2 := StorageLocation_Tab{}
+
+	storageLocationListTab_Filtered := container.NewTabItem("Emplacements commençant par un e", StorageLocation_DisplayAndUpdate(nil, &Tab2))
+	Tab2.Tab = storageLocationListTab_Filtered
+	Tab2.Filter = StorageLocation_Filter_BeginByE
+
+	addStorageLocationTab := container.NewTabItem("Ajouter un emplacement", StorageLocation_AddNewObject(nil))
 	tabs := container.NewAppTabs(
 		storageLocationListTab,
+		storageLocationListTab_Filtered,
 		addStorageLocationTab,
 	)
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == storageLocationListTab {
-			StorageLocationTableRefreshMethod()
-			StorageLocationUpdateFormClearMethod()
+			Tab1.StorageLocation_TableRefreshMethod()
+			Tab1.StorageLocation_UpdateFormClearMethod()
+		} else if ti == storageLocationListTab_Filtered {
+			Tab2.StorageLocation_TableRefreshMethod()
+			Tab2.StorageLocation_UpdateFormClearMethod()
 		}
 		if ti == addStorageLocationTab {
-			StorageLocationAddFormClearMethod()
-			//BottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+			StorageLocation_AddFormClearMethod()
 		}
 	}
 	return container.NewBorder(nil, nil, nil, nil, tabs)
 }
 
-func getStorageLocations() (bool, *widget.Label) {
-	var source = "WIDGETS.STORAGELOCATION.getStorageLocations() "
-	StorageLocationData := data.StorageLocationsData
+func StorageLocation_GetStorageLocations(Tab *StorageLocation_Tab) (bool, *widget.Label) {
+	var source = "WIDGETS.STORAGELOCATION.StorageLocation_GetStorageLocations() "
+	StorageLocations := data.StorageLocationsData
 	response := data.AuthGetRequest("storageLocation")
 	if response == nil {
 		fmt.Println("No result returned")
 		return false, widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
 	}
-	if err := json.NewDecoder(response).Decode(&StorageLocationData); err != nil {
+	if err := json.NewDecoder(response).Decode(&StorageLocations); err != nil {
 		fmt.Println(err)
 		log(true, source, err.Error())
 		return false, widget.NewLabel("Erreur de décodage du json")
 	}
 
 	//order datas by Id
-	sort.SliceStable(StorageLocationData, func(i, j int) bool {
-		return StorageLocationData[i].Id < StorageLocationData[j].Id
+	sort.SliceStable(StorageLocations, func(i, j int) bool {
+		return StorageLocations[i].Id < StorageLocations[j].Id
 	})
 
-	BindStorageLocation = nil
+	Tab.StorageLocation_Bind = nil
 
-	for i := 0; i < len(StorageLocationData); i++ {
+	for i := 0; i < len(StorageLocations); i++ {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
-		t := StorageLocationData[i]
+		t := StorageLocations[i]
 		id := strconv.Itoa(t.Id)
-		StorageLocationData[i].ID = id
+		StorageLocations[i].ID = id
+
+		if Tab.Filter != nil {
+			StorageLocations = Tab.Filter(StorageLocations)
+		}
 
 		// binding storageLocation data
-		BindStorageLocation = append(BindStorageLocation, binding.BindStruct(&StorageLocationData[i]))
+		Tab.StorageLocation_Bind = append(Tab.StorageLocation_Bind, binding.BindStruct(&StorageLocations[i]))
 
 	}
 
 	return true, widget.NewLabel("")
 }
 
-// displayAndUpdateStorageLocations implements a dynamic table bound to an editing form
-func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.STORAGELOCATION.displayAndUpdateStorageLocations()"
+func StorageLocation_Filter_BeginByE(StorageLocations []data.PartialStorageLocation) []data.PartialStorageLocation {
+
+	n := 0
+	for _, storageLocation := range StorageLocations {
+		if string([]rune(storageLocation.Name)[0]) == "e" {
+			StorageLocations[n] = storageLocation
+			n++
+		}
+	}
+
+	StorageLocations = StorageLocations[:n]
+
+	return StorageLocations
+}
+
+// StorageLocation_DisplayAndUpdate implements a dynamic table bound to an editing form
+func StorageLocation_DisplayAndUpdate(_ fyne.Window, Tab *StorageLocation_Tab) fyne.CanvasObject {
+	//var source = "WIDGETS.STORAGELOCATION.StorageLocation_DisplayAndUpdate()"
 
 	//region datas
 	// retrieve structs from data package
 	StorageLocation := data.IndStorageLocation
 
-	resp, label := getStorageLocations()
+	resp, label := StorageLocation_GetStorageLocations(Tab)
 	if !resp {
 		return label
 	}
@@ -105,12 +153,12 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 	tableOptions := &rtable.TableOptions{
 		RefWidth: "========================================",
 		ColAttrs: StorageLocationColumns,
-		Bindings: BindStorageLocation,
+		Bindings: Tab.StorageLocation_Bind,
 	}
 	table := rtable.CreateTable(tableOptions)
-	StorageLocationTableRefreshMethod = func() {
-		getStorageLocations()
-		tableOptions.Bindings = BindStorageLocation
+	Tab.StorageLocation_TableRefreshMethod = func() {
+		StorageLocation_GetStorageLocations(Tab)
+		tableOptions.Bindings = Tab.StorageLocation_Bind
 		table.Refresh()
 	}
 
@@ -118,32 +166,37 @@ func displayAndUpdateStorageLocations(_ fyne.Window) fyne.CanvasObject {
 
 	updateForm, entryName, gridContainerItems := StorageLocation_InitForm(bottleNames, bottleMap)
 
-	StorageLocationUpdateFormClearMethod = func() {
+	//region " design elements initialization "
+	buttonsContainer := StorageLocation_InitButtonContainer(Tab, &StorageLocation, entryName)
+	buttonsContainer.Hide()
+	mainContainer := StorageLocation_InitMainContainer(updateForm, table, buttonsContainer)
+	//endregion
+	updateForm.Hide()
+
+	Tab.StorageLocation_UpdateFormClearMethod = func() {
+		updateForm.Hide()
 		table.UnselectAll()
 		entryName.Text = ""
 		entryName.Refresh()
 		gridContainerItems.RemoveAll()
-		BottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+		StorageLocation.ID = -1
+		StorageLocation_BottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+		buttonsContainer.Hide()
 	}
 
 	//endregion
 
 	//region " table events "
 	table.OnSelected = func(cell widget.TableCellID) {
-		StorageLocation_TableOnSelected(cell, StorageLocationColumns, tableOptions, &StorageLocation, entryName, gridContainerItems, bottleNames, bottleMap, updateForm)
+		StorageLocation_TableOnSelected(Tab, cell, StorageLocationColumns, tableOptions, &StorageLocation, entryName, gridContainerItems, bottleNames, bottleMap, updateForm, buttonsContainer)
 	}
-	//endregion
-
-	//region " design elements initialization "
-	buttonsContainer := StorageLocation_InitButtonContainer(&StorageLocation, entryName)
-	mainContainer := StorageLocation_InitMainContainer(updateForm, table, buttonsContainer)
 	//endregion
 
 	return mainContainer
 }
 
-func StorageLocation_TableOnSelected(cell widget.TableCellID, StorageLocationColumns []rtable.ColAttr, tableOptions *rtable.TableOptions, StorageLocation *data.StorageLocation, entryName *widget.Entry, gridContainerItems *fyne.Container, bottleNames []string, bottleMap map[string]int, updateForm *fyne.Container) {
-	if cell.Row < 0 || cell.Row > len(BindStorageLocation) { // 1st col is header
+func StorageLocation_TableOnSelected(Tab *StorageLocation_Tab, cell widget.TableCellID, StorageLocationColumns []rtable.ColAttr, tableOptions *rtable.TableOptions, StorageLocation *data.StorageLocation, entryName *widget.Entry, gridContainerItems *fyne.Container, bottleNames []string, bottleMap map[string]int, updateForm *fyne.Container, buttonsContainer *fyne.Container) {
+	if cell.Row < 0 || cell.Row > len(Tab.StorageLocation_Bind) { // 1st col is header
 		fmt.Println("*-> Row out of limits")
 		log(true, source, "*-> Row out of limits")
 		return
@@ -198,11 +251,14 @@ func StorageLocation_TableOnSelected(cell widget.TableCellID, StorageLocationCol
 			fmt.Println(err)
 		}
 		// Fill form fields with fetched data
+		updateForm.Show()
+		buttonsContainer.Show()
+
 		entryName.SetText(StorageLocation.Name)
 
 		gridContainerItems.RemoveAll()
 
-		BottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+		StorageLocation_BottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 
 		//
 		for _, bsl := range StorageLocation.BottleStorageLocations {
@@ -211,7 +267,7 @@ func StorageLocation_TableOnSelected(cell widget.TableCellID, StorageLocationCol
 			item.SelectEntryBottle.Text = bsl.Bottle.FullName
 			item.EntryQuantity.Text = strconv.Itoa(bsl.Quantity)
 
-			BottleStorageLocationControls[item] = len(BottleStorageLocationControls) + 1
+			StorageLocation_BottleStorageLocationControls[item] = len(StorageLocation_BottleStorageLocationControls) + 1
 
 			var deleteItemBtn *widget.Button
 			deleteItemBtn = widget.NewButtonWithIcon("", theme.DeleteIcon(),
@@ -219,7 +275,7 @@ func StorageLocation_TableOnSelected(cell widget.TableCellID, StorageLocationCol
 					gridContainerItems.Remove(deleteItemBtn)
 					gridContainerItems.Remove(item.SelectEntryBottle)
 					gridContainerItems.Remove(item.EntryQuantity)
-					delete(BottleStorageLocationControls, item)
+					delete(StorageLocation_BottleStorageLocationControls, item)
 				})
 
 			gridContainerItems.Add(deleteItemBtn)
@@ -240,7 +296,6 @@ func StorageLocation_InitForm(bottleNames []string, bottleMap map[string]int) (*
 	// declare form elements
 	labelName := widget.NewLabel("Nom")
 	entryName := widget.NewEntry()
-	//entryName.Disable()
 
 	//StorageLocation's header
 	layoutControlItemName := &fyne.Container{Layout: layout.NewFormLayout()}
@@ -268,7 +323,7 @@ func StorageLocation_InitForm(bottleNames []string, bottleMap map[string]int) (*
 
 	AddItemBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(),
 		func() {
-			addItem(bottleNames, bottleMap, gridContainerItems)
+			StorageLocation_AddBottleStorageLocationControl(bottleNames, bottleMap, gridContainerItems)
 		})
 
 	updateForm.Add(layoutControlItemName)
@@ -282,7 +337,7 @@ func StorageLocation_InitForm(bottleNames []string, bottleMap map[string]int) (*
 	return updateForm, entryName, gridContainerItems
 }
 
-func StorageLocation_InitButtonContainer(StorageLocation *data.StorageLocation, entryName *widget.Entry) *fyne.Container {
+func StorageLocation_InitButtonContainer(Tab *StorageLocation_Tab, StorageLocation *data.StorageLocation, entryName *widget.Entry) *fyne.Container {
 
 	var source = "WIDGETS.STORAGELOCATION.StorageLocation_InitButtonContainer"
 
@@ -296,19 +351,21 @@ func StorageLocation_InitButtonContainer(StorageLocation *data.StorageLocation, 
 
 		bottleStorageLocations := make([]data.BottleStorageLocation, 0)
 
-		for control, _ := range BottleStorageLocationControls {
-			bottle := data.Bottle{
-				ID: control.BottleId,
+		for control, _ := range StorageLocation_BottleStorageLocationControls {
+			if control.BottleId > 0 {
+				bottle := data.Bottle{
+					ID: control.BottleId,
+				}
+
+				quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
+
+				bottleStorageLocation := data.BottleStorageLocation{
+					Bottle:   bottle,
+					Quantity: int(quantity),
+				}
+
+				bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
 			}
-
-			quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
-
-			bottleStorageLocation := data.BottleStorageLocation{
-				Bottle:   bottle,
-				Quantity: int(quantity),
-			}
-
-			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
 		}
 
 		storageLocation := &data.StorageLocation{
@@ -325,7 +382,7 @@ func StorageLocation_InitButtonContainer(StorageLocation *data.StorageLocation, 
 			return
 		}
 		fmt.Println("Success on update")
-		StorageLocationTableRefreshMethod()
+		Tab.StorageLocation_TableRefreshMethod()
 	}
 
 	deleteBtn.OnTapped = func() {
@@ -338,8 +395,8 @@ func StorageLocation_InitButtonContainer(StorageLocation *data.StorageLocation, 
 			log(true, source, message)
 			return
 		}
-		StorageLocationTableRefreshMethod()
-		StorageLocationUpdateFormClearMethod()
+		Tab.StorageLocation_TableRefreshMethod()
+		Tab.StorageLocation_UpdateFormClearMethod()
 	}
 
 	buttonsContainer := container.NewHBox(editBtn, deleteBtn)
@@ -367,7 +424,7 @@ func StorageLocation_InitMainContainer(updateForm *fyne.Container, table *widget
 }
 
 func StorageLocation_GetAndMapBottleNames() ([]string, map[string]int) {
-	bottles := getAllBottleName()
+	bottles := StorageLocation_GetAllBottleName()
 	bottleNames := make([]string, 0)
 	for i := 0; i < len(bottles); i++ {
 		bottles[i].ID = strconv.Itoa(bottles[i].Id)
@@ -388,62 +445,20 @@ func StorageLocation_GetAndMapBottleNames() ([]string, map[string]int) {
 // endregion
 
 // Form to add and send a new storageLocation to the API endpoint (POST)
-func addNewStorageLocation(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.STORAGELOCATION.addNewStorageLocation"
-	//nameLabel := widget.NewLabel("Nom")
-	//nameStorageLocation := widget.NewEntry()
-	//detailsLabel := widget.NewLabel("Description")
-	//detailsStorageLocation := widget.NewMultiLineEntry()
-	//pictureLabel := widget.NewLabel("Image")
-	//pictureStorageLocation := widget.NewButtonWithIcon("Ajouter une image", theme.FileImageIcon(), func() { fmt.Print("Image was sent") })
-	//
-	//title := widget.NewLabelWithStyle("", fyne.TextAlignCenter, fyne.TextStyle{Bold: true})
-	//
-	//form := &widget.Form{
-	//	Items: []*widget.FormItem{
-	//		{Text: "", Widget: title},
-	//		{Text: "", Widget: nameLabel},
-	//		{Text: "", Widget: nameStorageLocation},
-	//		{Text: "", Widget: detailsLabel},
-	//		{Text: "", Widget: detailsStorageLocation},
-	//		{Text: "", Widget: pictureLabel},
-	//		{Text: "", Widget: pictureStorageLocation},
-	//	},
-	//	OnSubmit: func() {
-	//		storageLocation := &data.StorageLocation{
-	//			Name: nameStorageLocation.Text,
-	//		}
-	//		// convert storageLocation struct to json
-	//		jsonValue, err := json.Marshal(&storageLocation)
-	//		if err != nil {
-	//			fmt.Println(err)
-	//			log(true, source, err.Error())
-	//			return
-	//		}
-	//		postData := data.AuthPostRequest("StorageLocation/AddStorageLocation", bytes.NewBuffer(jsonValue))
-	//		if postData != 200|201 {
-	//			message := "StatusCode " + strconv.Itoa(postData)
-	//			log(true, source, message)
-	//			fmt.Println(message)
-	//			return
-	//		}
-	//		fmt.Println("New storageLocation added with success")
-	//		StorageLocationTableRefreshMethod()
-	//	},
-	//	SubmitText: "Envoyer",
-	//}
+func StorageLocation_AddNewObject(_ fyne.Window) fyne.CanvasObject {
+	var source = "WIDGETS.STORAGELOCATION.StorageLocation_AddNewObject"
 
-	BottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+	StorageLocation_BottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 
 	bottleNames, bottleMap := StorageLocation_GetAndMapBottleNames()
 
 	addForm, entryName, gridContainerItems := StorageLocation_InitForm(bottleNames, bottleMap)
 
-	StorageLocationAddFormClearMethod = func() {
+	StorageLocation_AddFormClearMethod = func() {
 		entryName.Text = ""
 		entryName.Refresh()
 		gridContainerItems.RemoveAll()
-		BottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+		StorageLocation_BottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 	}
 
 	addBtn := widget.NewButtonWithIcon("Ajouter cet emplacement", theme.ConfirmIcon(),
@@ -452,19 +467,22 @@ func addNewStorageLocation(_ fyne.Window) fyne.CanvasObject {
 	addBtn.OnTapped = func() {
 		bottleStorageLocations := make([]data.BottleStorageLocation, 0)
 
-		for control, _ := range BottleStorageLocationControls {
-			bottle := data.Bottle{
-				ID: control.BottleId,
+		for control, _ := range StorageLocation_BottleStorageLocationControls {
+			if control.BottleId > 0 {
+
+				bottle := data.Bottle{
+					ID: control.BottleId,
+				}
+
+				quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
+
+				bottleStorageLocation := data.BottleStorageLocation{
+					Bottle:   bottle,
+					Quantity: int(quantity),
+				}
+
+				bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
 			}
-
-			quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
-
-			bottleStorageLocation := data.BottleStorageLocation{
-				Bottle:   bottle,
-				Quantity: int(quantity),
-			}
-
-			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
 		}
 
 		storageLocation := &data.StorageLocation{
@@ -480,7 +498,7 @@ func addNewStorageLocation(_ fyne.Window) fyne.CanvasObject {
 			return
 		}
 		fmt.Println("Success on update")
-		StorageLocationTableRefreshMethod()
+		StorageLocationDefaultTab.StorageLocation_TableRefreshMethod()
 	}
 
 	buttonsContainer := container.NewHBox(addBtn)
@@ -493,7 +511,7 @@ func addNewStorageLocation(_ fyne.Window) fyne.CanvasObject {
 	return mainContainer
 }
 
-func getAllBottleName() []data.PartialBottle {
+func StorageLocation_GetAllBottleName() []data.PartialBottle {
 	var source = "WIDGETS.STORAGELOCATION.GetAllBottleName"
 	bottleData := data.BottleData
 	response := data.AuthGetRequest("Bottle")
@@ -509,10 +527,10 @@ func getAllBottleName() []data.PartialBottle {
 	return bottleData
 }
 
-func addItem(bottleNames []string, bottleMap map[string]int, gridContainerItems *fyne.Container) {
+func StorageLocation_AddBottleStorageLocationControl(bottleNames []string, bottleMap map[string]int, gridContainerItems *fyne.Container) {
 	item := controls.NewBottleStorageLocationControl(bottleNames, bottleMap)
 
-	BottleStorageLocationControls[item] = len(BottleStorageLocationControls) + 1
+	StorageLocation_BottleStorageLocationControls[item] = len(StorageLocation_BottleStorageLocationControls) + 1
 
 	var deleteItemBtn *widget.Button
 	deleteItemBtn = widget.NewButtonWithIcon("", theme.DeleteIcon(),
@@ -520,7 +538,7 @@ func addItem(bottleNames []string, bottleMap map[string]int, gridContainerItems 
 			gridContainerItems.Remove(deleteItemBtn)
 			gridContainerItems.Remove(item.SelectEntryBottle)
 			gridContainerItems.Remove(item.EntryQuantity)
-			delete(BottleStorageLocationControls, item)
+			delete(StorageLocation_BottleStorageLocationControls, item)
 		})
 
 	gridContainerItems.Add(deleteItemBtn)

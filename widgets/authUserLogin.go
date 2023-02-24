@@ -36,11 +36,18 @@ func LoginForm(w fyne.Window) fyne.CanvasObject {
 			{Text: "", Widget: passwordInput},
 		},
 		OnSubmit: func() {
-			data.LoginAndSaveToken(emailInput.Text, passwordInput.Text)
+			status := data.LoginAndSaveToken(emailInput.Text, passwordInput.Text)
 
-			if data.LoginAndSaveToken(emailInput.Text, passwordInput.Text) != 200 {
-				data.Logger(false, "LOGIN ", "Failed : Incorrect email or password")
-				text.SetText("Identifiants incorrects !")
+			if status != 200 {
+
+				if status == 503 {
+					data.Logger(false, "LOGIN ", "Failed : API Service not found")
+					text.SetText("Serveur indisponible !")
+				} else {
+					data.Logger(false, "LOGIN ", "Failed : Incorrect email or password")
+					text.SetText("Identifiants incorrects !")
+				}
+
 			} else {
 				a := fyne.CurrentApp()
 				content := container.NewMax(homePage(w))

@@ -133,6 +133,7 @@ func LoginAndSaveToken(email string, password string) int {
 	if err != nil {
 		Logger(true, "LOGIN", err.Error())
 		fmt.Print(err, "Error sending request")
+		return 503
 	}
 
 	responseCode = responsePost.StatusCode
