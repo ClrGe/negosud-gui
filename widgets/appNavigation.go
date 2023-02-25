@@ -45,7 +45,7 @@ var (
 			makeUsersPage,
 			true,
 		},
-		"storageLocations_management": {"Tous les emplacements de stock",
+		"storageLocations_management": {"Gestion des emplacements de stock",
 			StorageLocation.MakePage,
 			true,
 		},
