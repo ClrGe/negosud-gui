@@ -7,7 +7,7 @@ import (
 type BottleStorageLocationItem struct {
 	BottleId          int
 	StorageLocationId int
-	SelectEntryBottle *widget.SelectEntry
+	SelectBottle      *widget.Select
 	EntryQuantity     *widget.Entry
 	BottleMap         map[string]int
 }
@@ -31,12 +31,13 @@ func (i *BottleStorageLocationItem) BindBottleId(name string) {
 func NewBottleStorageLocationControl(bottleNames []string, bottleMap map[string]int) *BottleStorageLocationItem {
 
 	i := &BottleStorageLocationItem{
-		SelectEntryBottle: widget.NewSelectEntry(bottleNames),
-		EntryQuantity:     widget.NewEntry(),
-		BottleMap:         bottleMap,
+		SelectBottle:  widget.NewSelect(bottleNames, func(s string) {}),
+		EntryQuantity: widget.NewEntry(),
+		BottleMap:     bottleMap,
 	}
 
-	i.SelectEntryBottle.OnChanged = func(name string) {
+	i.SelectBottle.PlaceHolder = " "
+	i.SelectBottle.OnChanged = func(name string) {
 		i.BindBottleId(name)
 	}
 
