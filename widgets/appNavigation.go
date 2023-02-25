@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"negosud-gui/data"
+	"negosud-gui/widgets/StorageLocation"
 )
 
 var log = data.Logger
@@ -45,7 +46,7 @@ var (
 			true,
 		},
 		"storageLocations_management": {"Tous les emplacements de stock",
-			StorageLocation_MakePage,
+			StorageLocation.MakePage,
 			true,
 		},
 		"producers_management": {"Gestion des producteurs",
