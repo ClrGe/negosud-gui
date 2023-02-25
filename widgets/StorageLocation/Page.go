@@ -80,8 +80,6 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	var Columns = []rtable.ColAttr{
 		{ColName: "ID", Header: "ID", WidthPercent: 50},
 		{ColName: "Name", Header: "Nom", WidthPercent: 90},
-		{ColName: "CreatedBy", Header: "Crée par", WidthPercent: 50},
-		{ColName: "CreatedAt", Header: "Crée le", WidthPercent: 50},
 	}
 
 	tableOptions := &rtable.TableOptions{
@@ -131,7 +129,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 
 // Form to add and send a new object to the API endpoint (POST)
 func initAddTab(_ fyne.Window) fyne.CanvasObject {
-	var source = "WIDGETS.STORAGELOCATION.initAddTab"
+	//var source = "WIDGETS.STORAGELOCATION.initAddTab"
 
 	bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 
@@ -150,40 +148,7 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 		func() {})
 
 	addBtn.OnTapped = func() {
-		bottleStorageLocations := make([]data.BottleStorageLocation, 0)
-
-		for control, _ := range bottleStorageLocationControls {
-			if control.BottleId > 0 {
-
-				bottle := data.Bottle{
-					ID: control.BottleId,
-				}
-
-				quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
-
-				bottleStorageLocation := data.BottleStorageLocation{
-					Bottle:   bottle,
-					Quantity: int(quantity),
-				}
-
-				bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
-			}
-		}
-
-		storageLocation := &data.StorageLocation{
-			Name:                   entryName.Text,
-			BottleStorageLocations: bottleStorageLocations,
-		}
-		jsonValue, _ := json.Marshal(storageLocation)
-		postData := data.AuthPostRequest("StorageLocation/AddStorageLocation", bytes.NewBuffer(jsonValue))
-		if postData != 200 {
-			fmt.Println("Error on add")
-			message := "Error on storageLocation " + identifier + " add"
-			log(true, source, message)
-			return
-		}
-		fmt.Println("Success on update")
-		tableRefreshMethod()
+		addStorageLocations(entryName.Text)
 	}
 
 	buttonsContainer := container.NewHBox(addBtn)
@@ -259,41 +224,7 @@ func initButtonContainer(StorageLocation *data.StorageLocation, entryName *widge
 
 	//region " events "
 	editBtn.OnTapped = func() {
-
-		bottleStorageLocations := make([]data.BottleStorageLocation, 0)
-
-		for control, _ := range bottleStorageLocationControls {
-			if control.BottleId > 0 {
-				bottle := data.Bottle{
-					ID: control.BottleId,
-				}
-
-				quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
-
-				bottleStorageLocation := data.BottleStorageLocation{
-					Bottle:   bottle,
-					Quantity: int(quantity),
-				}
-
-				bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
-			}
-		}
-
-		storageLocation := &data.StorageLocation{
-			ID:                     StorageLocation.ID,
-			Name:                   entryName.Text,
-			BottleStorageLocations: bottleStorageLocations,
-		}
-		jsonValue, _ := json.Marshal(storageLocation)
-		postData := data.AuthPostRequest("StorageLocation/UpdateStorageLocation", bytes.NewBuffer(jsonValue))
-		if postData != 200 {
-			fmt.Println("Error on update")
-			message := "Error on storageLocation " + identifier + " update"
-			log(true, source, message)
-			return
-		}
-		fmt.Println("Success on update")
-		tableRefreshMethod()
+		updateStorageLocation(StorageLocation, entryName.Text)
 	}
 
 	deleteBtn.OnTapped = func() {
@@ -402,6 +333,83 @@ func getStorageLocations() (bool, *widget.Label) {
 	}
 
 	return true, widget.NewLabel("")
+}
+
+func addStorageLocations(name string) {
+	var source = "WIDGETS.STORAGELOCATION.addStorageLocations"
+	bottleStorageLocations := make([]data.BottleStorageLocation, 0)
+
+	for control, _ := range bottleStorageLocationControls {
+		if control.BottleId > 0 {
+
+			bottle := data.Bottle{
+				ID: control.BottleId,
+			}
+
+			quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
+
+			bottleStorageLocation := data.BottleStorageLocation{
+				Bottle:   bottle,
+				Quantity: int(quantity),
+			}
+
+			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
+		}
+	}
+
+	storageLocation := &data.StorageLocation{
+		Name:                   name,
+		BottleStorageLocations: bottleStorageLocations,
+	}
+	jsonValue, _ := json.Marshal(storageLocation)
+	postData := data.AuthPostRequest("StorageLocation/AddStorageLocation", bytes.NewBuffer(jsonValue))
+	if postData != 201 {
+		fmt.Println("Error on add")
+		message := "Error on storageLocation " + identifier + " add"
+		log(true, source, message)
+		return
+	} else {
+		fmt.Println("Success on add")
+	}
+	tableRefreshMethod()
+}
+
+func updateStorageLocation(StorageLocation *data.StorageLocation, name string) {
+	var source = "WIDGETS.STORAGELOCATION.updateStorageLocations"
+	bottleStorageLocations := make([]data.BottleStorageLocation, 0)
+
+	for control, _ := range bottleStorageLocationControls {
+		if control.BottleId > 0 {
+			bottle := data.Bottle{
+				ID: control.BottleId,
+			}
+
+			quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
+
+			bottleStorageLocation := data.BottleStorageLocation{
+				Bottle:   bottle,
+				Quantity: int(quantity),
+			}
+
+			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
+		}
+	}
+
+	storageLocation := &data.StorageLocation{
+		ID:                     StorageLocation.ID,
+		Name:                   name,
+		BottleStorageLocations: bottleStorageLocations,
+	}
+	jsonValue, _ := json.Marshal(storageLocation)
+	postData := data.AuthPostRequest("StorageLocation/UpdateStorageLocation", bytes.NewBuffer(jsonValue))
+	if postData != 200 {
+		fmt.Println("Error on update")
+		message := "Error on storageLocation " + identifier + " update"
+		log(true, source, message)
+		return
+	}
+	fmt.Println("Success on update")
+	tableRefreshMethod()
 }
 
 // endregion " storageLocations "
