@@ -20,6 +20,18 @@ import (
 
 // region " declarations "
 
+type editForm struct {
+	form *fyne.Container
+
+	entryName          *widget.Entry
+	entryCustomerPrice *widget.Entry
+	entrySupplierPrice *widget.Entry
+
+	gridContainerItems *fyne.Container
+
+	formClear func()
+}
+
 var log = data.Logger
 var identifier string
 
@@ -29,10 +41,10 @@ var filter func([]data.PartialBottle) []data.PartialBottle
 var table *widget.Table
 var tableOptions *rtable.TableOptions
 
-var bottleStorageLocationControls map[*controls.BottleStorageLocationItem]int
+var updateForm editForm
+var addForm editForm
 
-var updateFormClearMethod func()
-var addFormClearMethod func()
+var bottleStorageLocationControls map[*controls.BottleStorageLocationItem]int
 
 // endregion " declarations "
 
@@ -50,9 +62,9 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == ListTab {
 			tableRefresh()
-			updateFormClearMethod()
+			updateForm.formClear()
 		} else if ti == addTab {
-			addFormClearMethod()
+			addForm.formClear()
 		}
 	}
 	return container.NewBorder(nil, nil, nil, nil, tabs)
@@ -94,21 +106,21 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 
 	//region UPDATE FORM
 
-	updateForm, entryName, entryCustomerPrice, entrySupplierPrice, gridContainerItems := initForm(storageLocationNames, storageLocationMap)
+	updateForm = initForm(storageLocationNames, storageLocationMap)
 
 	//region " design elements initialization "
-	buttonsContainer := initButtonContainer(&Bottle, entryName, entryCustomerPrice, entrySupplierPrice)
+	buttonsContainer := initButtonContainer(&Bottle)
 	buttonsContainer.Hide()
-	mainContainer := initMainContainer(updateForm, buttonsContainer)
+	mainContainer := initMainContainer(updateForm.form, buttonsContainer)
 	//endregion
-	updateForm.Hide()
+	updateForm.form.Hide()
 
-	updateFormClearMethod = func() {
-		updateForm.Hide()
+	updateForm.formClear = func() {
+		updateForm.form.Hide()
 		table.UnselectAll()
-		entryName.Text = ""
-		entryName.Refresh()
-		gridContainerItems.RemoveAll()
+		updateForm.entryName.Text = ""
+		updateForm.entryName.Refresh()
+		updateForm.gridContainerItems.RemoveAll()
 		Bottle.ID = -1
 		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 		buttonsContainer.Hide()
@@ -118,7 +130,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 
 	//region " table events "
 	table.OnSelected = func(cell widget.TableCellID) {
-		tableOnSelected(cell, Columns, &Bottle, entryName, entryCustomerPrice, entrySupplierPrice, gridContainerItems, storageLocationNames, storageLocationMap, updateForm, buttonsContainer)
+		tableOnSelected(cell, Columns, &Bottle, storageLocationNames, storageLocationMap, buttonsContainer)
 	}
 	//endregion
 
@@ -131,18 +143,18 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 
 	bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 
-	bottleNames, bottleMap := getAndMapStorageLocationNames()
+	storageLocationNames, storageLocationMap := getAndMapStorageLocationNames()
 
-	addForm, entryName, entryCustomerPrice, entrySupplierPrice, gridContainerItems := initForm(bottleNames, bottleMap)
+	addForm = initForm(storageLocationNames, storageLocationMap)
 
-	addFormClearMethod = func() {
-		entryName.Text = ""
-		entryName.Refresh()
-		entryCustomerPrice.Text = ""
-		entryCustomerPrice.Refresh()
-		entrySupplierPrice.Text = ""
-		entrySupplierPrice.Refresh()
-		gridContainerItems.RemoveAll()
+	addForm.formClear = func() {
+		addForm.entryName.Text = ""
+		addForm.entryName.Refresh()
+		addForm.entryCustomerPrice.Text = ""
+		addForm.entryCustomerPrice.Refresh()
+		addForm.entrySupplierPrice.Text = ""
+		addForm.entrySupplierPrice.Refresh()
+		addForm.gridContainerItems.RemoveAll()
 		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 	}
 
@@ -150,12 +162,12 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 		func() {})
 
 	addBtn.OnTapped = func() {
-		addBottles(entryName.Text, entryCustomerPrice.Text, entrySupplierPrice.Text)
+		addBottle()
 	}
 
 	buttonsContainer := container.NewHBox(addBtn)
 
-	layoutForm := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 200), addForm))
+	layoutForm := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 200), addForm.form))
 	layoutWithButtons := container.NewBorder(layoutForm, buttonsContainer, nil, nil)
 
 	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), layoutWithButtons))
@@ -215,9 +227,8 @@ func initFilterContainer() *fyne.Container {
 	return filterContainer
 }
 
-func initForm(bottleNames []string, bottleMap map[string]int) (*fyne.Container, *widget.Entry, *widget.Entry, *widget.Entry, *fyne.Container) {
-	// Region UPDATE FORM
-	updateForm := &fyne.Container{Layout: layout.NewVBoxLayout()}
+func initForm(storageLocationNames []string, storageLocationMap map[string]int) editForm {
+	form := &fyne.Container{Layout: layout.NewVBoxLayout()}
 
 	// declare form elements
 	labelName := widget.NewLabel("Nom")
@@ -263,23 +274,31 @@ func initForm(bottleNames []string, bottleMap map[string]int) (*fyne.Container, 
 
 	AddItemBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(),
 		func() {
-			addBottleStorageLocationControl(bottleNames, bottleMap, gridContainerItems)
+			addBottleStorageLocationControl(storageLocationNames, storageLocationMap, gridContainerItems)
 		})
 
-	updateForm.Add(layoutControlItemName)
-	updateForm.Add(layoutControlItemCustomerPrice)
-	updateForm.Add(layoutControlItemSupplierPrice)
-	updateForm.Add(widget.NewLabel(""))
-	updateForm.Add(widget.NewSeparator())
-	updateForm.Add(BSLListTitle)
-	updateForm.Add(gridContainerHeader)
-	updateForm.Add(gridContainerItems)
-	updateForm.Add(AddItemBtn)
+	form.Add(layoutControlItemName)
+	form.Add(layoutControlItemCustomerPrice)
+	form.Add(layoutControlItemSupplierPrice)
+	form.Add(widget.NewLabel(""))
+	form.Add(widget.NewSeparator())
+	form.Add(BSLListTitle)
+	form.Add(gridContainerHeader)
+	form.Add(gridContainerItems)
+	form.Add(AddItemBtn)
 
-	return updateForm, entryName, entryCustomerPrice, entrySupplierPrice, gridContainerItems
+	formStruct := editForm{
+		form:               form,
+		entryName:          entryName,
+		entryCustomerPrice: entryCustomerPrice,
+		entrySupplierPrice: entrySupplierPrice,
+		gridContainerItems: gridContainerItems,
+	}
+
+	return formStruct
 }
 
-func initButtonContainer(Bottle *data.Bottle, entryName *widget.Entry, entryCustomerPrice *widget.Entry, entrySupplierPrice *widget.Entry) *fyne.Container {
+func initButtonContainer(Bottle *data.Bottle) *fyne.Container {
 
 	//var source = "WIDGETS.Bottle.initButtonContainer"
 
@@ -290,7 +309,7 @@ func initButtonContainer(Bottle *data.Bottle, entryName *widget.Entry, entryCust
 
 	//region " events "
 	editBtn.OnTapped = func() {
-		updateBottle(Bottle, entryName.Text, entryCustomerPrice.Text, entrySupplierPrice.Text)
+		updateBottle(Bottle)
 	}
 
 	deleteBtn.OnTapped = func() {
@@ -350,8 +369,8 @@ func getBottles() (bool, *widget.Label) {
 	return true, widget.NewLabel("")
 }
 
-func addBottles(name string, customerPriceString string, supplierPriceString string) {
-	var source = "WIDGETS.Bottle.addBottles"
+func addBottle() {
+	var source = "WIDGETS.Bottle.addBottle"
 	bottleStorageLocations := make([]data.BottleStorageLocation, 0)
 
 	uniqueIds := make(map[int]struct{})
@@ -382,6 +401,10 @@ func addBottles(name string, customerPriceString string, supplierPriceString str
 			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
 		}
 	}
+
+	name := addForm.entryName.Text
+	customerPriceString := addForm.entryCustomerPrice.Text
+	supplierPriceString := addForm.entrySupplierPrice.Text
 
 	customerPriceString = strings.Replace(customerPriceString, ",", ".", 1)
 	supplierPriceString = strings.Replace(supplierPriceString, ",", ".", 1)
@@ -416,7 +439,7 @@ func addBottles(name string, customerPriceString string, supplierPriceString str
 	tableRefresh()
 }
 
-func updateBottle(Bottle *data.Bottle, name string, customerPriceString string, supplierPriceString string) {
+func updateBottle(Bottle *data.Bottle) {
 	var source = "WIDGETS.Bottle.updateBottles"
 	bottleStorageLocations := make([]data.BottleStorageLocation, 0)
 
@@ -436,6 +459,10 @@ func updateBottle(Bottle *data.Bottle, name string, customerPriceString string, 
 			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
 		}
 	}
+
+	name := updateForm.entryName.Text
+	customerPriceString := updateForm.entryCustomerPrice.Text
+	supplierPriceString := updateForm.entrySupplierPrice.Text
 
 	customerPriceString = strings.Replace(customerPriceString, ",", ".", 1)
 	supplierPriceString = strings.Replace(supplierPriceString, ",", ".", 1)
@@ -481,7 +508,7 @@ func deleteBottle(id int) {
 		return
 	}
 	tableRefresh()
-	updateFormClearMethod()
+	addForm.formClear()
 }
 
 // endregion " Bottles "
@@ -549,7 +576,7 @@ func beginByE(Bottles []data.PartialBottle) []data.PartialBottle {
 // region " events "
 
 // region " table "
-func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Bottle *data.Bottle, entryName *widget.Entry, entryCustomerPrice *widget.Entry, entrySupplierPrice *widget.Entry, gridContainerItems *fyne.Container, bottleNames []string, bottleMap map[string]int, updateForm *fyne.Container, buttonsContainer *fyne.Container) {
+func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Bottle *data.Bottle, storageLocationNames []string, storageLocationMap map[string]int, buttonsContainer *fyne.Container) {
 	var source = "WIDGETS.Bottle.tableOnSelected"
 	if cell.Row < 0 || cell.Row > len(bind) { // 1st col is header
 		fmt.Println("*-> Row out of limits")
@@ -606,21 +633,21 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Bottle *
 			fmt.Println(err)
 		}
 		// Fill form fields with fetched data
-		updateForm.Show()
+		updateForm.form.Show()
 		buttonsContainer.Show()
 
-		entryName.SetText(Bottle.FullName)
-		entryCustomerPrice.SetText(fmt.Sprintf("%f", Bottle.CustomerPrice))
-		entrySupplierPrice.SetText(fmt.Sprintf("%f", Bottle.SupplierPrice))
+		updateForm.entryName.SetText(Bottle.FullName)
+		updateForm.entryCustomerPrice.SetText(fmt.Sprintf("%f", Bottle.CustomerPrice))
+		updateForm.entrySupplierPrice.SetText(fmt.Sprintf("%f", Bottle.SupplierPrice))
 
-		gridContainerItems.RemoveAll()
+		updateForm.gridContainerItems.RemoveAll()
 
 		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 
 		//
 		for _, bsl := range Bottle.BottleStorageLocations {
-			item := controls.NewBottleStorageLocationControl(bottleNames, bottleMap)
-			item.Bind(bsl.Bottle.ID, bsl.Bottle.ID)
+			item := controls.NewBottleStorageLocationControl(storageLocationNames, storageLocationMap)
+			item.Bind(bsl.StorageLocation.ID, bsl.StorageLocation.ID)
 			item.SelectStorageLocation.Selected = bsl.StorageLocation.Name
 			item.EntryQuantity.Text = strconv.Itoa(bsl.Quantity)
 
@@ -629,17 +656,17 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Bottle *
 			var deleteItemBtn *widget.Button
 			deleteItemBtn = widget.NewButtonWithIcon("", theme.DeleteIcon(),
 				func() {
-					gridContainerItems.Remove(deleteItemBtn)
-					gridContainerItems.Remove(item.SelectStorageLocation)
-					gridContainerItems.Remove(item.EntryQuantity)
+					updateForm.gridContainerItems.Remove(deleteItemBtn)
+					updateForm.gridContainerItems.Remove(item.SelectStorageLocation)
+					updateForm.gridContainerItems.Remove(item.EntryQuantity)
 					delete(bottleStorageLocationControls, item)
 				})
 
-			gridContainerItems.Add(deleteItemBtn)
-			gridContainerItems.Add(item.SelectStorageLocation)
-			gridContainerItems.Add(item.EntryQuantity)
+			updateForm.gridContainerItems.Add(deleteItemBtn)
+			updateForm.gridContainerItems.Add(item.SelectStorageLocation)
+			updateForm.gridContainerItems.Add(item.EntryQuantity)
 		}
-		updateForm.Refresh()
+		updateForm.form.Refresh()
 	} else {
 		log(true, source, err.Error())
 	}
@@ -657,8 +684,8 @@ func tableRefresh() {
 
 // region " Other functions "
 
-func addBottleStorageLocationControl(bottleNames []string, bottleMap map[string]int, gridContainerItems *fyne.Container) {
-	item := controls.NewBottleStorageLocationControl(bottleNames, bottleMap)
+func addBottleStorageLocationControl(storageLocationNames []string, storageLocationMap map[string]int, gridContainerItems *fyne.Container) {
+	item := controls.NewBottleStorageLocationControl(storageLocationNames, storageLocationMap)
 
 	bottleStorageLocationControls[item] = len(bottleStorageLocationControls) + 1
 
