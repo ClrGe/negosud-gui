@@ -2,15 +2,19 @@ package widgets
 
 import (
 	"fmt"
-	"negosud-gui/data"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
+	"negosud-gui/data"
+	"negosud-gui/widgets/Bottle"
+	"negosud-gui/widgets/StorageLocation"
 )
 
 var log = data.Logger
+var identifier string
 
 // homePage with logo and message
 func homePage(_ fyne.Window) fyne.CanvasObject {
@@ -32,6 +36,7 @@ type Component struct {
 	Title      string
 	View       func(w fyne.Window) fyne.CanvasObject
 	SupportWeb bool
+	Icon       fyne.Resource
 }
 
 var (
@@ -39,62 +44,89 @@ var (
 		"home": {"Accueil",
 			homePage,
 			true,
+			theme.HomeIcon(),
 		},
 		"users_management": {"Gestion des utilisateurs",
 			makeUsersPage,
 			true,
+			theme.AccountIcon(),
+		},
+		"storageLocations_management": {"Gestion des emplacements de stock",
+			StorageLocation.MakePage,
+			true,
+			theme.StorageIcon(),
 		},
 		"producers_management": {"Gestion des producteurs",
 			makeProducerPage,
 			true,
+			theme.FolderOpenIcon(),
 		},
 		"bottles_management": {"Gestion des produits",
-			makeBottlesPage,
+			Bottle.MakePage,
 			true,
+			theme.FolderOpenIcon(),
 		},
 		"orders_tab": {"Commandes",
 			makeOrdersTabs,
-			true},
+			true,
+			theme.FolderIcon(),
+		},
 		"orders_producers": {"Commandes fournisseurs",
 			makeOrdersTabs,
 			true,
+			theme.DownloadIcon(),
 		},
 		"orders_customers": {"Commandes clients",
 			makeCusOrdersTabs,
 			true,
+			theme.DownloadIcon(),
 		},
-		"website_management": {"Site e-commerce",
-			makeWebsiteTabs,
-			true},
+		//"website_management": {"Site e-commerce",
+		//	makeWebsiteTabs,
+		//	true},
 		"support_tab": {"Support",
 			displayFAQ,
 			true,
+			theme.InfoIcon(),
 		},
+
 		"faq_tab": {"FAQ",
 			displayFAQ,
-			true},
+			true,
+			theme.QuestionIcon(),
+		},
 		"contact_tab": {"Demander de l'aide",
 			contactForm,
 			true,
+			theme.MailComposeIcon(),
 		},
 		"admin_tab": {"Administration",
 			makeDocumentsTabs,
 			true,
+			theme.SettingsIcon(),
 		},
 		"documents_tab": {"Documents",
 			makeDocumentsTabs,
-			true},
-		"statistics_tab": {"Statistiques",
-			makeStatsTabs,
 			true,
+			theme.DocumentIcon(),
+			//"statistics_tab": {"Statistiques",
+			//	makeStatsTabs,
+			//	true,
+			//},
+			//"new_bottle_tab": {"NewBottle",
+			//	makeBottleTabs,
+			//	true,
+			//},
 		},
 	}
 
 	ComponentIndex = map[string][]string{
-		"":            {"home", "producers_management", "bottles_management", "orders_tab", "admin_tab", "support_tab"},
+		"":            {"home", "storageLocations_management", "producers_management", "bottles_management", "orders_tab", "admin_tab", "support_tab", "new_bottle_tab"},
 		"support_tab": {"faq_tab", "contact_tab"},
 		"orders_tab":  {"orders_producers", "orders_customers"},
-		"admin_tab":   {"users_management", "documents_tab", "statistics_tab", "website_management"},
+		//"admin_tab":   {"users_management", "documents_tab", "statistics_tab", "website_management"},
+
+		"admin_tab": {"users_management", "documents_tab"},
 	}
 )
 
@@ -103,22 +135,34 @@ const currentTab = "currentTab"
 // Navigation implements the left-side navigation panel with layout defined in widgets/navigationLayout
 func Navigation(setTab func(component Component), loadPrevious bool) fyne.CanvasObject {
 	a := fyne.CurrentApp()
+
 	arborescence := &widget.Tree{
 		ChildUIDs: func(uid string) []string {
 			return ComponentIndex[uid]
 		},
 		IsBranch: func(uid string) bool {
 			children, ok := ComponentIndex[uid]
-
+			// for each branch, add icon to the left
 			return ok && len(children) > 0
 		},
 		CreateNode: func(branch bool) fyne.CanvasObject {
-			return widget.NewLabel("Nouvel onglet")
+			var icon fyne.CanvasObject
+			if branch {
+				icon = widget.NewIcon(theme.FolderIcon())
+			} else {
+				icon = widget.NewIcon(theme.DocumentIcon())
+			}
+			return fyne.NewContainerWithLayout(layout.NewHBoxLayout(), icon, widget.NewLabel("Template Object"))
 		},
-		UpdateNode: func(uid string, branch bool, obj fyne.CanvasObject) {
-			t, _ := Components[uid]
-			obj.(*widget.Label).SetText(t.Title)
-			obj.(*widget.Label).TextStyle = fyne.TextStyle{}
+		UpdateNode: func(uid string, branch bool, node fyne.CanvasObject) {
+			c := node.(*fyne.Container)
+
+			// retrieve icon from map
+			c.Objects[0].(*widget.Icon).SetResource(Components[uid].Icon)
+
+			l := c.Objects[1].(*widget.Label)
+			l.SetText(Components[uid].Title)
+
 		},
 		OnSelected: func(uid string) {
 			if t, ok := Components[uid]; ok {
@@ -127,7 +171,7 @@ func Navigation(setTab func(component Component), loadPrevious bool) fyne.Canvas
 			}
 		},
 	}
-
+	arborescence.ExtendBaseWidget(arborescence)
 	// close a when hitting button
 	disconnectUser := widget.NewButton("Déconnexion", func() {
 		fmt.Println("user disconnected")

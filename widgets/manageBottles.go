@@ -4,12 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"negosud-gui/data"
-	"os"
-	"strconv"
-	"strings"
-	"time"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/container"
@@ -18,6 +12,11 @@ import (
 	"fyne.io/fyne/v2/theme"
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
+	"negosud-gui/data"
+	"os"
+	"strconv"
+	"strings"
+	"time"
 )
 
 var BindBottle []binding.DataMap
@@ -76,13 +75,13 @@ func getBottles() bool {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
 		id := strconv.Itoa(BottleData[i].Id)
 		v := strconv.Itoa(BottleData[i].VolumeInt)
-		a := strconv.Itoa(BottleData[i].AlcoholPercentage)
-		p := strconv.Itoa(BottleData[i].CurrentPrice)
+		alcoholPercentage := fmt.Sprintf("%f", BottleData[i].AlcoholPercentage)
+		p := fmt.Sprintf("%f", BottleData[i].CurrentPrice)
 		y := strconv.Itoa(BottleData[i].YearProduced)
 		BottleData[i].Price = p
 		BottleData[i].Year = y
 		BottleData[i].Volume = v
-		BottleData[i].Alcohol = a
+		BottleData[i].Alcohol = alcoholPercentage
 		BottleData[i].ID = id
 
 		// binding bottle data
@@ -167,7 +166,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 	// declare form elements
 	nameBottle := widget.NewEntry()
 	detailsBottle := widget.NewMultiLineEntry()
-	typeBottle := widget.NewSelectEntry([]string{"Red", "White", "Rosé", "Dessert", "Sparkling"})
+	typeBottle := widget.NewSelectEntry([]string{"Rouge", "Blanc", "Rosé", "Dessert", "Pétillant"})
 	volumeBottle := widget.NewEntry()
 	alcoholBottle := widget.NewEntry()
 	yearBottle := widget.NewEntry()
@@ -190,7 +189,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 		table.Refresh()
 	}
 	table.OnSelected = func(cell widget.TableCellID) {
-		if cell.Row < 0 || cell.Row > len(BindBottle) { // 1st col is header
+		if cell.Row < 1 || cell.Row > len(BindBottle) { // 1st col is header
 			fmt.Println("*-> Row out of limits")
 			return
 		}
@@ -198,16 +197,7 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			fmt.Println("*-> Column out of limits")
 			return
 		}
-		// Handle header row clicked
-		if cell.Row == 0 { // fmt.Println("-->", tblOpts.ColAttrs[cell.Col].Header)
-			// Add a row
-			BindProducer = append(BindProducer,
-				binding.BindStruct(&data.Producer{Name: "Belle Ambiance",
-					Details: "brown", CreatedBy: "170"}))
-			tableOptions.Bindings = BindProducer
-			table.Refresh()
-			return
-		}
+
 		//Handle non-header row clicked
 		identifier, err := rtable.GetStrCellValue(cell, tableOptions)
 		if err != nil {
@@ -243,16 +233,16 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			typeBottle.SetPlaceHolder(Bottle.WineType)
 			volumeBottle.SetText(strconv.Itoa(Bottle.Volume))
 			yearBottle.SetText(strconv.Itoa(Bottle.YearProduced))
-			priceBottle.SetText(strconv.Itoa(Bottle.CurrentPrice))
-			alcoholBottle.SetText(strconv.Itoa(Bottle.AlcoholPercentage))
+			priceBottle.SetText(fmt.Sprintf("%f", Bottle.CurrentPrice))
+			alcoholBottle.SetText(fmt.Sprintf("%f", Bottle.AlcoholPercentage))
 			// Display details
 			productTitle.SetText("Nom: " + Bottle.FullName)
 			productDesc.SetText("Description: " + details)
 			productLab.SetText("Type : " + Bottle.WineType)
 			productYear.SetText("Année : " + strconv.Itoa(Bottle.YearProduced))
 			productVol.SetText("Volume : " + strconv.Itoa(Bottle.Volume) + " cL")
-			productPr.SetText("Prix HT : " + strconv.Itoa(Bottle.CurrentPrice) + " €")
-			productAlc.SetText("Alcool : " + strconv.Itoa(Bottle.AlcoholPercentage) + " %")
+			productPr.SetText("Prix HT : " + fmt.Sprintf("%f", Bottle.CurrentPrice) + " €")
+			productAlc.SetText("Alcool : " + fmt.Sprintf("%f", Bottle.AlcoholPercentage) + " %")
 		}
 	}
 
@@ -274,20 +264,20 @@ func displayAndUpdateBottle(_ fyne.Window) fyne.CanvasObject {
 			year, _ := strconv.ParseInt(yearBottle.Text, 10, 0)
 			pr, _ := strconv.ParseInt(priceBottle.Text, 10, 0)
 			who, _ := os.Hostname()
-			t, _ := time.Parse("2023-01-27T22:48:02.646Z", time.Now().String())
+			t, _ := time.Parse("2006-01-02 15:04:05", time.Now().String())
 			bottle := &data.Bottle{
 				ID:                Bottle.ID,
 				FullName:          nameBottle.Text,
 				Description:       detailsBottle.Text,
 				WineType:          typeBottle.Text,
 				Volume:            int(vol),
-				AlcoholPercentage: int(alc),
+				AlcoholPercentage: float32(alc),
 				CreatedAt:         t,
 				UpdatedAt:         t,
 				YearProduced:      int(year),
 				CreatedBy:         who,
 				UpdatedBy:         who,
-				CurrentPrice:      int(pr),
+				CurrentPrice:      float32(pr),
 			}
 			// Convert to JSON
 			jsonValue, err := json.Marshal(bottle)
@@ -384,8 +374,8 @@ func addNewBottle(_ fyne.Window) fyne.CanvasObject {
 					FullName:          nameBottle.Text,
 					WineType:          typeBottle.Text,
 					YearProduced:      year,
-					AlcoholPercentage: alcohol,
-					CurrentPrice:      price,
+					AlcoholPercentage: float32(alcohol),
+					CurrentPrice:      float32(price),
 					Volume:            volume,
 					Description:       descriptionBottle.Text,
 				}

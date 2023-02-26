@@ -19,15 +19,8 @@ func AuthGetRequest(route string) io.ReadCloser {
 		fmt.Println("Could not load config")
 	}
 	Token = env.KEY
-	var server string
 
-	if env.ENV == "dev" {
-		server = env.SERVER_DEV
-	} else {
-		server = env.SERVER_PROD
-	}
-
-	url := server + "/" + route
+	url := "http://localhost:4001/api/" + route
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -57,15 +50,8 @@ func AuthPostRequest(route string, body *bytes.Buffer) int {
 	}
 
 	Token = env.KEY
-	var server string
 
-	if env.ENV == "dev" {
-		server = env.SERVER_DEV
-	} else {
-		server = env.SERVER_PROD
-	}
-
-	url := server + "/" + route
+	url := "http://localhost:4001/api/" + route
 
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
@@ -91,24 +77,19 @@ func AuthPostRequest(route string, body *bytes.Buffer) int {
 }
 
 func LoginAndSaveToken(email string, password string) int {
-	env, err := LoadConfig(".")
-	if err != nil {
-		fmt.Print(err, "Error loading config")
-		Logger(true, "ConfigFile", err.Error())
-	}
 
 	var responseCode int
 	var token string
-	var server string
-
-	if env.ENV == "dev" {
-		server = env.SERVER_DEV
-	} else {
-		server = env.SERVER_PROD
-	}
+	//var server string
+	//
+	//if env.ENV == "dev" {
+	//	server = env.SERVER_DEV
+	//} else {
+	//	server = env.SERVER_PROD
+	//}
 
 	hostname, _ := os.Hostname()
-	url := server + "/authentication/login"
+	url := "http://localhost:4001/api/authentication/login"
 
 	userInfo := &User{
 		Email:    email,
@@ -125,6 +106,8 @@ func LoginAndSaveToken(email string, password string) int {
 	if err != nil {
 		fmt.Print(err, "Error creating request")
 	}
+
+	// define  Host in request URLerror handling
 	requestPost.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}
@@ -133,6 +116,7 @@ func LoginAndSaveToken(email string, password string) int {
 	if err != nil {
 		Logger(true, "LOGIN", err.Error())
 		fmt.Print(err, "Error sending request")
+		return 503
 	}
 
 	responseCode = responsePost.StatusCode
@@ -149,7 +133,13 @@ func LoginAndSaveToken(email string, password string) int {
 	if err != nil {
 		fmt.Print(err, "Error retrieving token from response")
 	}
-	defer responsePost.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(responsePost.Body)
+
 	SaveConfig("KEY", token)
 
 	return responseCode
