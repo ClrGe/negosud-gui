@@ -53,8 +53,8 @@ var bottleStorageLocationControls map[*controls.BottleStorageLocationItem]int
 // MakePage function creates a new set of tabs
 func MakePage(_ fyne.Window) fyne.CanvasObject {
 
-	ListTab := container.NewTabItem("Liste des bouteilles", initListTab(nil))
-	addTab := container.NewTabItem("Ajouter un bouteille", initAddTab(nil))
+	ListTab := container.NewTabItem("Liste des produits", initListTab(nil))
+	addTab := container.NewTabItem("Ajouter un produit", initAddTab(nil))
 	tabs := container.NewAppTabs(
 		ListTab,
 		addTab,
@@ -158,7 +158,7 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 	}
 
-	addBtn := widget.NewButtonWithIcon("Ajouter cette bouteille", theme.ConfirmIcon(),
+	addBtn := widget.NewButtonWithIcon("Ajouter ce produit", theme.ConfirmIcon(),
 		func() {})
 
 	addBtn.OnTapped = func() {
@@ -186,7 +186,7 @@ func initMainContainer(updateForm *fyne.Container, buttonsContainer *fyne.Contai
 
 	// Define layout
 	individualTabs := container.NewAppTabs(
-		container.NewTabItem("Modifier la bouteille", layoutWithButtons),
+		container.NewTabItem("Modifier le produit", layoutWithButtons),
 	)
 
 	filterContainer := initFilterContainer()
@@ -302,9 +302,9 @@ func initButtonContainer(Bottle *data.Bottle) *fyne.Container {
 
 	//var source = "WIDGETS.Bottle.initButtonContainer"
 
-	editBtn := widget.NewButtonWithIcon("Modifier cette bouteille", theme.ConfirmIcon(),
+	editBtn := widget.NewButtonWithIcon("Modifier ce produit", theme.ConfirmIcon(),
 		func() {})
-	deleteBtn := widget.NewButtonWithIcon("Supprimer cette bouteille", theme.WarningIcon(),
+	deleteBtn := widget.NewButtonWithIcon("Supprimer ce produit", theme.WarningIcon(),
 		func() {})
 
 	//region " events "

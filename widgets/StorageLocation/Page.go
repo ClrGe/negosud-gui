@@ -238,7 +238,7 @@ func initForm(bottleNames []string, bottleMap map[string]int) editForm {
 	//BottleStorageLocation List
 
 	// List Title
-	BSLListTitle := widget.NewLabel("Bouteilles")
+	BSLListTitle := widget.NewLabel("Produit")
 	BSLListTitle.TextStyle.Bold = true
 
 	// List headers

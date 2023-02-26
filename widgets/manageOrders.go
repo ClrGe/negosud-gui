@@ -48,7 +48,25 @@ func displayOrders(_ fyne.Window) fyne.CanvasObject {
 		message := "Request body returned empty"
 		fmt.Println(message)
 		data.Logger(false, "WIDGETS.ORDERS", message)
-		return widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
+		for i := 0; i < len(Orders); i++ {
+			id := strconv.Itoa(Orders[i].Id)
+			q := strconv.Itoa(Orders[i].QuantityInt)
+			p := strconv.Itoa(Orders[i].ProducerId)
+			b := strconv.Itoa(Orders[i].ProductId)
+			Orders[i].Product = b
+			Orders[i].Producer = p
+			Orders[i].Quantity = q
+			Orders[i].ID = id
+			BindOrder = append(BindOrder, binding.BindStruct(&Orders[i]))
+		}
+
+		tableOptions := &rtable.TableOptions{
+			RefWidth: "========================================",
+			ColAttrs: OrdersColumns,
+			Bindings: BindOrder,
+		}
+		table := rtable.CreateTable(tableOptions)
+		return table
 	}
 	if err := json.NewDecoder(response).Decode(&Orders); err != nil {
 		data.Logger(true, "WIDGETS.ORDERS", err.Error())
