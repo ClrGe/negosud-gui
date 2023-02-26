@@ -53,7 +53,7 @@ func displayFAQ(_ fyne.Window) fyne.CanvasObject {
 
 	questions := widget.NewAccordion(
 		&widget.AccordionItem{
-			Title:  "Les données des bouteilles et producteurs ne s'affichent pas. Que faire ?",
+			Title:  "Les données des produits et producteurs ne s'affichent pas. Que faire ?",
 			Detail: widget.NewLabel("Relancer l'application. Si rien ne change, utilisez le formulaire de contact de l'onglet \"Demander de l'aide\"."),
 		},
 		&widget.AccordionItem{

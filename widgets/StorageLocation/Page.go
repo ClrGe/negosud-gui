@@ -226,7 +226,7 @@ func initForm(bottleNames []string, bottleMap map[string]int) (*fyne.Container, 
 	//BottleStorageLocation List
 
 	// List Title
-	BSLListTitle := widget.NewLabel("Bouteilles")
+	BSLListTitle := widget.NewLabel("Produit")
 	BSLListTitle.TextStyle.Bold = true
 
 	// List headers
