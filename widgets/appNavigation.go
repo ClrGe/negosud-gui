@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/widget"
 	"negosud-gui/data"
+	"negosud-gui/widgets/Bottle"
 	"negosud-gui/widgets/StorageLocation"
 )
 
@@ -54,7 +55,7 @@ var (
 			true,
 		},
 		"bottles_management": {"Gestion des produits",
-			makeBottlesPage,
+			Bottle.MakePage,
 			true,
 		},
 		"orders_tab": {"Commandes",

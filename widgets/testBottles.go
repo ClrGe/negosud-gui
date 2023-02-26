@@ -380,7 +380,7 @@ func displayTestInventory(_ fyne.Window) fyne.CanvasObject {
 }
 
 func getAllLocationName() map[string]int {
-	storageLocationData := data.StorageLocationsData
+	storageLocationData := data.StorageLocationData
 	response := data.AuthGetRequest("StorageLocation")
 	if response == nil {
 		fmt.Println("No result returned")

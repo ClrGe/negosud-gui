@@ -132,7 +132,7 @@ type CustomerOrder struct {
 
 var StorageLocations []StorageLocation
 var IndStorageLocation StorageLocation
-var StorageLocationsData []PartialStorageLocation
+var StorageLocationData []PartialStorageLocation
 
 // StorageLocation struct holds information about a user
 type StorageLocation struct {
