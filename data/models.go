@@ -75,6 +75,8 @@ type Bottle struct {
 	BottleGrapes           interface{}             `json:"bottleGrapes"`
 	BottleSuppliers        interface{}             `json:"bottleSuppliers"`
 	Producer               interface{}             `json:"producer"`
+	CustomerPrice          float32                 `json:"customerPrice"`
+	SupplierPrice          float32                 `json:"supplierPrice"`
 }
 
 // PartialBottle holds only the necessary data for the table (= needs string only)
@@ -93,6 +95,8 @@ type PartialBottle struct {
 	YearProduced      int     `json:"yearProduced"`
 	AlcoholPercentage float32 `json:"alcoholPercentage"`
 	CurrentPrice      float32 `json:"currentPrice"`
+	CustomerPrice     float32 `json:"customerPrice"`
+	SupplierPrice     float32 `json:"supplierPrice"`
 }
 
 // ############################################
