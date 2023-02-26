@@ -104,11 +104,11 @@ var (
 		//	makeBottleTabs,
 		//	true,
 		//},
-		"new_bottle_tab": {"Nouveau produit",
-			makeBottleTabs,
-			true,
-			theme.ContentAddIcon(),
-		},
+		//"new_bottle_tab": {"Nouveau produit",
+		//	makeBottleTabs,
+		//	true,
+		//	theme.ContentAddIcon(),
+		//},
 	}
 
 	ComponentIndex = map[string][]string{

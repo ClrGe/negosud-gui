@@ -55,9 +55,11 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 
 	ListTab := container.NewTabItem("Liste des produits", initListTab(nil))
 	addTab := container.NewTabItem("Ajouter un produit", initAddTab(nil))
+	addMassTab := container.NewTabItem("Ajouter plusieurs produits", initAddMassTab(nil))
 	tabs := container.NewAppTabs(
 		ListTab,
 		addTab,
+		addMassTab,
 	)
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == ListTab {
@@ -139,13 +141,49 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 
 // Form to add and send a new object to the API endpoint (POST)
 func initAddTab(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.Bottle.initAddTab"
 
 	bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 
 	storageLocationNames, storageLocationMap := getAndMapStorageLocationNames()
 
 	addForm = initForm(storageLocationNames, storageLocationMap)
+
+	addForm.formClear = func() {
+		addForm.entryName.Text = ""
+		addForm.entryName.Refresh()
+		addForm.entryCustomerPrice.Text = ""
+		addForm.entryCustomerPrice.Refresh()
+		addForm.entrySupplierPrice.Text = ""
+		addForm.entrySupplierPrice.Refresh()
+		addForm.gridContainerItems.RemoveAll()
+		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+	}
+
+	addBtn := widget.NewButtonWithIcon("Ajouter ce produit", theme.ConfirmIcon(),
+		func() {})
+
+	addBtn.OnTapped = func() {
+		addBottle()
+	}
+
+	buttonsContainer := container.NewHBox(addBtn)
+
+	layoutForm := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 200), addForm.form))
+	layoutWithButtons := container.NewBorder(layoutForm, buttonsContainer, nil, nil)
+
+	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), layoutWithButtons))
+
+	return mainContainer
+}
+
+// Form to add and send many new objects to the API endpoint (POST)
+func initAddMassTab(_ fyne.Window) fyne.CanvasObject {
+
+	bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+
+	storageLocationNames, storageLocationMap := getAndMapStorageLocationNames()
+
+	addForm = initFormMassAdd(storageLocationNames, storageLocationMap)
 
 	addForm.formClear = func() {
 		addForm.entryName.Text = ""
@@ -277,6 +315,82 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 			addBottleStorageLocationControl(storageLocationNames, storageLocationMap, gridContainerItems)
 		})
 
+	form.Add(layoutControlItemName)
+	form.Add(layoutControlItemCustomerPrice)
+	form.Add(layoutControlItemSupplierPrice)
+	form.Add(widget.NewLabel(""))
+	form.Add(widget.NewSeparator())
+	form.Add(BSLListTitle)
+	form.Add(gridContainerHeader)
+	form.Add(gridContainerItems)
+	form.Add(AddItemBtn)
+
+	formStruct := editForm{
+		form:               form,
+		entryName:          entryName,
+		entryCustomerPrice: entryCustomerPrice,
+		entrySupplierPrice: entrySupplierPrice,
+		gridContainerItems: gridContainerItems,
+	}
+
+	return formStruct
+}
+
+func initFormMassAdd(storageLocationNames []string, storageLocationMap map[string]int) editForm {
+	form := &fyne.Container{Layout: layout.NewVBoxLayout()}
+
+	// declare form elements
+	// List Title
+	ProductListTitle := widget.NewLabel("Produits")
+	ProductListTitle.TextStyle.Bold = true
+
+	labelName := widget.NewLabel("Nom")
+	entryName := widget.NewEntry()
+
+	labelCustomerPrice := widget.NewLabel("Prix du client")
+	entryCustomerPrice := widget.NewEntry()
+
+	labelSupplierPrice := widget.NewLabel("Prix du fournisseur")
+	entrySupplierPrice := widget.NewEntry()
+
+	//Bottle's header
+	layoutControlItemName := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutControlItemName.Add(labelName)
+	layoutControlItemName.Add(entryName)
+
+	layoutControlItemCustomerPrice := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutControlItemCustomerPrice.Add(labelCustomerPrice)
+	layoutControlItemCustomerPrice.Add(entryCustomerPrice)
+
+	layoutControlItemSupplierPrice := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutControlItemSupplierPrice.Add(labelSupplierPrice)
+	layoutControlItemSupplierPrice.Add(entrySupplierPrice)
+
+	//BottleStorageLocation List
+
+	// List Title
+	BSLListTitle := widget.NewLabel("Emplacements")
+	BSLListTitle.TextStyle.Bold = true
+
+	// List headers
+	labelBottle := widget.NewLabel("Nom")
+	labelQuantity := widget.NewLabel("Quantité")
+
+	// List items
+	gridContainerHeader := &fyne.Container{Layout: layout.NewGridLayout(3)}
+	// List headers
+	gridContainerHeader.Add(widget.NewLabel(""))
+	gridContainerHeader.Add(labelBottle)
+	gridContainerHeader.Add(labelQuantity)
+	// List items
+	gridContainerItems := &fyne.Container{Layout: layout.NewGridLayout(3)}
+
+	AddItemBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(),
+		func() {
+			initForm(storageLocationNames, storageLocationMap)
+		})
+
+	form.Add(ProductListTitle)
 	form.Add(layoutControlItemName)
 	form.Add(layoutControlItemCustomerPrice)
 	form.Add(layoutControlItemSupplierPrice)
