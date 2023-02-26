@@ -87,7 +87,7 @@ var (
 			theme.SettingsIcon(),
 		},
 		"gestion_tab": {"Gestion",
-			makeDocumentsTabs,
+			Bottle.MakePage,
 			true,
 			theme.FolderIcon(),
 		},
