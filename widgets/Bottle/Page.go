@@ -281,7 +281,7 @@ func initForm(bottleNames []string, bottleMap map[string]int) (*fyne.Container, 
 
 func initButtonContainer(Bottle *data.Bottle, entryName *widget.Entry, entryCustomerPrice *widget.Entry, entrySupplierPrice *widget.Entry) *fyne.Container {
 
-	var source = "WIDGETS.Bottle.initButtonContainer"
+	//var source = "WIDGETS.Bottle.initButtonContainer"
 
 	editBtn := widget.NewButtonWithIcon("Modifier cette bouteille", theme.ConfirmIcon(),
 		func() {})
@@ -294,17 +294,7 @@ func initButtonContainer(Bottle *data.Bottle, entryName *widget.Entry, entryCust
 	}
 
 	deleteBtn.OnTapped = func() {
-		jsonValue, _ := json.Marshal(strconv.Itoa(Bottle.ID))
-
-		postData := data.AuthPostRequest("Bottle/DeleteBottle", bytes.NewBuffer(jsonValue))
-		if postData != 200 {
-			fmt.Println("Error on delete")
-			message := "Error on Bottle " + identifier + " delete"
-			log(true, source, message)
-			return
-		}
-		tableRefresh()
-		updateFormClearMethod()
+		deleteBottle(Bottle.ID)
 	}
 
 	buttonsContainer := container.NewHBox(editBtn, deleteBtn)
@@ -367,26 +357,26 @@ func addBottles(name string, customerPriceString string, supplierPriceString str
 	uniqueIds := make(map[int]struct{})
 	// Modify duplicate values to exclude them later
 	for item, _ := range bottleStorageLocationControls {
-		if _, has := uniqueIds[item.BottleId]; has {
+		if _, has := uniqueIds[item.StorageLocationId]; has {
 			//duplicate = true
-			item.BottleId = -1
+			item.StorageLocationId = -1
 		}
-		uniqueIds[item.BottleId] = struct{}{}
+		uniqueIds[item.StorageLocationId] = struct{}{}
 	}
 
 	for control, _ := range bottleStorageLocationControls {
 		// Exclude duplicate values
-		if control.BottleId > 0 {
+		if control.StorageLocationId > 0 {
 
-			bottle := data.Bottle{
-				ID: control.BottleId,
+			storageLocation := data.StorageLocation{
+				ID: control.StorageLocationId,
 			}
 
 			quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
 
 			bottleStorageLocation := data.BottleStorageLocation{
-				Bottle:   bottle,
-				Quantity: int(quantity),
+				StorageLocation: storageLocation,
+				Quantity:        int(quantity),
 			}
 
 			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
@@ -431,16 +421,16 @@ func updateBottle(Bottle *data.Bottle, name string, customerPriceString string, 
 	bottleStorageLocations := make([]data.BottleStorageLocation, 0)
 
 	for control, _ := range bottleStorageLocationControls {
-		if control.BottleId > 0 {
-			bottle := data.Bottle{
-				ID: control.BottleId,
+		if control.StorageLocationId > 0 {
+			storageLocation := data.StorageLocation{
+				ID: control.StorageLocationId,
 			}
 
 			quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
 
 			bottleStorageLocation := data.BottleStorageLocation{
-				Bottle:   bottle,
-				Quantity: int(quantity),
+				StorageLocation: storageLocation,
+				Quantity:        int(quantity),
 			}
 
 			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
@@ -477,6 +467,21 @@ func updateBottle(Bottle *data.Bottle, name string, customerPriceString string, 
 	}
 	fmt.Println("Success on update")
 	tableRefresh()
+}
+
+func deleteBottle(id int) {
+	var source = "WIDGETS.Bottle.deleteBottles"
+	jsonValue, _ := json.Marshal(strconv.Itoa(id))
+
+	postData := data.AuthPostRequest("Bottle/DeleteBottle", bytes.NewBuffer(jsonValue))
+	if postData != 200 {
+		fmt.Println("Error on delete")
+		message := "Error on Bottle " + identifier + " delete"
+		log(true, source, message)
+		return
+	}
+	tableRefresh()
+	updateFormClearMethod()
 }
 
 // endregion " Bottles "

@@ -260,7 +260,7 @@ func initForm(bottleNames []string, bottleMap map[string]int) (*fyne.Container, 
 
 func initButtonContainer(StorageLocation *data.StorageLocation, entryName *widget.Entry) *fyne.Container {
 
-	var source = "WIDGETS.STORAGELOCATION.initButtonContainer"
+	//var source = "WIDGETS.STORAGELOCATION.initButtonContainer"
 
 	editBtn := widget.NewButtonWithIcon("Modifier cet emplacement", theme.ConfirmIcon(),
 		func() {})
@@ -273,17 +273,7 @@ func initButtonContainer(StorageLocation *data.StorageLocation, entryName *widge
 	}
 
 	deleteBtn.OnTapped = func() {
-		jsonValue, _ := json.Marshal(strconv.Itoa(StorageLocation.ID))
-
-		postData := data.AuthPostRequest("StorageLocation/DeleteStorageLocation", bytes.NewBuffer(jsonValue))
-		if postData != 200 {
-			fmt.Println("Error on delete")
-			message := "Error on storageLocation " + identifier + " delete"
-			log(true, source, message)
-			return
-		}
-		tableRefresh()
-		updateFormClearMethod()
+		deleteStorageLocation(StorageLocation.ID)
 	}
 
 	buttonsContainer := container.NewHBox(editBtn, deleteBtn)
@@ -425,6 +415,21 @@ func updateStorageLocation(StorageLocation *data.StorageLocation, name string) {
 	}
 	fmt.Println("Success on update")
 	tableRefresh()
+}
+
+func deleteStorageLocation(id int) {
+	var source = "WIDGETS.STORAGELOCATION.deleteStorageLocations"
+	jsonValue, _ := json.Marshal(strconv.Itoa(id))
+
+	postData := data.AuthPostRequest("StorageLocation/DeleteStorageLocation", bytes.NewBuffer(jsonValue))
+	if postData != 200 {
+		fmt.Println("Error on delete")
+		message := "Error on storageLocation " + identifier + " delete"
+		log(true, source, message)
+		return
+	}
+	tableRefresh()
+	updateFormClearMethod()
 }
 
 // endregion " storageLocations "
