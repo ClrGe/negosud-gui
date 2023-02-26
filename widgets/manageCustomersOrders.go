@@ -44,7 +44,17 @@ func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
 		message := "Request body returned empty"
 		fmt.Println(message)
 		data.Logger(false, "WIDGETS.CUSTOMER-ORDERS", message)
-		return widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
+		for i := 0; i < len(CustomerOrders); i++ {
+			BindCustomerOrder = append(BindCustomerOrder, binding.BindStruct(&CustomerOrders[i]))
+		}
+		tableOptions := &rtable.TableOptions{
+			RefWidth: "========================================",
+			ColAttrs: CustomersOrdersColumns,
+			Bindings: BindCustomerOrder,
+		}
+		table := rtable.CreateTable(tableOptions)
+
+		return table
 	}
 
 	if err := json.NewDecoder(response).Decode(&CustomerOrders); err != nil {
