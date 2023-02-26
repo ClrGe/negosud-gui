@@ -29,11 +29,11 @@ var ProducerColumns = []rtable.ColAttr{
 
 // makeProducerPage function creates a new set of tabs
 func makeProducerPage(_ fyne.Window) fyne.CanvasObject {
-	producerListTab := container.NewTabItem("Liste des producteurs", displayAndUpdateProducers(nil))
+	producerListTab := container.NewTabItem("Liste des fournisseurs", displayAndUpdateProducers(nil))
 	tabs := container.NewAppTabs(
 		producerListTab,
 		container.NewTabItem("Ajouter un producteur", addNewProducer(nil)),
-		container.NewTabItem("Contact producteurs", contactProducers(nil)),
+		container.NewTabItem("Factures", contactProducers(nil)),
 	)
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == producerListTab {
