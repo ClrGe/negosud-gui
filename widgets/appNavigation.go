@@ -169,8 +169,12 @@ func Navigation(setTab func(component Component), loadPrevious bool) fyne.Canvas
 		fmt.Println("user disconnected")
 		fyne.CurrentApp().Quit()
 	})
+	disconnectUser.Resize(fyne.NewSize(100, 100))
 
-	return container.NewBorder(nil, disconnectUser, nil, nil, arborescence)
+	logo := canvas.NewImageFromFile("media/logo.png")
+	logo.FillMode = canvas.ImageFillContain
+	logo.SetMinSize(fyne.NewSize(100, 100))
+	return container.NewBorder(logo, disconnectUser, nil, nil, arborescence)
 }
 
 // homePage with logo and message
