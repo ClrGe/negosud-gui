@@ -156,9 +156,9 @@ func Navigation(setTab func(component Component), loadPrevious bool) fyne.Canvas
 		},
 		UpdateNode: func(uid string, branch bool, node fyne.CanvasObject) {
 			c := node.(*fyne.Container)
-
 			// retrieve icon from map
 			c.Objects[0].(*widget.Icon).SetResource(Components[uid].Icon)
+			// set node height to 100
 
 			l := c.Objects[1].(*widget.Label)
 			l.SetText(Components[uid].Title)
