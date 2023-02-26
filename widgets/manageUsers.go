@@ -89,7 +89,7 @@ func addUserForm(_ fyne.Window) fyne.CanvasObject {
 	passwordInput := widget.NewPasswordEntry()
 	passwordInput.SetPlaceHolder("******")
 	roleLabel := widget.NewLabelWithStyle("Rôle", fyne.TextAlignLeading, fyne.TextStyle{Bold: true})
-	roleUser := widget.NewSelectEntry([]string{"Administrateur", "Employé", "Intérimaire"})
+	roleUser := widget.NewSelectEntry([]string{"Administrateur", "Employé", "Client"})
 	roleUser.SetPlaceHolder("Veuillez sélectionner un rôle...")
 
 	form := &widget.Form{
