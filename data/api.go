@@ -18,9 +18,17 @@ func AuthGetRequest(route string) io.ReadCloser {
 	if err != nil {
 		fmt.Println("Could not load config")
 	}
-	Token = env.KEY
 
-	url := "http://localhost:4001/api/" + route
+	var server string
+
+	Token = env.KEY
+	if env.ENV == "dev" {
+		server = env.SERVER_DEV
+	} else {
+		server = env.SERVER_PROD
+	}
+
+	url := server + route
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -50,8 +58,14 @@ func AuthPostRequest(route string, body *bytes.Buffer) int {
 	}
 
 	Token = env.KEY
+	var server string
+	if env.ENV == "dev" {
+		server = env.SERVER_DEV
+	} else {
+		server = env.SERVER_PROD
+	}
 
-	url := "http://localhost:4001/api/" + route
+	url := server + route
 
 	req, err := http.NewRequest("POST", url, body)
 	if err != nil {
@@ -80,16 +94,21 @@ func LoginAndSaveToken(email string, password string) int {
 
 	var responseCode int
 	var token string
-	//var server string
-	//
-	//if env.ENV == "dev" {
-	//	server = env.SERVER_DEV
-	//} else {
-	//	server = env.SERVER_PROD
-	//}
+	env, err := LoadConfig(".")
+	if err != nil {
+		fmt.Println("Could not load config")
+	}
+
+	var server string
+
+	if env.ENV == "dev" {
+		server = env.SERVER_DEV
+	} else {
+		server = env.SERVER_PROD
+	}
 
 	hostname, _ := os.Hostname()
-	url := "http://localhost:4001/api/authentication/login"
+	url := server + "authentication/login"
 
 	userInfo := &User{
 		Email:    email,
