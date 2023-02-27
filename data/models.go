@@ -312,3 +312,31 @@ type PartialWineLabel struct {
 	CreatedBy string `json:"createdBy"`
 	UpdatedBy string `json:"updatedBy"`
 }
+
+// ############################################
+// ################## GRAPE ###################
+// ############################################
+
+var IndGrape Grape
+var GrapeData []PartialGrape
+
+type Grape struct {
+	ID        int    `json:"id"`
+	GrapeType string `json:"grapeType"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+type PartialGrape struct {
+	Id        int `json:"id"`
+	ID        string
+	GrapeType string `json:"grapeType"`
+
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+	UpdatedBy string `json:"updatedBy"`
+}

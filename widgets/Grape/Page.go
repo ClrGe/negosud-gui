@@ -1,4 +1,4 @@
-package WineLabel
+package Grape
 
 import (
 	"bytes"
@@ -21,7 +21,7 @@ import (
 type editForm struct {
 	form *fyne.Container
 
-	entryLabel *widget.Entry
+	entryGrapeType *widget.Entry
 
 	formClear func()
 }
@@ -30,7 +30,7 @@ var log = data.Logger
 var identifier string
 
 var bind []binding.DataMap
-var filter func([]data.PartialWineLabel) []data.PartialWineLabel
+var filter func([]data.PartialGrape) []data.PartialGrape
 
 var table *widget.Table
 var tableOptions *rtable.TableOptions
@@ -45,8 +45,8 @@ var addForm editForm
 // MakePage function creates a new set of tabs
 func MakePage(_ fyne.Window) fyne.CanvasObject {
 
-	ListTab := container.NewTabItem("Liste des labels", initListTab(nil))
-	addTab := container.NewTabItem("Ajouter un label", initAddTab(nil))
+	ListTab := container.NewTabItem("Liste des cepages", initListTab(nil))
+	addTab := container.NewTabItem("Ajouter un cepage", initAddTab(nil))
 	tabs := container.NewAppTabs(
 		ListTab,
 		addTab,
@@ -70,21 +70,21 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 
 // initListTab implements a dynamic table bound to an editing form
 func initListTab(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.WineLabel.initListTab()"
+	//var source = "WIDGETS.Grape.initListTab()"
 
 	//region datas
 	// retrieve structs from data package
-	WineLabel := data.IndWineLabel
+	Grape := data.IndGrape
 
-	resp, label := getWineLabels()
+	resp, grape := getGrapes()
 	if !resp {
-		return label
+		return grape
 	}
 
 	// Columns defines the header row for the table
 	var Columns = []rtable.ColAttr{
 		{ColName: "ID", Header: "ID", WidthPercent: 50},
-		{ColName: "Label", Header: "Nom", WidthPercent: 90},
+		{ColName: "GrapeType", Header: "Nom", WidthPercent: 90},
 	}
 
 	tableOptions = &rtable.TableOptions{
@@ -99,7 +99,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	updateForm = initForm()
 
 	//region " design elements initialization "
-	buttonsContainer := initButtonContainer(&WineLabel)
+	buttonsContainer := initButtonContainer(&Grape)
 	buttonsContainer.Hide()
 	mainContainer := initMainContainer(updateForm.form, buttonsContainer)
 	//endregion
@@ -108,9 +108,9 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	updateForm.formClear = func() {
 		updateForm.form.Hide()
 		table.UnselectAll()
-		updateForm.entryLabel.Text = ""
-		updateForm.entryLabel.Refresh()
-		WineLabel.ID = -1
+		updateForm.entryGrapeType.Text = ""
+		updateForm.entryGrapeType.Refresh()
+		Grape.ID = -1
 		buttonsContainer.Hide()
 	}
 
@@ -118,7 +118,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 
 	//region " table events "
 	table.OnSelected = func(cell widget.TableCellID) {
-		tableOnSelected(cell, Columns, &WineLabel, buttonsContainer)
+		tableOnSelected(cell, Columns, &Grape, buttonsContainer)
 	}
 	//endregion
 
@@ -127,20 +127,20 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 
 // Form to add and send a new object to the API endpoint (POST)
 func initAddTab(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.WineLabel.initAddTab"
+	//var source = "WIDGETS.Grape.initAddTab"
 
 	addForm = initForm()
 
 	addForm.formClear = func() {
-		addForm.entryLabel.Text = ""
-		addForm.entryLabel.Refresh()
+		addForm.entryGrapeType.Text = ""
+		addForm.entryGrapeType.Refresh()
 	}
 
-	addBtn := widget.NewButtonWithIcon("Ajouter ce label", theme.ConfirmIcon(),
+	addBtn := widget.NewButtonWithIcon("Ajouter ce cépage", theme.ConfirmIcon(),
 		func() {})
 
 	addBtn.OnTapped = func() {
-		addWineLabels()
+		addGrapes()
 	}
 
 	buttonsContainer := container.NewHBox(addBtn)
@@ -164,7 +164,7 @@ func initMainContainer(updateForm *fyne.Container, buttonsContainer *fyne.Contai
 
 	// Define layout
 	individualTabs := container.NewAppTabs(
-		container.NewTabItem("Modifier le label", layoutWithButtons),
+		container.NewTabItem("Modifier le cépage", layoutWithButtons),
 	)
 
 	filterContainer := initFilterContainer()
@@ -209,42 +209,42 @@ func initForm() editForm {
 	form := &fyne.Container{Layout: layout.NewVBoxLayout()}
 
 	// declare form elements
-	labelLabel := widget.NewLabel("Nom")
-	entryLabel := widget.NewEntry()
+	labelGrapeType := widget.NewLabel("Nom")
+	entryGrapeType := widget.NewEntry()
 
-	//WineLabel's header
+	//Grape's header
 	layoutHeader := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutHeader.Add(labelLabel)
-	layoutHeader.Add(entryLabel)
+	layoutHeader.Add(labelGrapeType)
+	layoutHeader.Add(entryGrapeType)
 
 	form.Add(layoutHeader)
 	form.Add(widget.NewLabel(""))
 	form.Add(widget.NewSeparator())
 
 	formStruct := editForm{
-		form:       form,
-		entryLabel: entryLabel,
+		form:           form,
+		entryGrapeType: entryGrapeType,
 	}
 
 	return formStruct
 }
 
-func initButtonContainer(WineLabel *data.WineLabel) *fyne.Container {
+func initButtonContainer(Grape *data.Grape) *fyne.Container {
 
-	//var source = "WIDGETS.WineLabel.initButtonContainer"
+	//var source = "WIDGETS.Grape.initButtonContainer"
 
-	editBtn := widget.NewButtonWithIcon("Modifier ce label ", theme.ConfirmIcon(),
+	editBtn := widget.NewButtonWithIcon("Modifier ce cepageGrapeType ", theme.ConfirmIcon(),
 		func() {})
-	deleteBtn := widget.NewButtonWithIcon("Supprimer ce label", theme.WarningIcon(),
+	deleteBtn := widget.NewButtonWithIcon("Supprimer ce cepage", theme.WarningIcon(),
 		func() {})
 
 	//region " events "
 	editBtn.OnTapped = func() {
-		updateWineLabel(WineLabel)
+		updateGrape(Grape)
 	}
 
 	deleteBtn.OnTapped = func() {
-		deleteWineLabel(WineLabel.ID)
+		deleteGrape(Grape.ID)
 	}
 
 	buttonsContainer := container.NewHBox(editBtn, deleteBtn)
@@ -258,17 +258,17 @@ func initButtonContainer(WineLabel *data.WineLabel) *fyne.Container {
 
 // region " data "
 
-// region " wineLabels "
+// region " grapes "
 
-func getWineLabels() (bool, *widget.Label) {
-	var source = "WIDGETS.WineLabel.getWineLabels() "
-	WineLabels := data.WineLabelData
-	response := data.AuthGetRequest("wineLabel")
+func getGrapes() (bool, *widget.Label) {
+	var source = "WIDGETS.Grape.getGrapes() "
+	Grapes := data.GrapeData
+	response := data.AuthGetRequest("grape")
 	if response == nil {
 		fmt.Println("No result returned")
 		return false, widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
 	}
-	if err := json.NewDecoder(response).Decode(&WineLabels); err != nil {
+	if err := json.NewDecoder(response).Decode(&Grapes); err != nil {
 		fmt.Println(err)
 		log(true, source, err.Error())
 		return false, widget.NewLabel("Erreur de décodage du json")
@@ -276,43 +276,43 @@ func getWineLabels() (bool, *widget.Label) {
 
 	//filter data
 	if filter != nil {
-		WineLabels = filter(WineLabels)
+		Grapes = filter(Grapes)
 	}
 
 	//order datas by Id
-	sort.SliceStable(WineLabels, func(i, j int) bool {
-		return WineLabels[i].Id < WineLabels[j].Id
+	sort.SliceStable(Grapes, func(i, j int) bool {
+		return Grapes[i].Id < Grapes[j].Id
 	})
 
 	bind = nil
 
-	for i := 0; i < len(WineLabels); i++ {
+	for i := 0; i < len(Grapes); i++ {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
-		t := WineLabels[i]
+		t := Grapes[i]
 		id := strconv.Itoa(t.Id)
-		WineLabels[i].ID = id
+		Grapes[i].ID = id
 
-		// binding wineLabel data
-		bind = append(bind, binding.BindStruct(&WineLabels[i]))
+		// binding grape data
+		bind = append(bind, binding.BindStruct(&Grapes[i]))
 
 	}
 
 	return true, widget.NewLabel("")
 }
 
-func addWineLabels() {
-	var source = "WIDGETS.WineLabel.addWineLabels"
+func addGrapes() {
+	var source = "WIDGETS.Grape.addGrapes"
 
-	label := addForm.entryLabel.Text
+	grapeType := addForm.entryGrapeType.Text
 
-	wineLabel := &data.WineLabel{
-		Label: label,
+	grape := &data.Grape{
+		GrapeType: grapeType,
 	}
-	jsonValue, _ := json.Marshal(wineLabel)
-	postData := data.AuthPostRequest("WineLabel/AddWineLabel", bytes.NewBuffer(jsonValue))
+	jsonValue, _ := json.Marshal(grape)
+	postData := data.AuthPostRequest("Grape/AddGrape", bytes.NewBuffer(jsonValue))
 	if postData != 201 {
 		fmt.Println("Error on add")
-		message := "Error on wineLabel " + identifier + " add"
+		message := "Error on grape " + identifier + " add"
 		log(true, source, message)
 		return
 	} else {
@@ -321,20 +321,20 @@ func addWineLabels() {
 	tableRefresh()
 }
 
-func updateWineLabel(WineLabel *data.WineLabel) {
-	var source = "WIDGETS.WineLabel.updateWineLabels"
+func updateGrape(Grape *data.Grape) {
+	var source = "WIDGETS.Grape.updateGrapes"
 
-	label := updateForm.entryLabel.Text
+	grapeType := updateForm.entryGrapeType.Text
 
-	wineLabel := &data.WineLabel{
-		ID:    WineLabel.ID,
-		Label: label,
+	grape := &data.Grape{
+		ID:        Grape.ID,
+		GrapeType: grapeType,
 	}
-	jsonValue, _ := json.Marshal(wineLabel)
-	postData := data.AuthPostRequest("WineLabel/UpdateWineLabel", bytes.NewBuffer(jsonValue))
+	jsonValue, _ := json.Marshal(grape)
+	postData := data.AuthPostRequest("Grape/UpdateGrape", bytes.NewBuffer(jsonValue))
 	if postData != 200 {
 		fmt.Println("Error on update")
-		message := "Error on wineLabel " + identifier + " update"
+		message := "Error on grape " + identifier + " update"
 		log(true, source, message)
 		return
 	}
@@ -342,14 +342,14 @@ func updateWineLabel(WineLabel *data.WineLabel) {
 	tableRefresh()
 }
 
-func deleteWineLabel(id int) {
-	var source = "WIDGETS.WineLabel.deleteWineLabels"
+func deleteGrape(id int) {
+	var source = "WIDGETS.Grape.deleteGrapes"
 	jsonValue, _ := json.Marshal(strconv.Itoa(id))
 
-	postData := data.AuthPostRequest("WineLabel/DeleteWineLabel", bytes.NewBuffer(jsonValue))
+	postData := data.AuthPostRequest("Grape/DeleteGrape", bytes.NewBuffer(jsonValue))
 	if postData != 200 {
 		fmt.Println("Error on delete")
-		message := "Error on wineLabel " + identifier + " delete"
+		message := "Error on grape " + identifier + " delete"
 		log(true, source, message)
 		return
 	}
@@ -357,23 +357,23 @@ func deleteWineLabel(id int) {
 	updateForm.formClear()
 }
 
-// endregion " wineLabels "
+// endregion " grapes "
 
 // region " filters "
 
-func beginByE(WineLabels []data.PartialWineLabel) []data.PartialWineLabel {
+func beginByE(Grapes []data.PartialGrape) []data.PartialGrape {
 
 	n := 0
-	for _, wineLabel := range WineLabels {
-		if string([]rune(wineLabel.Label)[0]) == "e" {
-			WineLabels[n] = wineLabel
+	for _, grape := range Grapes {
+		if string([]rune(grape.GrapeType)[0]) == "e" {
+			Grapes[n] = grape
 			n++
 		}
 	}
 
-	WineLabels = WineLabels[:n]
+	Grapes = Grapes[:n]
 
-	return WineLabels
+	return Grapes
 }
 
 // endregion " filters "
@@ -383,8 +383,8 @@ func beginByE(WineLabels []data.PartialWineLabel) []data.PartialWineLabel {
 // region " events "
 
 // region " table "
-func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, WineLabel *data.WineLabel, buttonsContainer *fyne.Container) {
-	var source = "WIDGETS.WineLabel.tableOnSelected"
+func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Grape *data.Grape, buttonsContainer *fyne.Container) {
+	var source = "WIDGETS.Grape.tableOnSelected"
 	if cell.Row < 0 || cell.Row > len(bind) { // 1st col is header
 		fmt.Println("*-> Row out of limits")
 		log(true, source, "*-> Row out of limits")
@@ -433,9 +433,9 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, WineLabe
 	i, err := strconv.Atoi(identifier)
 	if err == nil {
 		fmt.Println(i)
-		// Fetch individual wineLabel to fill form
-		response := data.AuthGetRequest("WineLabel/" + identifier)
-		if err := json.NewDecoder(response).Decode(&WineLabel); err != nil {
+		// Fetch individual grape to fill form
+		response := data.AuthGetRequest("Grape/" + identifier)
+		if err := json.NewDecoder(response).Decode(&Grape); err != nil {
 			log(true, source, err.Error())
 			fmt.Println(err)
 		}
@@ -443,7 +443,7 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, WineLabe
 		updateForm.form.Show()
 		buttonsContainer.Show()
 
-		updateForm.entryLabel.SetText(WineLabel.Label)
+		updateForm.entryGrapeType.SetText(Grape.GrapeType)
 
 		updateForm.form.Refresh()
 	} else {
@@ -453,7 +453,7 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, WineLabe
 
 func tableRefresh() {
 	if table != nil && tableOptions != nil {
-		getWineLabels()
+		getGrapes()
 		tableOptions.Bindings = bind
 		table.Refresh()
 	}
