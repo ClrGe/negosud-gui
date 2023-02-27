@@ -12,6 +12,7 @@ import (
 	"negosud-gui/widgets/Bottle"
 	"negosud-gui/widgets/StorageLocation"
 	"negosud-gui/widgets/Supplier"
+	"negosud-gui/widgets/WineLabel"
 )
 
 var log = data.Logger
@@ -45,6 +46,11 @@ var (
 			Supplier.MakePage,
 			true,
 			theme.FolderOpenIcon(),
+		},
+		"wineLabel_management": {"Labels",
+			WineLabel.MakePage,
+			true,
+			theme.ColorPaletteIcon(),
 		},
 		"bottles_management": {"Produits",
 			Bottle.MakePage,
@@ -116,7 +122,7 @@ var (
 		"":            {"home", "gestion_tab", "orders_tab", "admin_tab", "support_tab"},
 		"support_tab": {"faq_tab", "contact_tab"},
 		"orders_tab":  {"orders_producers", "orders_customers"},
-		"gestion_tab": {"storageLocations_management", "producers_management", "bottles_management"},
+		"gestion_tab": {"storageLocations_management", "producers_management", "wineLabel_management", "bottles_management"},
 		//"admin_tab":   {"users_management", "documents_tab", "statistics_tab", "website_management"},
 
 		"admin_tab": {"users_management", "documents_tab"},

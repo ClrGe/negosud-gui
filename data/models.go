@@ -284,3 +284,31 @@ type Country struct {
 	CreatedBy string      `json:"createdBy"`
 	UpdatedBy string      `json:"updatedBy"`
 }
+
+// ############################################
+// ################## WINELABEL ###################
+// ############################################
+
+var IndWineLabel WineLabel
+var WineLabelData []PartialWineLabel
+
+type WineLabel struct {
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+type PartialWineLabel struct {
+	Id    int `json:"id"`
+	ID    string
+	Label string `json:"label"`
+
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+	UpdatedBy string `json:"updatedBy"`
+}
