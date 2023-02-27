@@ -55,11 +55,11 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 
 	ListTab := container.NewTabItem("Liste des produits", initListTab(nil))
 	addTab := container.NewTabItem("Ajouter un produit", initAddTab(nil))
-	addMassTab := container.NewTabItem("Ajouter plusieurs produits", initAddMassTab(nil))
+	editMassTab := container.NewTabItem("Editer plusieurs produits", initEditMassTab(nil))
 	tabs := container.NewAppTabs(
 		ListTab,
 		addTab,
-		addMassTab,
+		editMassTab,
 	)
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == ListTab {
@@ -80,9 +80,7 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 
 // initListTab implements a dynamic table bound to an editing form
 func initListTab(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.Bottle.initListTab()"
 
-	//region datas
 	// retrieve structs from data package
 	Bottle := data.IndBottle
 
@@ -177,38 +175,61 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 }
 
 // Form to add and send many new objects to the API endpoint (POST)
-func initAddMassTab(_ fyne.Window) fyne.CanvasObject {
+func initEditMassTab(_ fyne.Window) fyne.CanvasObject {
 
-	bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+	// retrieve structs from data package
+	Bottle := data.IndBottle
+
+	resp, label := getBottles()
+	if !resp {
+		return label
+	}
 
 	storageLocationNames, storageLocationMap := getAndMapStorageLocationNames()
 
-	addForm = initFormMassAdd(storageLocationNames, storageLocationMap)
+	// Columns defines the header row for the table
+	var Columns = []rtable.ColAttr{
+		{ColName: "ID", Header: "ID", WidthPercent: 50},
+		{ColName: "FullName", Header: "Nom", WidthPercent: 90},
+		{ColName: "ToEdit", Header: "Editer", WidthPercent: 10},
+	}
 
-	addForm.formClear = func() {
-		addForm.entryName.Text = ""
-		addForm.entryName.Refresh()
-		addForm.entryCustomerPrice.Text = ""
-		addForm.entryCustomerPrice.Refresh()
-		addForm.entrySupplierPrice.Text = ""
-		addForm.entrySupplierPrice.Refresh()
-		addForm.gridContainerItems.RemoveAll()
+	tableOptions = &rtable.TableOptions{
+		RefWidth: "========================================",
+		ColAttrs: Columns,
+		Bindings: bind,
+	}
+	table = rtable.CreateTable(tableOptions)
+
+	//region UPDATE FORM
+
+	updateForm = initForm(storageLocationNames, storageLocationMap)
+
+	//region " design elements initialization "
+	buttonsContainer := initButtonContainer(&Bottle)
+	buttonsContainer.Hide()
+	mainContainer := initMainContainer(updateForm.form, buttonsContainer)
+	//endregion
+	updateForm.form.Hide()
+
+	updateForm.formClear = func() {
+		updateForm.form.Hide()
+		table.UnselectAll()
+		updateForm.entryName.Text = ""
+		updateForm.entryName.Refresh()
+		updateForm.gridContainerItems.RemoveAll()
+		Bottle.ID = -1
 		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+		buttonsContainer.Hide()
 	}
 
-	addBtn := widget.NewButtonWithIcon("Ajouter ce produit", theme.ConfirmIcon(),
-		func() {})
+	//endregion
 
-	addBtn.OnTapped = func() {
-		addBottle()
+	//region " table events "
+	table.OnSelected = func(cell widget.TableCellID) {
+		tableOnSelected(cell, Columns, &Bottle, storageLocationNames, storageLocationMap, buttonsContainer)
 	}
-
-	buttonsContainer := container.NewHBox(addBtn)
-
-	layoutForm := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 200), addForm.form))
-	layoutWithButtons := container.NewBorder(layoutForm, buttonsContainer, nil, nil)
-
-	mainContainer := container.NewCenter(container.NewGridWrap(fyne.NewSize(900, 600), layoutWithButtons))
+	//endregion
 
 	return mainContainer
 }
@@ -627,7 +648,7 @@ func deleteBottle(id int) {
 
 // endregion " Bottles "
 
-// region " bottles "
+// region " Map Storage Location "
 
 func getAndMapStorageLocationNames() ([]string, map[string]int) {
 	storageLocations := getAllStorageLocationName()
@@ -664,7 +685,7 @@ func getAllStorageLocationName() []data.PartialStorageLocation {
 	return storageLocationData
 }
 
-// endregion " bottles "
+// endregion " Map Storage Location "
 
 // region " filters "
 
