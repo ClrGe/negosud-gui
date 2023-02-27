@@ -112,6 +112,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 		updateForm.entryGrapeType.Refresh()
 		Grape.ID = -1
 		buttonsContainer.Hide()
+
 	}
 
 	//endregion

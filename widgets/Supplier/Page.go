@@ -21,8 +21,9 @@ import (
 type editForm struct {
 	form *fyne.Container
 
-	entryName *widget.Entry
-	entryMail *widget.Entry
+	entryName    *widget.Entry
+	entryMail    *widget.Entry
+	entryDetails *widget.Entry
 
 	entryAddressLine1 *widget.Entry
 	entryAddressLine2 *widget.Entry
@@ -120,7 +121,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 		updateForm.form.Hide()
 		table.UnselectAll()
 
-		var entryArray = []*widget.Entry{updateForm.entryName, updateForm.entryMail, updateForm.entryAddressLine1, updateForm.entryAddressLine2}
+		var entryArray = []*widget.Entry{updateForm.entryName, updateForm.entryMail, updateForm.entryDetails, updateForm.entryAddressLine1, updateForm.entryAddressLine2}
 
 		for _, entry := range entryArray {
 			entry.Text = ""
@@ -132,6 +133,8 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 
 		Supplier.ID = -1
 		buttonsContainer.Hide()
+
+		currentCityId = -1
 	}
 
 	//endregion
@@ -155,16 +158,17 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 
 	addForm.formClear = func() {
 
-		var entryArray = []*widget.Entry{updateForm.entryName, updateForm.entryMail, updateForm.entryAddressLine1, updateForm.entryAddressLine2}
+		var entryArray = []*widget.Entry{addForm.entryName, addForm.entryMail, addForm.entryDetails, addForm.entryAddressLine1, addForm.entryAddressLine2}
 
 		for _, entry := range entryArray {
 			entry.Text = ""
 			entry.Refresh()
 		}
 
-		updateForm.selectCity.Selected = " "
-		updateForm.selectCity.Refresh()
+		addForm.selectCity.Selected = " "
+		addForm.selectCity.Refresh()
 
+		currentCityId = -1
 	}
 
 	addBtn := widget.NewButtonWithIcon("Ajouter ce fournisseur", theme.ConfirmIcon(),
@@ -195,7 +199,7 @@ func initMainContainer(updateForm *fyne.Container, buttonsContainer *fyne.Contai
 
 	// Define layout
 	individualTabs := container.NewAppTabs(
-		container.NewTabItem("Modifier l'fournisseur", layoutWithButtons),
+		container.NewTabItem("Modifier le fournisseur", layoutWithButtons),
 	)
 
 	filterContainer := initFilterContainer()
@@ -246,6 +250,9 @@ func initForm(cityNames []string, cityMap map[string]int) editForm {
 	labelMail := widget.NewLabel("Email")
 	entryMail := widget.NewEntry()
 
+	labelDetails := widget.NewLabel("Description")
+	entryDetails := widget.NewEntry()
+
 	labelAddress1 := widget.NewLabel("Adresse 1")
 	entryAddress1 := widget.NewEntry()
 
@@ -279,6 +286,8 @@ func initForm(cityNames []string, cityMap map[string]int) editForm {
 	layoutHeader.Add(entryName)
 	layoutHeader.Add(labelMail)
 	layoutHeader.Add(entryMail)
+	layoutHeader.Add(labelDetails)
+	layoutHeader.Add(entryDetails)
 	layoutHeader.Add(labelAddress1)
 	layoutHeader.Add(entryAddress1)
 	layoutHeader.Add(labelAddress2)
@@ -295,6 +304,7 @@ func initForm(cityNames []string, cityMap map[string]int) editForm {
 		form:              form,
 		entryName:         entryName,
 		entryMail:         entryMail,
+		entryDetails:      entryDetails,
 		entryAddressLine1: entryAddress1,
 		entryAddressLine2: entryAddress2,
 		selectCity:        selectCity,
@@ -379,6 +389,7 @@ func addSuppliers() {
 
 	name := addForm.entryName.Text
 	mail := addForm.entryMail.Text
+	details := addForm.entryDetails.Text
 
 	address := &data.Address{
 		AddressLine1: addForm.entryAddressLine1.Text,
@@ -390,6 +401,7 @@ func addSuppliers() {
 		Name:    name,
 		Email:   mail,
 		Address: address,
+		Details: details,
 	}
 	jsonValue, _ := json.Marshal(supplier)
 	postData := data.AuthPostRequest("Supplier/AddSupplier", bytes.NewBuffer(jsonValue))
@@ -409,6 +421,7 @@ func updateSupplier(Supplier *data.Supplier) {
 
 	name := updateForm.entryName.Text
 	mail := updateForm.entryMail.Text
+	details := updateForm.entryDetails.Text
 
 	address := &data.Address{
 		AddressLine1: updateForm.entryAddressLine1.Text,
@@ -424,6 +437,7 @@ func updateSupplier(Supplier *data.Supplier) {
 		ID:      Supplier.ID,
 		Name:    name,
 		Email:   mail,
+		Details: details,
 		Address: address,
 	}
 	jsonValue, _ := json.Marshal(supplier)
@@ -580,6 +594,7 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Supplier
 
 		updateForm.entryName.SetText(Supplier.Name)
 		updateForm.entryMail.SetText(Supplier.Email)
+		updateForm.entryDetails.SetText(Supplier.Details)
 
 		if Supplier != nil && Supplier.Address != nil {
 
