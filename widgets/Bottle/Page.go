@@ -673,9 +673,11 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Bottle *
 }
 
 func tableRefresh() {
-	getBottles()
-	tableOptions.Bindings = bind
-	table.Refresh()
+	if table != nil && tableOptions != nil {
+		getBottles()
+		tableOptions.Bindings = bind
+		table.Refresh()
+	}
 }
 
 // endregion "table"

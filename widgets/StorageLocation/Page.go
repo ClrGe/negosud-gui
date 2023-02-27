@@ -43,9 +43,6 @@ var addForm editForm
 
 var bottleStorageLocationControls map[*controls.BottleStorageLocationItem]int
 
-var updateFormClearMethod func()
-var addFormClearMethod func()
-
 // endregion " declarations "
 
 // region " constructor "
@@ -62,9 +59,9 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == ListTab {
 			tableRefresh()
-			updateFormClearMethod()
+			updateForm.formClear()
 		} else if ti == addTab {
-			addFormClearMethod()
+			addForm.formClear()
 		}
 	}
 	return container.NewBorder(nil, nil, nil, nil, tabs)
@@ -115,7 +112,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	//endregion
 	updateForm.form.Hide()
 
-	updateFormClearMethod = func() {
+	updateForm.formClear = func() {
 		updateForm.form.Hide()
 		table.UnselectAll()
 		updateForm.entryName.Text = ""
@@ -147,7 +144,7 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 
 	addForm = initForm(bottleNames, bottleMap)
 
-	addFormClearMethod = func() {
+	addForm.formClear = func() {
 		addForm.entryName.Text = ""
 		addForm.entryName.Refresh()
 		addForm.gridContainerItems.RemoveAll()
@@ -451,7 +448,7 @@ func deleteStorageLocation(id int) {
 		return
 	}
 	tableRefresh()
-	updateFormClearMethod()
+	updateForm.formClear()
 }
 
 // endregion " storageLocations "
@@ -614,9 +611,11 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, StorageL
 }
 
 func tableRefresh() {
-	getStorageLocations()
-	tableOptions.Bindings = bind
-	table.Refresh()
+	if table != nil && tableOptions != nil {
+		getStorageLocations()
+		tableOptions.Bindings = bind
+		table.Refresh()
+	}
 }
 
 // endregion "table"
