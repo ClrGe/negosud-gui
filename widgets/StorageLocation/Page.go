@@ -228,9 +228,9 @@ func initForm(bottleNames []string, bottleMap map[string]int) editForm {
 	entryName := widget.NewEntry()
 
 	//StorageLocation's header
-	layoutControlItemName := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutControlItemName.Add(labelName)
-	layoutControlItemName.Add(entryName)
+	layoutHeader := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutHeader.Add(labelName)
+	layoutHeader.Add(entryName)
 
 	//BottleStorageLocation List
 
@@ -256,7 +256,7 @@ func initForm(bottleNames []string, bottleMap map[string]int) editForm {
 			addBottleStorageLocationControl(bottleNames, bottleMap, gridContainerItems)
 		})
 
-	form.Add(layoutControlItemName)
+	form.Add(layoutHeader)
 	form.Add(widget.NewLabel(""))
 	form.Add(widget.NewSeparator())
 	form.Add(BSLListTitle)

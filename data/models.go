@@ -193,3 +193,94 @@ type PartialBottleStorageLocation struct {
 	CreatedBy           string `json:"createdBy"`
 	UpdatedBy           string `json:"updatedBy"`
 }
+
+// ############################################
+// ################## SUPPLIER ###################
+// ############################################
+
+var Suppliers []Supplier
+var IndSupplier Supplier
+var SupplierData []PartialSupplier
+
+// Supplier struct holds information about a Supplier
+type Supplier struct {
+	ID        int         `json:"id"`
+	Name      string      `json:"name"`
+	Details   string      `json:"details"`
+	Email     string      `json:"email"`
+	Address   *Address    `json:"address"`
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+// PartialSupplier holds only the necessary data for the table (= needs string only)
+type PartialSupplier struct {
+	Id        int `json:"id"`
+	ID        string
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+	UpdatedBy string `json:"updatedBy"`
+}
+
+// ############################################
+// ################## ADDRESS ###################
+// ############################################
+
+type Address struct {
+	ID           int    `json:"id"`
+	AddressLine1 string `json:"addressLine1"`
+	AddressLine2 string `json:"addressLine2"`
+	CityId       int    `json:"cityId"`
+	City         *City  `json:"city"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+// ############################################
+// ################## CITY ###################
+// ############################################
+
+var Cities []City
+var IndCity City
+var CityData []PartialCity
+
+type City struct {
+	ID      int      `json:"id"`
+	Name    string   `json:"name"`
+	ZipCode int      `json:"zipCode"`
+	Country *Country `json:"country"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+type PartialCity struct {
+	Id      int `json:"id"`
+	ID      string
+	Name    string `json:"name"`
+	ZipCode int    `json:"zipCode"`
+}
+
+// ############################################
+// ################## Country ###################
+// ############################################
+
+type Country struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}

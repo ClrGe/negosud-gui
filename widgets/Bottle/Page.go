@@ -241,17 +241,15 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	entrySupplierPrice := widget.NewEntry()
 
 	//Bottle's header
-	layoutControlItemName := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutControlItemName.Add(labelName)
-	layoutControlItemName.Add(entryName)
+	layoutHeader := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutHeader.Add(labelName)
+	layoutHeader.Add(entryName)
 
-	layoutControlItemCustomerPrice := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutControlItemCustomerPrice.Add(labelCustomerPrice)
-	layoutControlItemCustomerPrice.Add(entryCustomerPrice)
+	layoutHeader.Add(labelCustomerPrice)
+	layoutHeader.Add(entryCustomerPrice)
 
-	layoutControlItemSupplierPrice := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutControlItemSupplierPrice.Add(labelSupplierPrice)
-	layoutControlItemSupplierPrice.Add(entrySupplierPrice)
+	layoutHeader.Add(labelSupplierPrice)
+	layoutHeader.Add(entrySupplierPrice)
 
 	//BottleStorageLocation List
 
@@ -277,9 +275,7 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 			addBottleStorageLocationControl(storageLocationNames, storageLocationMap, gridContainerItems)
 		})
 
-	form.Add(layoutControlItemName)
-	form.Add(layoutControlItemCustomerPrice)
-	form.Add(layoutControlItemSupplierPrice)
+	form.Add(layoutHeader)
 	form.Add(widget.NewLabel(""))
 	form.Add(widget.NewSeparator())
 	form.Add(BSLListTitle)
