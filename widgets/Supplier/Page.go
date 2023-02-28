@@ -261,7 +261,6 @@ func initForm(cityNames []string, cityMap map[string]int) editForm {
 
 	labelZIPCode := widget.NewLabel("Code postal")
 	entryZIPCode := widget.NewEntry()
-	entryZIPCode.Disable()
 
 	labelCity := widget.NewLabel("Ville")
 	selectCity := widget.NewSelect(cityNames, func(s string) {

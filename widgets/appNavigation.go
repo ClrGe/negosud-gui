@@ -13,6 +13,7 @@ import (
 	"negosud-gui/widgets/Grape"
 	"negosud-gui/widgets/StorageLocation"
 	"negosud-gui/widgets/Supplier"
+	"negosud-gui/widgets/SupplierOrder"
 	"negosud-gui/widgets/WineLabel"
 )
 
@@ -69,7 +70,7 @@ var (
 			theme.HistoryIcon(),
 		},
 		"orders_producers": {"Fournisseurs",
-			makeOrdersTabs,
+			SupplierOrder.MakePage,
 			true,
 			theme.RadioButtonCheckedIcon(),
 		},
