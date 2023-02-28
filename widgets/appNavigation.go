@@ -11,6 +11,7 @@ import (
 	"negosud-gui/data"
 	"negosud-gui/widgets/Bottle"
 	"negosud-gui/widgets/Grape"
+	"negosud-gui/widgets/Producer"
 	"negosud-gui/widgets/StorageLocation"
 	"negosud-gui/widgets/Supplier"
 	"negosud-gui/widgets/SupplierOrder"
@@ -44,7 +45,7 @@ var (
 			true,
 			theme.StorageIcon(),
 		},
-		"producers_management": {"Fournisseurs",
+		"suppliers_management": {"Fournisseurs",
 			Supplier.MakePage,
 			true,
 			theme.FolderOpenIcon(),
@@ -64,12 +65,17 @@ var (
 			true,
 			theme.FolderOpenIcon(),
 		},
+		"producers_management": {"Producteurs",
+			Producer.MakePage,
+			true,
+			theme.AccountIcon(),
+		},
 		"orders_tab": {"Commandes",
 			makeOrdersTabs,
 			true,
 			theme.HistoryIcon(),
 		},
-		"orders_producers": {"Fournisseurs",
+		"orders_suppliers": {"Fournisseurs",
 			SupplierOrder.MakePage,
 			true,
 			theme.RadioButtonCheckedIcon(),
@@ -128,8 +134,8 @@ var (
 	ComponentIndex = map[string][]string{
 		"":            {"home", "gestion_tab", "orders_tab", "admin_tab", "support_tab"},
 		"support_tab": {"faq_tab", "contact_tab"},
-		"orders_tab":  {"orders_producers", "orders_customers"},
-		"gestion_tab": {"storageLocations_management", "producers_management", "wineLabel_management", "grape_management", "bottles_management"},
+		"orders_tab":  {"orders_suppliers", "orders_customers"},
+		"gestion_tab": {"storageLocations_management", "suppliers_management", "producers_management", "wineLabel_management", "grape_management", "bottles_management"},
 		//"admin_tab":   {"users_management", "documents_tab", "statistics_tab", "website_management"},
 
 		"admin_tab": {"users_management", "documents_tab"},

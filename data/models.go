@@ -29,15 +29,17 @@ var ProducerData []PartialProducer
 
 // Producer struct holds information about a producer
 type Producer struct {
-	ID        int         `json:"id"`
-	Name      string      `json:"name"`
-	Details   string      `json:"details"`
+	ID      int         `json:"id"`
+	Name    string      `json:"name"`
+	Details string      `json:"details"`
+	Address *Address    `json:"address"`
+	Region  interface{} `json:"region"`
+
 	CreatedAt interface{} `json:"createdAt"`
 	UpdatedAt time.Time   `json:"updatedAt"`
 	CreatedBy string      `json:"createdBy"`
 	UpdatedBy string      `json:"updatedBy"`
 	Bottles   interface{} `json:"Bottles"`
-	Region    interface{} `json:"region"`
 }
 
 // PartialProducer holds only the necessary data for the table (= needs string only)

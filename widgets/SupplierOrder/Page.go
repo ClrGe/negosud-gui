@@ -22,8 +22,9 @@ import (
 type editForm struct {
 	form *fyne.Container
 
-	entryReference *widget.Entry
-	selectSupplier *widget.Select
+	entryReference       *widget.Entry
+	selectSupplier       *widget.Select
+	selectDeliveryStatus *widget.Select
 
 	gridContainerItems *fyne.Container
 
@@ -39,8 +40,11 @@ var bind []binding.DataMap
 var filter func([]data.PartialSupplierOrder) []data.PartialSupplierOrder
 
 var currentSupplierId int
+var currentDeliveryStatusId int
 var supplierNames []string
 var supplierMap map[string]int
+var deliveryStatusNames []string
+var deliveryStatusMap map[int]string
 
 var table *widget.Table
 var tableOptions *rtable.TableOptions
@@ -127,12 +131,15 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 		updateForm.entryReference.Refresh()
 		updateForm.selectSupplier.Selected = " "
 		updateForm.selectSupplier.Refresh()
+		updateForm.selectDeliveryStatus.ClearSelected()
+		updateForm.selectDeliveryStatus.Refresh()
 		updateForm.gridContainerItems.RemoveAll()
 		SupplierOrder.ID = -1
 		supplierOrderLineControls = make(map[*controls.SupplierOrderLineItem]int)
 		buttonsContainer.Hide()
 
 		currentSupplierId = -1
+		currentDeliveryStatusId = -1
 	}
 
 	//endregion
@@ -162,9 +169,12 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 		addForm.entryReference.Refresh()
 		addForm.selectSupplier.Selected = " "
 		addForm.selectSupplier.Refresh()
+		addForm.selectDeliveryStatus.Selected = " "
+		addForm.selectDeliveryStatus.Refresh()
 		addForm.gridContainerItems.RemoveAll()
 		supplierOrderLineControls = make(map[*controls.SupplierOrderLineItem]int)
 		currentSupplierId = -1
+		currentDeliveryStatusId = -1
 	}
 
 	addBtn := widget.NewButtonWithIcon("Ajouter cette commande fournisseur", theme.ConfirmIcon(),
@@ -249,12 +259,35 @@ func initForm(bottleNames []string, bottleMap map[string]int) editForm {
 	})
 	selectSupplier.PlaceHolder = " "
 
+	deliveryStatusNames = []string{"Nouvelle", "En attente", "Validée", "Prête", "En attente", "Livrée", "Echouée", "Annulée"}
+
+	deliveryStatusMap = make(map[int]string)
+
+	for i, s := range deliveryStatusNames {
+		deliveryStatusMap[i+1] = s
+	}
+
+	labelDeliveryStatus := widget.NewLabel("Statut de livraison")
+	selectDeliveryStatus := widget.NewSelect(deliveryStatusNames, func(s string) {
+		index := -1
+		for i, n := range deliveryStatusMap {
+			if n == s {
+				index = i
+				break
+			}
+		}
+		currentDeliveryStatusId = index
+	})
+	selectDeliveryStatus.PlaceHolder = " "
+
 	//SupplierOrder's header
 	layoutHeader := &fyne.Container{Layout: layout.NewFormLayout()}
 	layoutHeader.Add(labelReference)
 	layoutHeader.Add(entryReference)
 	layoutHeader.Add(labelSupplier)
 	layoutHeader.Add(selectSupplier)
+	layoutHeader.Add(labelDeliveryStatus)
+	layoutHeader.Add(selectDeliveryStatus)
 
 	//SupplierOrderLine List
 
@@ -289,10 +322,11 @@ func initForm(bottleNames []string, bottleMap map[string]int) editForm {
 	form.Add(AddItemBtn)
 
 	formStruct := editForm{
-		form:               form,
-		entryReference:     entryReference,
-		selectSupplier:     selectSupplier,
-		gridContainerItems: gridContainerItems,
+		form:                 form,
+		entryReference:       entryReference,
+		selectSupplier:       selectSupplier,
+		selectDeliveryStatus: selectDeliveryStatus,
+		gridContainerItems:   gridContainerItems,
 	}
 
 	return formStruct
@@ -410,9 +444,10 @@ func addSupplierOrders() {
 	}
 
 	supplierOrder := &data.SupplierOrder{
-		Reference: reference,
-		Lines:     supplierOrderLines,
-		Supplier:  supplier,
+		Reference:      reference,
+		Supplier:       supplier,
+		DeliveryStatus: currentDeliveryStatusId,
+		Lines:          supplierOrderLines,
 	}
 	jsonValue, _ := json.Marshal(supplierOrder)
 	postData := data.AuthPostRequest("SupplierOrder/AddSupplierOrder", bytes.NewBuffer(jsonValue))
@@ -456,10 +491,11 @@ func updateSupplierOrder(SupplierOrder *data.SupplierOrder) {
 	}
 
 	supplierOrder := &data.SupplierOrder{
-		ID:        SupplierOrder.ID,
-		Reference: reference,
-		Supplier:  supplier,
-		Lines:     supplierOrderLines,
+		ID:             SupplierOrder.ID,
+		Reference:      reference,
+		Supplier:       supplier,
+		DeliveryStatus: currentDeliveryStatusId,
+		Lines:          supplierOrderLines,
 	}
 	jsonValue, _ := json.Marshal(supplierOrder)
 	postData := data.AuthPostRequest("SupplierOrder/UpdateSupplierOrder", bytes.NewBuffer(jsonValue))
@@ -658,6 +694,12 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Supplier
 			updateForm.selectSupplier.SetSelected(SupplierOrder.Supplier.Name)
 		} else {
 			updateForm.selectSupplier.ClearSelected()
+		}
+
+		if SupplierOrder != nil && SupplierOrder.DeliveryStatus > 0 {
+			updateForm.selectDeliveryStatus.SetSelected(deliveryStatusMap[SupplierOrder.DeliveryStatus])
+		} else {
+			updateForm.selectDeliveryStatus.ClearSelected()
 		}
 
 		updateForm.gridContainerItems.RemoveAll()
