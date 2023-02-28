@@ -37,7 +37,7 @@ var CustomersOrdersColumns = []rtable.ColAttr{
 
 // Display the list of orders fetched from API in a table
 func displayCustomersOrders(_ fyne.Window) fyne.CanvasObject {
-	CustomerOrders := data.CustomerOrders
+	CustomerOrders := data.CustomerOrderData
 
 	response := data.AuthGetRequest("customers-orders")
 	if response == nil {

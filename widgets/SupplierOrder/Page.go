@@ -1,4 +1,4 @@
-package StorageLocation
+package SupplierOrder
 
 import (
 	"bytes"
@@ -12,7 +12,7 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"github.com/rohanthewiz/rtable"
 	"negosud-gui/data"
-	"negosud-gui/widgets/StorageLocation/controls"
+	"negosud-gui/widgets/SupplierOrder/controls"
 	"sort"
 	"strconv"
 )
@@ -22,7 +22,9 @@ import (
 type editForm struct {
 	form *fyne.Container
 
-	entryName *widget.Entry
+	entryReference       *widget.Entry
+	selectSupplier       *widget.Select
+	selectDeliveryStatus *widget.Select
 
 	gridContainerItems *fyne.Container
 
@@ -32,8 +34,17 @@ type editForm struct {
 var log = data.Logger
 var identifier string
 
+var suppliers []data.PartialSupplier
+
 var bind []binding.DataMap
-var filter func([]data.PartialStorageLocation) []data.PartialStorageLocation
+var filter func([]data.PartialSupplierOrder) []data.PartialSupplierOrder
+
+var currentSupplierId int
+var currentDeliveryStatusId int
+var supplierNames []string
+var supplierMap map[string]int
+var deliveryStatusNames []string
+var deliveryStatusMap map[int]string
 
 var table *widget.Table
 var tableOptions *rtable.TableOptions
@@ -41,7 +52,7 @@ var tableOptions *rtable.TableOptions
 var updateForm editForm
 var addForm editForm
 
-var bottleStorageLocationControls map[*controls.BottleStorageLocationItem]int
+var supplierOrderLineControls map[*controls.SupplierOrderLineItem]int
 
 // endregion " declarations "
 
@@ -50,8 +61,8 @@ var bottleStorageLocationControls map[*controls.BottleStorageLocationItem]int
 // MakePage function creates a new set of tabs
 func MakePage(_ fyne.Window) fyne.CanvasObject {
 
-	ListTab := container.NewTabItem("Liste des emplacements", initListTab(nil))
-	addTab := container.NewTabItem("Ajouter un emplacement", initAddTab(nil))
+	ListTab := container.NewTabItem("Liste des commandes fournisseurs", initListTab(nil))
+	addTab := container.NewTabItem("Ajouter une commande fournisseur", initAddTab(nil))
 	tabs := container.NewAppTabs(
 		ListTab,
 		addTab,
@@ -75,23 +86,24 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 
 // initListTab implements a dynamic table bound to an editing form
 func initListTab(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.STORAGELOCATION.initListTab()"
+	//var source = "WIDGETS.SupplierOrder.initListTab()"
 
 	//region datas
 	// retrieve structs from data package
-	StorageLocation := data.IndStorageLocation
+	SupplierOrder := data.IndSupplierOrder
 
-	resp, label := getStorageLocations()
+	resp, label := getSupplierOrders()
 	if !resp {
 		return label
 	}
 
 	bottleNames, bottleMap := getAndMapBottleNames()
+	supplierNames, supplierMap = getAndMapSupplierNames()
 
 	// Columns defines the header row for the table
 	var Columns = []rtable.ColAttr{
 		{ColName: "ID", Header: "ID", WidthPercent: 50},
-		{ColName: "Name", Header: "Nom", WidthPercent: 90},
+		{ColName: "Reference", Header: "Reference", WidthPercent: 90},
 	}
 
 	tableOptions = &rtable.TableOptions{
@@ -106,7 +118,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	updateForm = initForm(bottleNames, bottleMap)
 
 	//region " design elements initialization "
-	buttonsContainer := initButtonContainer(&StorageLocation)
+	buttonsContainer := initButtonContainer(&SupplierOrder)
 	buttonsContainer.Hide()
 	mainContainer := initMainContainer(updateForm.form, buttonsContainer)
 	//endregion
@@ -115,19 +127,26 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	updateForm.formClear = func() {
 		updateForm.form.Hide()
 		table.UnselectAll()
-		updateForm.entryName.Text = ""
-		updateForm.entryName.Refresh()
+		updateForm.entryReference.Text = ""
+		updateForm.entryReference.Refresh()
+		updateForm.selectSupplier.Selected = " "
+		updateForm.selectSupplier.Refresh()
+		updateForm.selectDeliveryStatus.ClearSelected()
+		updateForm.selectDeliveryStatus.Refresh()
 		updateForm.gridContainerItems.RemoveAll()
-		StorageLocation.ID = -1
-		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+		SupplierOrder.ID = -1
+		supplierOrderLineControls = make(map[*controls.SupplierOrderLineItem]int)
 		buttonsContainer.Hide()
+
+		currentSupplierId = -1
+		currentDeliveryStatusId = -1
 	}
 
 	//endregion
 
 	//region " table events "
 	table.OnSelected = func(cell widget.TableCellID) {
-		tableOnSelected(cell, Columns, &StorageLocation, bottleNames, bottleMap, buttonsContainer)
+		tableOnSelected(cell, Columns, &SupplierOrder, bottleNames, bottleMap, buttonsContainer)
 	}
 	//endregion
 
@@ -136,26 +155,33 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 
 // Form to add and send a new object to the API endpoint (POST)
 func initAddTab(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.STORAGELOCATION.initAddTab"
+	//var source = "WIDGETS.SupplierOrder.initAddTab"
 
-	bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+	supplierOrderLineControls = make(map[*controls.SupplierOrderLineItem]int)
 
 	bottleNames, bottleMap := getAndMapBottleNames()
+	supplierNames, supplierMap = getAndMapSupplierNames()
 
 	addForm = initForm(bottleNames, bottleMap)
 
 	addForm.formClear = func() {
-		addForm.entryName.Text = ""
-		addForm.entryName.Refresh()
+		addForm.entryReference.Text = ""
+		addForm.entryReference.Refresh()
+		addForm.selectSupplier.Selected = " "
+		addForm.selectSupplier.Refresh()
+		addForm.selectDeliveryStatus.Selected = " "
+		addForm.selectDeliveryStatus.Refresh()
 		addForm.gridContainerItems.RemoveAll()
-		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+		supplierOrderLineControls = make(map[*controls.SupplierOrderLineItem]int)
+		currentSupplierId = -1
+		currentDeliveryStatusId = -1
 	}
 
-	addBtn := widget.NewButtonWithIcon("Ajouter cet emplacement", theme.ConfirmIcon(),
+	addBtn := widget.NewButtonWithIcon("Ajouter cette commande fournisseur", theme.ConfirmIcon(),
 		func() {})
 
 	addBtn.OnTapped = func() {
-		addStorageLocations()
+		addSupplierOrders()
 	}
 
 	buttonsContainer := container.NewHBox(addBtn)
@@ -179,7 +205,7 @@ func initMainContainer(updateForm *fyne.Container, buttonsContainer *fyne.Contai
 
 	// Define layout
 	individualTabs := container.NewAppTabs(
-		container.NewTabItem("Modifier l'emplacement", layoutWithButtons),
+		container.NewTabItem("Modifier la commande fournisseur", layoutWithButtons),
 	)
 
 	filterContainer := initFilterContainer()
@@ -224,22 +250,53 @@ func initForm(bottleNames []string, bottleMap map[string]int) editForm {
 	form := &fyne.Container{Layout: layout.NewVBoxLayout()}
 
 	// declare form elements
-	labelName := widget.NewLabel("Nom")
-	entryName := widget.NewEntry()
+	labelReference := widget.NewLabel("Reference")
+	entryReference := widget.NewEntry()
 
-	//StorageLocation's header
+	labelSupplier := widget.NewLabel("Fournisseur")
+	selectSupplier := widget.NewSelect(supplierNames, func(s string) {
+		currentSupplierId = supplierMap[s]
+	})
+	selectSupplier.PlaceHolder = " "
+
+	deliveryStatusNames = []string{"Nouvelle", "En attente", "Validée", "Prête", "En attente", "Livrée", "Echouée", "Annulée"}
+
+	deliveryStatusMap = make(map[int]string)
+
+	for i, s := range deliveryStatusNames {
+		deliveryStatusMap[i+1] = s
+	}
+
+	labelDeliveryStatus := widget.NewLabel("Statut de livraison")
+	selectDeliveryStatus := widget.NewSelect(deliveryStatusNames, func(s string) {
+		index := -1
+		for i, n := range deliveryStatusMap {
+			if n == s {
+				index = i
+				break
+			}
+		}
+		currentDeliveryStatusId = index
+	})
+	selectDeliveryStatus.PlaceHolder = " "
+
+	//SupplierOrder's header
 	layoutHeader := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutHeader.Add(labelName)
-	layoutHeader.Add(entryName)
+	layoutHeader.Add(labelReference)
+	layoutHeader.Add(entryReference)
+	layoutHeader.Add(labelSupplier)
+	layoutHeader.Add(selectSupplier)
+	layoutHeader.Add(labelDeliveryStatus)
+	layoutHeader.Add(selectDeliveryStatus)
 
-	//BottleStorageLocation List
+	//SupplierOrderLine List
 
 	// List Title
 	BSLListTitle := widget.NewLabel("Produit")
 	BSLListTitle.TextStyle.Bold = true
 
 	// List headers
-	labelBottle := widget.NewLabel("Nom")
+	labelBottle := widget.NewLabel("Reference")
 	labelQuantity := widget.NewLabel("Quantité")
 
 	// List items
@@ -253,7 +310,7 @@ func initForm(bottleNames []string, bottleMap map[string]int) editForm {
 
 	AddItemBtn := widget.NewButtonWithIcon("", theme.ContentAddIcon(),
 		func() {
-			addBottleStorageLocationControl(bottleNames, bottleMap, gridContainerItems)
+			addSupplierOrderLineControl(bottleNames, bottleMap, gridContainerItems)
 		})
 
 	form.Add(layoutHeader)
@@ -265,30 +322,32 @@ func initForm(bottleNames []string, bottleMap map[string]int) editForm {
 	form.Add(AddItemBtn)
 
 	formStruct := editForm{
-		form:               form,
-		entryName:          entryName,
-		gridContainerItems: gridContainerItems,
+		form:                 form,
+		entryReference:       entryReference,
+		selectSupplier:       selectSupplier,
+		selectDeliveryStatus: selectDeliveryStatus,
+		gridContainerItems:   gridContainerItems,
 	}
 
 	return formStruct
 }
 
-func initButtonContainer(StorageLocation *data.StorageLocation) *fyne.Container {
+func initButtonContainer(SupplierOrder *data.SupplierOrder) *fyne.Container {
 
-	//var source = "WIDGETS.STORAGELOCATION.initButtonContainer"
+	//var source = "WIDGETS.SupplierOrder.initButtonContainer"
 
-	editBtn := widget.NewButtonWithIcon("Modifier cet emplacement", theme.ConfirmIcon(),
+	editBtn := widget.NewButtonWithIcon("Modifier cette commande fournisseur", theme.ConfirmIcon(),
 		func() {})
-	deleteBtn := widget.NewButtonWithIcon("Supprimer cet emplacement", theme.WarningIcon(),
+	deleteBtn := widget.NewButtonWithIcon("Supprimer cette commande fournisseur", theme.WarningIcon(),
 		func() {})
 
 	//region " events "
 	editBtn.OnTapped = func() {
-		updateStorageLocation(StorageLocation)
+		updateSupplierOrder(SupplierOrder)
 	}
 
 	deleteBtn.OnTapped = func() {
-		deleteStorageLocation(StorageLocation.ID)
+		deleteSupplierOrder(SupplierOrder.ID)
 	}
 
 	buttonsContainer := container.NewHBox(editBtn, deleteBtn)
@@ -302,17 +361,17 @@ func initButtonContainer(StorageLocation *data.StorageLocation) *fyne.Container 
 
 // region " data "
 
-// region " storageLocations "
+// region " supplierOrders "
 
-func getStorageLocations() (bool, *widget.Label) {
-	var source = "WIDGETS.STORAGELOCATION.getStorageLocations() "
-	StorageLocations := data.StorageLocationData
-	response := data.AuthGetRequest("storageLocation")
+func getSupplierOrders() (bool, *widget.Label) {
+	var source = "WIDGETS.SupplierOrder.getSupplierOrders() "
+	SupplierOrders := data.SupplierOrderData
+	response := data.AuthGetRequest("supplierOrder")
 	if response == nil {
 		fmt.Println("No result returned")
 		return false, widget.NewLabel("Le serveur n'a renvoyé aucun contenu")
 	}
-	if err := json.NewDecoder(response).Decode(&StorageLocations); err != nil {
+	if err := json.NewDecoder(response).Decode(&SupplierOrders); err != nil {
 		fmt.Println(err)
 		log(true, source, err.Error())
 		return false, widget.NewLabel("Erreur de décodage du json")
@@ -320,37 +379,37 @@ func getStorageLocations() (bool, *widget.Label) {
 
 	//filter data
 	if filter != nil {
-		StorageLocations = filter(StorageLocations)
+		SupplierOrders = filter(SupplierOrders)
 	}
 
 	//order datas by Id
-	sort.SliceStable(StorageLocations, func(i, j int) bool {
-		return StorageLocations[i].Id < StorageLocations[j].Id
+	sort.SliceStable(SupplierOrders, func(i, j int) bool {
+		return SupplierOrders[i].Id < SupplierOrders[j].Id
 	})
 
 	bind = nil
 
-	for i := 0; i < len(StorageLocations); i++ {
+	for i := 0; i < len(SupplierOrders); i++ {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
-		t := StorageLocations[i]
+		t := SupplierOrders[i]
 		id := strconv.Itoa(t.Id)
-		StorageLocations[i].ID = id
+		SupplierOrders[i].ID = id
 
-		// binding storageLocation data
-		bind = append(bind, binding.BindStruct(&StorageLocations[i]))
+		// binding supplierOrder data
+		bind = append(bind, binding.BindStruct(&SupplierOrders[i]))
 
 	}
 
 	return true, widget.NewLabel("")
 }
 
-func addStorageLocations() {
-	var source = "WIDGETS.STORAGELOCATION.addStorageLocations"
-	bottleStorageLocations := make([]data.BottleStorageLocation, 0)
+func addSupplierOrders() {
+	var source = "WIDGETS.SupplierOrder.addSupplierOrders"
+	supplierOrderLines := make([]data.SupplierOrderLine, 0)
 
 	uniqueIds := make(map[int]struct{})
 	// Modify duplicate values to exclude them later
-	for item, _ := range bottleStorageLocationControls {
+	for item, _ := range supplierOrderLineControls {
 		if _, has := uniqueIds[item.BottleId]; has {
 			//duplicate = true
 			item.BottleId = -1
@@ -358,7 +417,7 @@ func addStorageLocations() {
 		uniqueIds[item.BottleId] = struct{}{}
 	}
 
-	for control, _ := range bottleStorageLocationControls {
+	for control, _ := range supplierOrderLineControls {
 		// Exclude duplicate values
 		if control.BottleId > 0 {
 
@@ -368,26 +427,33 @@ func addStorageLocations() {
 
 			quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
 
-			bottleStorageLocation := data.BottleStorageLocation{
+			supplierOrderLine := data.SupplierOrderLine{
+				BottleId: control.BottleId,
 				Bottle:   bottle,
 				Quantity: int(quantity),
 			}
 
-			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
+			supplierOrderLines = append(supplierOrderLines, supplierOrderLine)
 		}
 	}
 
-	name := addForm.entryName.Text
+	reference := addForm.entryReference.Text
 
-	storageLocation := &data.StorageLocation{
-		Name:                   name,
-		BottleStorageLocations: bottleStorageLocations,
+	supplier := &data.Supplier{
+		ID: currentSupplierId,
 	}
-	jsonValue, _ := json.Marshal(storageLocation)
-	postData := data.AuthPostRequest("StorageLocation/AddStorageLocation", bytes.NewBuffer(jsonValue))
+
+	supplierOrder := &data.SupplierOrder{
+		Reference:      reference,
+		Supplier:       supplier,
+		DeliveryStatus: currentDeliveryStatusId,
+		Lines:          supplierOrderLines,
+	}
+	jsonValue, _ := json.Marshal(supplierOrder)
+	postData := data.AuthPostRequest("SupplierOrder/AddSupplierOrder", bytes.NewBuffer(jsonValue))
 	if postData != 201 {
 		fmt.Println("Error on add")
-		message := "Error on storageLocation " + identifier + " add"
+		message := "Error on supplierOrder " + identifier + " add"
 		log(true, source, message)
 		return
 	} else {
@@ -396,11 +462,11 @@ func addStorageLocations() {
 	tableRefresh()
 }
 
-func updateStorageLocation(StorageLocation *data.StorageLocation) {
-	var source = "WIDGETS.STORAGELOCATION.updateStorageLocations"
-	bottleStorageLocations := make([]data.BottleStorageLocation, 0)
+func updateSupplierOrder(SupplierOrder *data.SupplierOrder) {
+	var source = "WIDGETS.SupplierOrder.updateSupplierOrders"
+	supplierOrderLines := make([]data.SupplierOrderLine, 0)
 
-	for control, _ := range bottleStorageLocationControls {
+	for control, _ := range supplierOrderLineControls {
 		if control.BottleId > 0 {
 			bottle := data.Bottle{
 				ID: control.BottleId,
@@ -408,27 +474,34 @@ func updateStorageLocation(StorageLocation *data.StorageLocation) {
 
 			quantity, _ := strconv.ParseInt(control.EntryQuantity.Text, 10, 0)
 
-			bottleStorageLocation := data.BottleStorageLocation{
+			supplierOrderLine := data.SupplierOrderLine{
+				BottleId: control.BottleId,
 				Bottle:   bottle,
 				Quantity: int(quantity),
 			}
 
-			bottleStorageLocations = append(bottleStorageLocations, bottleStorageLocation)
+			supplierOrderLines = append(supplierOrderLines, supplierOrderLine)
 		}
 	}
 
-	name := updateForm.entryName.Text
+	reference := updateForm.entryReference.Text
 
-	storageLocation := &data.StorageLocation{
-		ID:                     StorageLocation.ID,
-		Name:                   name,
-		BottleStorageLocations: bottleStorageLocations,
+	supplier := &data.Supplier{
+		ID: currentSupplierId,
 	}
-	jsonValue, _ := json.Marshal(storageLocation)
-	postData := data.AuthPostRequest("StorageLocation/UpdateStorageLocation", bytes.NewBuffer(jsonValue))
+
+	supplierOrder := &data.SupplierOrder{
+		ID:             SupplierOrder.ID,
+		Reference:      reference,
+		Supplier:       supplier,
+		DeliveryStatus: currentDeliveryStatusId,
+		Lines:          supplierOrderLines,
+	}
+	jsonValue, _ := json.Marshal(supplierOrder)
+	postData := data.AuthPostRequest("SupplierOrder/UpdateSupplierOrder", bytes.NewBuffer(jsonValue))
 	if postData != 200 {
 		fmt.Println("Error on update")
-		message := "Error on storageLocation " + identifier + " update"
+		message := "Error on supplierOrder " + identifier + " update"
 		log(true, source, message)
 		return
 	}
@@ -436,14 +509,14 @@ func updateStorageLocation(StorageLocation *data.StorageLocation) {
 	tableRefresh()
 }
 
-func deleteStorageLocation(id int) {
-	var source = "WIDGETS.STORAGELOCATION.deleteStorageLocations"
+func deleteSupplierOrder(id int) {
+	var source = "WIDGETS.SupplierOrder.deleteSupplierOrders"
 	jsonValue, _ := json.Marshal(strconv.Itoa(id))
 
-	postData := data.AuthPostRequest("StorageLocation/DeleteStorageLocation", bytes.NewBuffer(jsonValue))
+	postData := data.AuthPostRequest("SupplierOrder/DeleteSupplierOrder", bytes.NewBuffer(jsonValue))
 	if postData != 200 {
 		fmt.Println("Error on delete")
-		message := "Error on storageLocation " + identifier + " delete"
+		message := "Error on supplierOrder " + identifier + " delete"
 		log(true, source, message)
 		return
 	}
@@ -451,7 +524,7 @@ func deleteStorageLocation(id int) {
 	updateForm.formClear()
 }
 
-// endregion " storageLocations "
+// endregion " supplierOrders "
 
 // region " bottles "
 
@@ -475,7 +548,7 @@ func getAndMapBottleNames() ([]string, map[string]int) {
 }
 
 func getAllBottleName() []data.PartialBottle {
-	var source = "WIDGETS.STORAGELOCATION.getAllBottleName"
+	var source = "WIDGETS.SupplierOrder.getAllBottleName"
 	bottleData := data.BottleData
 	response := data.AuthGetRequest("Bottle")
 	if response == nil {
@@ -492,21 +565,60 @@ func getAllBottleName() []data.PartialBottle {
 
 // endregion " bottles "
 
+// region " suppliers "
+
+func getAndMapSupplierNames() ([]string, map[string]int) {
+	suppliers = getAllSupplierName()
+	supplierNames = make([]string, 0)
+	for i := 0; i < len(suppliers); i++ {
+		suppliers[i].ID = strconv.Itoa(suppliers[i].Id)
+		name := suppliers[i].Name
+		supplierNames = append(supplierNames, name)
+	}
+
+	supplierMap = make(map[string]int)
+	for i := 0; i < len(suppliers); i++ {
+		id := suppliers[i].Id
+		name := suppliers[i].Name
+		supplierMap[name] = id
+	}
+
+	return supplierNames, supplierMap
+}
+
+func getAllSupplierName() []data.PartialSupplier {
+	var source = "WIDGETS.SUPPLIER.getAllSupplierName"
+	supplierData := data.SupplierData
+	response := data.AuthGetRequest("Supplier")
+	if response == nil {
+		fmt.Println("No result returned")
+		return nil
+	}
+	if err := json.NewDecoder(response).Decode(&supplierData); err != nil {
+		fmt.Println(err)
+		log(true, source, err.Error())
+		return nil
+	}
+	return supplierData
+}
+
+// endregion " suppliers "
+
 // region " filters "
 
-func beginByE(StorageLocations []data.PartialStorageLocation) []data.PartialStorageLocation {
+func beginByE(SupplierOrders []data.PartialSupplierOrder) []data.PartialSupplierOrder {
 
 	n := 0
-	for _, storageLocation := range StorageLocations {
-		if string([]rune(storageLocation.Name)[0]) == "e" {
-			StorageLocations[n] = storageLocation
+	for _, supplierOrder := range SupplierOrders {
+		if string([]rune(supplierOrder.Reference)[0]) == "e" {
+			SupplierOrders[n] = supplierOrder
 			n++
 		}
 	}
 
-	StorageLocations = StorageLocations[:n]
+	SupplierOrders = SupplierOrders[:n]
 
-	return StorageLocations
+	return SupplierOrders
 }
 
 // endregion " filters "
@@ -516,8 +628,8 @@ func beginByE(StorageLocations []data.PartialStorageLocation) []data.PartialStor
 // region " events "
 
 // region " table "
-func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, StorageLocation *data.StorageLocation, bottleNames []string, bottleMap map[string]int, buttonsContainer *fyne.Container) {
-	var source = "WIDGETS.STORAGELOCATION.tableOnSelected"
+func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, SupplierOrder *data.SupplierOrder, bottleNames []string, bottleMap map[string]int, buttonsContainer *fyne.Container) {
+	var source = "WIDGETS.SupplierOrder.tableOnSelected"
 	if cell.Row < 0 || cell.Row > len(bind) { // 1st col is header
 		fmt.Println("*-> Row out of limits")
 		log(true, source, "*-> Row out of limits")
@@ -566,9 +678,9 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, StorageL
 	i, err := strconv.Atoi(identifier)
 	if err == nil {
 		fmt.Println(i)
-		// Fetch individual storageLocation to fill form
-		response := data.AuthGetRequest("StorageLocation/" + identifier)
-		if err := json.NewDecoder(response).Decode(&StorageLocation); err != nil {
+		// Fetch individual supplierOrder to fill form
+		response := data.AuthGetRequest("SupplierOrder/" + identifier)
+		if err := json.NewDecoder(response).Decode(&SupplierOrder); err != nil {
 			log(true, source, err.Error())
 			fmt.Println(err)
 		}
@@ -576,20 +688,32 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, StorageL
 		updateForm.form.Show()
 		buttonsContainer.Show()
 
-		updateForm.entryName.SetText(StorageLocation.Name)
+		updateForm.entryReference.SetText(SupplierOrder.Reference)
+
+		if SupplierOrder != nil && SupplierOrder.Supplier != nil {
+			updateForm.selectSupplier.SetSelected(SupplierOrder.Supplier.Name)
+		} else {
+			updateForm.selectSupplier.ClearSelected()
+		}
+
+		if SupplierOrder != nil && SupplierOrder.DeliveryStatus > 0 {
+			updateForm.selectDeliveryStatus.SetSelected(deliveryStatusMap[SupplierOrder.DeliveryStatus])
+		} else {
+			updateForm.selectDeliveryStatus.ClearSelected()
+		}
 
 		updateForm.gridContainerItems.RemoveAll()
 
-		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
+		supplierOrderLineControls = make(map[*controls.SupplierOrderLineItem]int)
 
 		//
-		for _, bsl := range StorageLocation.BottleStorageLocations {
-			item := controls.NewBottleStorageLocationControl(bottleNames, bottleMap)
-			item.Bind(bsl.Bottle.ID, bsl.StorageLocation.ID)
+		for _, bsl := range SupplierOrder.Lines {
+			item := controls.NewSupplierOrderLineControl(bottleNames, bottleMap)
+			item.Bind(bsl.Bottle.ID, bsl.SupplierOrder.ID)
 			item.SelectBottle.Selected = bsl.Bottle.FullName
 			item.EntryQuantity.Text = strconv.Itoa(bsl.Quantity)
 
-			bottleStorageLocationControls[item] = item.BottleId
+			supplierOrderLineControls[item] = item.BottleId
 
 			var deleteItemBtn *widget.Button
 			deleteItemBtn = widget.NewButtonWithIcon("", theme.DeleteIcon(),
@@ -597,7 +721,7 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, StorageL
 					updateForm.gridContainerItems.Remove(deleteItemBtn)
 					updateForm.gridContainerItems.Remove(item.SelectBottle)
 					updateForm.gridContainerItems.Remove(item.EntryQuantity)
-					delete(bottleStorageLocationControls, item)
+					delete(supplierOrderLineControls, item)
 				})
 
 			updateForm.gridContainerItems.Add(deleteItemBtn)
@@ -612,7 +736,7 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, StorageL
 
 func tableRefresh() {
 	if table != nil && tableOptions != nil {
-		getStorageLocations()
+		getSupplierOrders()
 		tableOptions.Bindings = bind
 		table.Refresh()
 	}
@@ -624,10 +748,10 @@ func tableRefresh() {
 
 // region " Other functions "
 
-func addBottleStorageLocationControl(bottleNames []string, bottleMap map[string]int, gridContainerItems *fyne.Container) {
-	item := controls.NewBottleStorageLocationControl(bottleNames, bottleMap)
+func addSupplierOrderLineControl(bottleNames []string, bottleMap map[string]int, gridContainerItems *fyne.Container) {
+	item := controls.NewSupplierOrderLineControl(bottleNames, bottleMap)
 
-	bottleStorageLocationControls[item] = len(bottleStorageLocationControls) + 1
+	supplierOrderLineControls[item] = len(supplierOrderLineControls) + 1
 
 	var deleteItemBtn *widget.Button
 	deleteItemBtn = widget.NewButtonWithIcon("", theme.DeleteIcon(),
@@ -635,7 +759,7 @@ func addBottleStorageLocationControl(bottleNames []string, bottleMap map[string]
 			gridContainerItems.Remove(deleteItemBtn)
 			gridContainerItems.Remove(item.SelectBottle)
 			gridContainerItems.Remove(item.EntryQuantity)
-			delete(bottleStorageLocationControls, item)
+			delete(supplierOrderLineControls, item)
 		})
 
 	gridContainerItems.Add(deleteItemBtn)

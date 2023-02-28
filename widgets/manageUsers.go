@@ -48,15 +48,19 @@ func getUsers() {
 	source := "WIDGETS.USERS "
 	response := data.AuthGetRequest("User")
 
-	if err := json.NewDecoder(response).Decode(&Users); err != nil {
-		log(true, source, err.Error())
-		fmt.Println(err)
+	if response != nil {
+
+		if err := json.NewDecoder(response).Decode(&Users); err != nil {
+			log(true, source, err.Error())
+			fmt.Println(err)
+		}
+
+		for i := 0; i < len(Users); i++ {
+			Users[i].ID = strconv.Itoa(Users[i].Id)
+			BindUser = append(BindUser, binding.BindStruct(&Users[i]))
+		}
 	}
 
-	for i := 0; i < len(Users); i++ {
-		Users[i].ID = strconv.Itoa(Users[i].Id)
-		BindUser = append(BindUser, binding.BindStruct(&Users[i]))
-	}
 }
 
 func displayUsers(_ fyne.Window) fyne.CanvasObject {

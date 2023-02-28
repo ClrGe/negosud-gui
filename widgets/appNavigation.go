@@ -10,7 +10,12 @@ import (
 	"fyne.io/fyne/v2/widget"
 	"negosud-gui/data"
 	"negosud-gui/widgets/Bottle"
+	"negosud-gui/widgets/Grape"
+	"negosud-gui/widgets/Producer"
 	"negosud-gui/widgets/StorageLocation"
+	"negosud-gui/widgets/Supplier"
+	"negosud-gui/widgets/SupplierOrder"
+	"negosud-gui/widgets/WineLabel"
 )
 
 var log = data.Logger
@@ -40,23 +45,38 @@ var (
 			true,
 			theme.StorageIcon(),
 		},
-		"producers_management": {"Fournisseurs",
-			makeProducerPage,
+		"suppliers_management": {"Fournisseurs",
+			Supplier.MakePage,
 			true,
 			theme.FolderOpenIcon(),
+		},
+		"wineLabel_management": {"Labels",
+			WineLabel.MakePage,
+			true,
+			theme.InfoIcon(),
+		},
+		"grape_management": {"Cépages",
+			Grape.MakePage,
+			true,
+			theme.ColorChromaticIcon(),
 		},
 		"bottles_management": {"Produits",
 			Bottle.MakePage,
 			true,
 			theme.FolderOpenIcon(),
 		},
+		"producers_management": {"Producteurs",
+			Producer.MakePage,
+			true,
+			theme.AccountIcon(),
+		},
 		"orders_tab": {"Commandes",
 			makeOrdersTabs,
 			true,
 			theme.HistoryIcon(),
 		},
-		"orders_producers": {"Fournisseurs",
-			makeOrdersTabs,
+		"orders_suppliers": {"Fournisseurs",
+			SupplierOrder.MakePage,
 			true,
 			theme.RadioButtonCheckedIcon(),
 		},
@@ -114,8 +134,8 @@ var (
 	ComponentIndex = map[string][]string{
 		"":            {"home", "gestion_tab", "orders_tab", "admin_tab", "support_tab"},
 		"support_tab": {"faq_tab", "contact_tab"},
-		"orders_tab":  {"orders_producers", "orders_customers"},
-		"gestion_tab": {"storageLocations_management", "producers_management", "bottles_management"},
+		"orders_tab":  {"orders_suppliers", "orders_customers"},
+		"gestion_tab": {"storageLocations_management", "suppliers_management", "producers_management", "wineLabel_management", "grape_management", "bottles_management"},
 		//"admin_tab":   {"users_management", "documents_tab", "statistics_tab", "website_management"},
 
 		"admin_tab": {"users_management", "documents_tab"},
@@ -179,6 +199,22 @@ func Navigation(setTab func(component Component), loadPrevious bool) fyne.Canvas
 
 // homePage with logo and message
 func homePage(_ fyne.Window) fyne.CanvasObject {
+	logo := canvas.NewImageFromFile("media/logo-large.png")
+	logo.FillMode = canvas.ImageFillContain
+	if fyne.CurrentDevice().IsMobile() {
+		logo.SetMinSize(fyne.NewSize(192, 192))
+	} else {
+		logo.SetMinSize(fyne.NewSize(900, 600))
+	}
+	return container.NewCenter(container.NewVBox(
+		widget.NewLabelWithStyle("Bienvenue dans l'utilitaire de gestion de NEGOSUD !", fyne.TextAlignCenter, fyne.TextStyle{Bold: true}),
+		logo,
+		widget.NewLabel(""),
+	))
+}
+
+// homePage with logo and message
+func alertPage(_ fyne.Window) fyne.CanvasObject {
 	logo := canvas.NewImageFromFile("media/logo-large.png")
 	logo.FillMode = canvas.ImageFillContain
 	if fyne.CurrentDevice().IsMobile() {

@@ -41,7 +41,7 @@ var OrdersColumns = []rtable.ColAttr{
 
 // Display the list of orders fetched from API in a table
 func displayOrders(_ fyne.Window) fyne.CanvasObject {
-	Orders := data.Orders
+	Orders := data.CustomerOrders
 
 	response := data.AuthGetRequest("orders")
 	if response == nil {
@@ -125,7 +125,7 @@ func producerOrdersForm(_ fyne.Window) fyne.CanvasObject {
 		OnSubmit: func() {
 
 			// extract the value from the input widget and set the corresponding field in the Producer struct
-			newOrder := &data.Order{
+			newOrder := &data.CustomerOrder{
 				Producer: nameProducer.Text,
 				Product:  productToOrder.Text,
 				Quantity: quantity.Text,
@@ -140,7 +140,7 @@ func producerOrdersForm(_ fyne.Window) fyne.CanvasObject {
 				data.Logger(false, "WIDGETS.ORDERS", message)
 
 			}
-			message := "Order placed successfully"
+			message := "CustomerOrder placed successfully"
 			data.Logger(false, "WIDGETS.ORDERS", message)
 		},
 		SubmitText: "Envoyer",

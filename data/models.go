@@ -29,15 +29,17 @@ var ProducerData []PartialProducer
 
 // Producer struct holds information about a producer
 type Producer struct {
-	ID        int         `json:"id"`
-	Name      string      `json:"name"`
-	Details   string      `json:"details"`
+	ID      int         `json:"id"`
+	Name    string      `json:"name"`
+	Details string      `json:"details"`
+	Address *Address    `json:"address"`
+	Region  interface{} `json:"region"`
+
 	CreatedAt interface{} `json:"createdAt"`
 	UpdatedAt time.Time   `json:"updatedAt"`
 	CreatedBy string      `json:"createdBy"`
 	UpdatedBy string      `json:"updatedBy"`
 	Bottles   interface{} `json:"Bottles"`
-	Region    interface{} `json:"region"`
 }
 
 // PartialProducer holds only the necessary data for the table (= needs string only)
@@ -100,13 +102,13 @@ type PartialBottle struct {
 }
 
 // ############################################
-// ################## ORDERS ##################
+// ################## CUSTOMERORDERS ##################
 // ############################################
 
-var Orders []Order
 var CustomerOrders []CustomerOrder
+var CustomerOrderData []PartialCustomerOrder
 
-type Order struct {
+type CustomerOrder struct {
 	ID          string
 	Product     string
 	Quantity    string
@@ -120,7 +122,7 @@ type Order struct {
 	ProducerId  int `json:"producer_id"`
 }
 
-type CustomerOrder struct {
+type PartialCustomerOrder struct {
 	ID       string
 	Client   string
 	Product  string
@@ -128,6 +130,72 @@ type CustomerOrder struct {
 	Producer string
 	Date     string
 	Status   string
+}
+
+//############################################
+//################## SUPPLIER ORDERS ##################
+//############################################
+
+var SupplierOrders []SupplierOrder
+var IndSupplierOrder SupplierOrder
+var SupplierOrderData []PartialSupplierOrder
+
+type SupplierOrder struct {
+	ID             int                 `json:"id"`
+	Reference      string              `json:"reference"`
+	DateOrder      interface{}         `json:"dateOrder"`
+	DateDelivery   interface{}         `json:"dateDelivery"`
+	DeliveryStatus int                 `json:"deliveryStatus"`
+	Supplier       *Supplier           `json:"supplier"`
+	Lines          []SupplierOrderLine `json:"Lines"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+type PartialSupplierOrder struct {
+	Id        int `json:"id"`
+	ID        string
+	Reference string `json:"reference"`
+
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+	UpdatedBy string `json:"updatedBy"`
+}
+
+//############################################
+//################## SUPPLIER ORDER LINES ##################
+//############################################
+
+var SupplierOrderLines []CustomerOrder
+var SupplierOrderLineData []PartialCustomerOrder
+
+type SupplierOrderLine struct {
+	ID            int           `json:"id"`
+	BottleId      int           `json:"BottleId"`
+	Bottle        Bottle        `json:"Bottle"`
+	SupplierOrder SupplierOrder `json:"SupplierOrder"`
+	Quantity      int           `json:"Quantity"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+type PartialSupplierOrderLine struct {
+	Id                     int `json:"id"`
+	ID                     string
+	BottleName             string
+	SupplierOrderReference string
+
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+	UpdatedBy string `json:"updatedBy"`
 }
 
 // ############################################
@@ -192,4 +260,151 @@ type PartialBottleStorageLocation struct {
 	UpdatedAt           string `json:"updatedAt"`
 	CreatedBy           string `json:"createdBy"`
 	UpdatedBy           string `json:"updatedBy"`
+}
+
+// ############################################
+// ################## SUPPLIER ###################
+// ############################################
+
+var Suppliers []Supplier
+var IndSupplier Supplier
+var SupplierData []PartialSupplier
+
+// Supplier struct holds information about a Supplier
+type Supplier struct {
+	ID        int         `json:"id"`
+	Name      string      `json:"name"`
+	Details   string      `json:"details"`
+	Email     string      `json:"email"`
+	Address   *Address    `json:"address"`
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+// PartialSupplier holds only the necessary data for the table (= needs string only)
+type PartialSupplier struct {
+	Id        int `json:"id"`
+	ID        string
+	Name      string `json:"name"`
+	Email     string `json:"email"`
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+	UpdatedBy string `json:"updatedBy"`
+}
+
+// ############################################
+// ################## ADDRESS ###################
+// ############################################
+
+type Address struct {
+	ID           int    `json:"id"`
+	AddressLine1 string `json:"addressLine1"`
+	AddressLine2 string `json:"addressLine2"`
+	CityId       int    `json:"cityId"`
+	City         *City  `json:"city"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+// ############################################
+// ################## CITY ###################
+// ############################################
+
+var Cities []City
+var IndCity City
+var CityData []PartialCity
+
+type City struct {
+	ID      int      `json:"id"`
+	Name    string   `json:"name"`
+	ZipCode int      `json:"zipCode"`
+	Country *Country `json:"country"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+type PartialCity struct {
+	Id      int `json:"id"`
+	ID      string
+	Name    string `json:"name"`
+	ZipCode int    `json:"zipCode"`
+}
+
+// ############################################
+// ################## Country ###################
+// ############################################
+
+type Country struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+// ############################################
+// ################## WINELABEL ###################
+// ############################################
+
+var IndWineLabel WineLabel
+var WineLabelData []PartialWineLabel
+
+type WineLabel struct {
+	ID    int    `json:"id"`
+	Label string `json:"label"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+type PartialWineLabel struct {
+	Id    int `json:"id"`
+	ID    string
+	Label string `json:"label"`
+
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+	UpdatedBy string `json:"updatedBy"`
+}
+
+// ############################################
+// ################## GRAPE ###################
+// ############################################
+
+var IndGrape Grape
+var GrapeData []PartialGrape
+
+type Grape struct {
+	ID        int    `json:"id"`
+	GrapeType string `json:"grapeType"`
+
+	CreatedAt interface{} `json:"createdAt"`
+	UpdatedAt interface{} `json:"updatedAt"`
+	CreatedBy string      `json:"createdBy"`
+	UpdatedBy string      `json:"updatedBy"`
+}
+
+type PartialGrape struct {
+	Id        int `json:"id"`
+	ID        string
+	GrapeType string `json:"grapeType"`
+
+	CreatedAt string `json:"createdAt"`
+	UpdatedAt string `json:"updatedAt"`
+	CreatedBy string `json:"createdBy"`
+	UpdatedBy string `json:"updatedBy"`
 }
