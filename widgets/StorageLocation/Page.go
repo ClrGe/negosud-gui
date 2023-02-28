@@ -498,7 +498,7 @@ func beginByE(StorageLocations []data.PartialStorageLocation) []data.PartialStor
 
 	n := 0
 	for _, storageLocation := range StorageLocations {
-		if string([]rune(storageLocation.Name)[0]) == "e" {
+		if string([]rune(storageLocation.Name)[0]) == "E" {
 			StorageLocations[n] = storageLocation
 			n++
 		}
