@@ -12,12 +12,26 @@ var Users []User
 
 // User struct holds information about a user
 type User struct {
-	ID        string `json:"-"`
-	Id        int    `json:"id"`
-	FirstName string `json:"firstName"`
-	Email     string `json:"email"`
-	Password  string `json:"password"`
-	//Role     string `json:"role"`
+	ID        string      `json:"-"`
+	Id        int         `json:"id"`
+	FirstName string      `json:"firstName"`
+	LastName  string      `json:"LastName"`
+	Email     string      `json:"email"`
+	Password  string      `json:"password"`
+	Role      interface{} `json:"role"`
+}
+
+// ############################################
+// ################## ROLES ###################
+// ############################################
+
+var Roles []Role
+
+// Role struct holds information about a role
+type Role struct {
+	ID   string `json:"-"`
+	Id   int    `json:"id"`
+	Name string `json:"name"`
 }
 
 // ############################################
@@ -86,22 +100,36 @@ type Bottle struct {
 
 // PartialBottle holds only the necessary data for the table (= needs string only)
 type PartialBottle struct {
-	Id                int `json:"id"`
-	ID                string
-	Price             string
-	Volume            string
-	Alcohol           string
-	Year              string
-	FullName          string  `json:"fullName"`
-	Description       string  `json:"description"`
-	WineType          string  `json:"wineType"`
-	VolumeInt         int     `json:"volume"`
-	Picture           string  `json:"picture"`
-	YearProduced      int     `json:"yearProduced"`
-	AlcoholPercentage float32 `json:"alcoholPercentage"`
-	CurrentPrice      float32 `json:"currentPrice"`
-	CustomerPrice     float32 `json:"customerPrice"`
-	SupplierPrice     float32 `json:"supplierPrice"`
+	Id                        int `json:"id"`
+	ID                        string
+	CustomerPrice             string
+	SupplierPrice             string
+	Volume                    string
+	Alcohol                   string
+	Year                      string
+	ThresholdToOrder          string
+	QuantityMinimumToOrder    string
+	YearProduced              string
+	FullName                  string                  `json:"fullName"`
+	Description               string                  `json:"description"`
+	WineType                  string                  `json:"wineType"`
+	VolumeInt                 int                     `json:"volume"`
+	Picture                   string                  `json:"picture"`
+	YearProducedInt           int                     `json:"yearProduced"`
+	AlcoholPercentage         float32                 `json:"alcoholPercentage"`
+	ThresholdToOrderInt       int                     `json:"thresholdToOrder"`
+	QuantityMinimumToOrderInt int                     `json:"quantityMinimumToOrder"`
+	CurrentPrice              float32                 `json:"currentPrice"`
+	CreatedAt                 interface{}             `json:"createdAt"`
+	UpdatedAt                 interface{}             `json:"updatedAt"`
+	CreatedBy                 string                  `json:"createdBy"`
+	UpdatedBy                 string                  `json:"updatedBy"`
+	BottleStorageLocations    []BottleStorageLocation `json:"bottleStorageLocations"`
+	BottleGrapes              interface{}             `json:"bottleGrapes"`
+	BottleSuppliers           interface{}             `json:"bottleSuppliers"`
+	Producer                  interface{}             `json:"producer"`
+	CustomerPriceFloat        float32                 `json:"customerPrice"`
+	SupplierPriceFloat        float32                 `json:"supplierPrice"`
 }
 
 // ############################################

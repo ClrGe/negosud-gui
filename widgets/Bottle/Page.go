@@ -23,11 +23,15 @@ import (
 type editForm struct {
 	form *fyne.Container
 
-	entryName          *widget.Entry
-	entryCustomerPrice *widget.Entry
-	entrySupplierPrice *widget.Entry
-
-	gridContainerItems *fyne.Container
+	entryName              *widget.Entry
+	entryCustomerPrice     *widget.Entry
+	entrySupplierPrice     *widget.Entry
+	entryVolume            *widget.Entry
+	entryAlcoholPercentage *widget.Entry
+	entryWineType          *widget.Entry
+	entryYearProduced      *widget.Entry
+	entryDescriptionBottle *widget.Entry
+	gridContainerItems     *fyne.Container
 
 	formClear func()
 }
@@ -124,6 +128,14 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 		table.UnselectAll()
 		updateForm.entryName.Text = ""
 		updateForm.entryName.Refresh()
+		updateForm.entryVolume.Text = ""
+		updateForm.entryVolume.Refresh()
+		updateForm.entryAlcoholPercentage.Text = ""
+		updateForm.entryAlcoholPercentage.Refresh()
+		updateForm.entryWineType.Text = ""
+		updateForm.entryWineType.Refresh()
+		updateForm.entryYearProduced.Text = ""
+		updateForm.entryYearProduced.Refresh()
 		updateForm.gridContainerItems.RemoveAll()
 		Bottle.ID = -1
 		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
@@ -153,6 +165,14 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 	addForm.formClear = func() {
 		addForm.entryName.Text = ""
 		addForm.entryName.Refresh()
+		updateForm.entryVolume.Text = ""
+		updateForm.entryVolume.Refresh()
+		updateForm.entryAlcoholPercentage.Text = ""
+		updateForm.entryAlcoholPercentage.Refresh()
+		updateForm.entryWineType.Text = ""
+		updateForm.entryWineType.Refresh()
+		updateForm.entryYearProduced.Text = ""
+		updateForm.entryYearProduced.Refresh()
 		addForm.entryCustomerPrice.Text = ""
 		addForm.entryCustomerPrice.Refresh()
 		addForm.entrySupplierPrice.Text = ""
@@ -301,25 +321,20 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	layoutHeader.Add(labelSupplierPrice)
 	layoutHeader.Add(entrySupplierPrice)
 
-	layoutControlItemDescriptionBottle := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutControlItemDescriptionBottle.Add(labelDescriptionBottle)
-	layoutControlItemDescriptionBottle.Add(entryDescriptionBottle)
+	layoutHeader.Add(labelDescriptionBottle)
+	layoutHeader.Add(entryDescriptionBottle)
 
-	layoutControlItemVolume := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutControlItemVolume.Add(labelVolume)
-	layoutControlItemVolume.Add(entryVolume)
+	layoutHeader.Add(labelVolume)
+	layoutHeader.Add(entryVolume)
 
-	layoutControlItemAlcoholPercentage := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutControlItemAlcoholPercentage.Add(labelAlcoholPercentage)
-	layoutControlItemAlcoholPercentage.Add(entryAlcoholPercentage)
+	layoutHeader.Add(labelAlcoholPercentage)
+	layoutHeader.Add(entryAlcoholPercentage)
 
-	layoutControlItemWineType := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutControlItemWineType.Add(labelWineType)
-	layoutControlItemWineType.Add(entryWineType)
+	layoutHeader.Add(labelWineType)
+	layoutHeader.Add(entryWineType)
 
-	layoutControlItemYearProduced := &fyne.Container{Layout: layout.NewFormLayout()}
-	layoutControlItemYearProduced.Add(labelYearProduced)
-	layoutControlItemYearProduced.Add(entryYearProduced)
+	layoutHeader.Add(labelYearProduced)
+	layoutHeader.Add(entryYearProduced)
 
 	//BottleStorageLocation List
 
@@ -354,11 +369,16 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	form.Add(AddItemBtn)
 
 	formStruct := editForm{
-		form:               form,
-		entryName:          entryName,
-		entryCustomerPrice: entryCustomerPrice,
-		entrySupplierPrice: entrySupplierPrice,
-		gridContainerItems: gridContainerItems,
+		form:                   form,
+		entryName:              entryName,
+		entryDescriptionBottle: entryDescriptionBottle,
+		entryVolume:            entryVolume,
+		entryAlcoholPercentage: entryAlcoholPercentage,
+		entryWineType:          entryWineType,
+		entryYearProduced:      entryYearProduced,
+		entryCustomerPrice:     entryCustomerPrice,
+		entrySupplierPrice:     entrySupplierPrice,
+		gridContainerItems:     gridContainerItems,
 	}
 
 	return formStruct
@@ -442,6 +462,8 @@ func getBottles() (bool, *widget.Label) {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
 		t := Bottles[i]
 		Bottles[i].ID = strconv.Itoa(t.Id)
+		Bottles[i].ThresholdToOrder = strconv.Itoa(t.ThresholdToOrderInt)
+		Bottles[i].QuantityMinimumToOrder = strconv.Itoa(t.QuantityMinimumToOrderInt)
 
 		// binding Bottle data
 		bind = append(bind, binding.BindStruct(&Bottles[i]))
@@ -487,7 +509,20 @@ func addBottle() {
 	name := addForm.entryName.Text
 	customerPriceString := addForm.entryCustomerPrice.Text
 	supplierPriceString := addForm.entrySupplierPrice.Text
-
+	volume, err := strconv.Atoi(addForm.entryVolume.Text)
+	if err != nil {
+		volume = 0
+	}
+	alcoholPercentage, err := strconv.ParseFloat(addForm.entryAlcoholPercentage.Text, 32)
+	if err != nil {
+		alcoholPercentage = 0
+	}
+	wineType := addForm.entryWineType.Text
+	yearProduced, err := strconv.Atoi(addForm.entryYearProduced.Text)
+	if err != nil {
+		yearProduced = 0
+	}
+	description := addForm.entryDescriptionBottle.Text
 	customerPriceString = strings.Replace(customerPriceString, ",", ".", 1)
 	supplierPriceString = strings.Replace(supplierPriceString, ",", ".", 1)
 
@@ -502,10 +537,14 @@ func addBottle() {
 	}
 
 	Bottle := &data.Bottle{
-		FullName:      name,
-		CustomerPrice: float32(customerPrice),
-		SupplierPrice: float32(supplierPrice),
-
+		FullName:               name,
+		CustomerPrice:          float32(customerPrice),
+		SupplierPrice:          float32(supplierPrice),
+		Volume:                 volume,
+		AlcoholPercentage:      float32(alcoholPercentage),
+		Description:            description,
+		WineType:               wineType,
+		YearProduced:           yearProduced,
 		BottleStorageLocations: bottleStorageLocations,
 	}
 	jsonValue, _ := json.Marshal(Bottle)
@@ -545,6 +584,22 @@ func updateBottle(Bottle *data.Bottle) {
 	name := updateForm.entryName.Text
 	customerPriceString := updateForm.entryCustomerPrice.Text
 	supplierPriceString := updateForm.entrySupplierPrice.Text
+	volume, err := strconv.Atoi(addForm.entryVolume.Text)
+	if err != nil {
+		volume = 0
+	}
+	alcoholPercentage, err := strconv.ParseFloat(addForm.entryAlcoholPercentage.Text, 32)
+	if err != nil {
+		alcoholPercentage = 0
+	}
+	wineType := addForm.entryWineType.Text
+	yearProduced, err := strconv.Atoi(addForm.entryYearProduced.Text)
+	if err != nil {
+		yearProduced = 0
+	}
+	description := addForm.entryDescriptionBottle.Text
+	customerPriceString = strings.Replace(customerPriceString, ",", ".", 1)
+	supplierPriceString = strings.Replace(supplierPriceString, ",", ".", 1)
 
 	customerPriceString = strings.Replace(customerPriceString, ",", ".", 1)
 	supplierPriceString = strings.Replace(supplierPriceString, ",", ".", 1)
@@ -564,6 +619,11 @@ func updateBottle(Bottle *data.Bottle) {
 		FullName:               name,
 		CustomerPrice:          float32(customerPrice),
 		SupplierPrice:          float32(supplierPrice),
+		Volume:                 volume,
+		AlcoholPercentage:      float32(alcoholPercentage),
+		Description:            description,
+		WineType:               wineType,
+		YearProduced:           yearProduced,
 		BottleStorageLocations: bottleStorageLocations,
 	}
 	jsonValue, _ := json.Marshal(bottle)
@@ -721,6 +781,11 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Bottle *
 		updateForm.entryName.SetText(Bottle.FullName)
 		updateForm.entryCustomerPrice.SetText(fmt.Sprintf("%.2f", Bottle.CustomerPrice))
 		updateForm.entrySupplierPrice.SetText(fmt.Sprintf("%.2f", Bottle.SupplierPrice))
+		updateForm.entryDescriptionBottle.SetText(Bottle.Description)
+		updateForm.entryVolume.SetText(fmt.Sprintf("%d", Bottle.Volume))
+		updateForm.entryAlcoholPercentage.SetText(fmt.Sprintf("%.2f", Bottle.AlcoholPercentage))
+		updateForm.entryYearProduced.SetText(fmt.Sprintf("%d", Bottle.YearProduced))
+		updateForm.entryWineType.SetText(Bottle.WineType)
 
 		updateForm.gridContainerItems.RemoveAll()
 

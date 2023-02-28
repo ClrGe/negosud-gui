@@ -71,7 +71,7 @@ var (
 			theme.AccountIcon(),
 		},
 		"orders_tab": {"Commandes",
-			makeOrdersTabs,
+			SupplierOrder.MakePage,
 			true,
 			theme.HistoryIcon(),
 		},
