@@ -584,20 +584,20 @@ func updateBottle(Bottle *data.Bottle) {
 	name := updateForm.entryName.Text
 	customerPriceString := updateForm.entryCustomerPrice.Text
 	supplierPriceString := updateForm.entrySupplierPrice.Text
-	volume, err := strconv.Atoi(addForm.entryVolume.Text)
+	volume, err := strconv.Atoi(updateForm.entryVolume.Text)
 	if err != nil {
 		volume = 0
 	}
-	alcoholPercentage, err := strconv.ParseFloat(addForm.entryAlcoholPercentage.Text, 32)
+	alcoholPercentage, err := strconv.ParseFloat(updateForm.entryAlcoholPercentage.Text, 32)
 	if err != nil {
 		alcoholPercentage = 0
 	}
-	wineType := addForm.entryWineType.Text
-	yearProduced, err := strconv.Atoi(addForm.entryYearProduced.Text)
+	wineType := updateForm.entryWineType.Text
+	yearProduced, err := strconv.Atoi(updateForm.entryYearProduced.Text)
 	if err != nil {
 		yearProduced = 0
 	}
-	description := addForm.entryDescriptionBottle.Text
+	description := updateForm.entryDescriptionBottle.Text
 	customerPriceString = strings.Replace(customerPriceString, ",", ".", 1)
 	supplierPriceString = strings.Replace(supplierPriceString, ",", ".", 1)
 

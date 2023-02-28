@@ -1,4 +1,0 @@
-- lié une ligne à l'id => si possible supprimer l'affichage de l'id
-- un tableau pour les emplacements de chaque bouteille ?  => un select entry sur chaque emplacement ?
-- pour l'update/creation de bouteille : ajout de route post pour les tables de storage
-- creation d'un pop up de validation / erreur
