@@ -23,11 +23,15 @@ import (
 type editForm struct {
 	form *fyne.Container
 
-	entryName          *widget.Entry
-	entryCustomerPrice *widget.Entry
-	entrySupplierPrice *widget.Entry
-
-	gridContainerItems *fyne.Container
+	entryName              *widget.Entry
+	entryCustomerPrice     *widget.Entry
+	entrySupplierPrice     *widget.Entry
+	entryVolume            *widget.Entry
+	entryAlcoholPercentage *widget.Entry
+	entryWineType          *widget.Entry
+	entryYearProduced      *widget.Entry
+	entryDescriptionBottle *widget.Entry
+	gridContainerItems     *fyne.Container
 
 	formClear func()
 }
@@ -41,6 +45,7 @@ var filter func([]data.PartialBottle) []data.PartialBottle
 var table *widget.Table
 var tableOptions *rtable.TableOptions
 
+var massUpdateForm editForm
 var updateForm editForm
 var addForm editForm
 
@@ -55,9 +60,11 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 
 	ListTab := container.NewTabItem("Liste des produits", initListTab(nil))
 	addTab := container.NewTabItem("Ajouter un produit", initAddTab(nil))
+	//editMassTab := container.NewTabItem("Editer plusieurs produits", initEditMassTab(nil))
 	tabs := container.NewAppTabs(
 		ListTab,
 		addTab,
+		//editMassTab,
 	)
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == ListTab {
@@ -78,9 +85,7 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 
 // initListTab implements a dynamic table bound to an editing form
 func initListTab(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.Bottle.initListTab()"
 
-	//region datas
 	// retrieve structs from data package
 	Bottle := data.IndBottle
 
@@ -95,6 +100,9 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	var Columns = []rtable.ColAttr{
 		{ColName: "ID", Header: "ID", WidthPercent: 50},
 		{ColName: "FullName", Header: "Nom", WidthPercent: 90},
+		{ColName: "WineType", Header: "Famille", WidthPercent: 90},
+		{ColName: "QuantityMinimumToOrder", Header: "Qté commande auto", WidthPercent: 90},
+		{ColName: "ThresholdToOrder", Header: "Quantité minimum", WidthPercent: 90},
 	}
 
 	tableOptions = &rtable.TableOptions{
@@ -104,7 +112,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	}
 	table = rtable.CreateTable(tableOptions)
 
-	//region UPDATE FORM
+	//region "UPDATE FORM"
 
 	updateForm = initForm(storageLocationNames, storageLocationMap)
 
@@ -112,7 +120,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	buttonsContainer := initButtonContainer(&Bottle)
 	buttonsContainer.Hide()
 	mainContainer := initMainContainer(updateForm.form, buttonsContainer)
-	//endregion
+	//endregion " design elements initialization "
 	updateForm.form.Hide()
 
 	updateForm.formClear = func() {
@@ -120,13 +128,21 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 		table.UnselectAll()
 		updateForm.entryName.Text = ""
 		updateForm.entryName.Refresh()
+		updateForm.entryVolume.Text = ""
+		updateForm.entryVolume.Refresh()
+		updateForm.entryAlcoholPercentage.Text = ""
+		updateForm.entryAlcoholPercentage.Refresh()
+		updateForm.entryWineType.Text = ""
+		updateForm.entryWineType.Refresh()
+		updateForm.entryYearProduced.Text = ""
+		updateForm.entryYearProduced.Refresh()
 		updateForm.gridContainerItems.RemoveAll()
 		Bottle.ID = -1
 		bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 		buttonsContainer.Hide()
 	}
 
-	//endregion
+	//endregion "UPDATE FORM"
 
 	//region " table events "
 	table.OnSelected = func(cell widget.TableCellID) {
@@ -139,7 +155,6 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 
 // Form to add and send a new object to the API endpoint (POST)
 func initAddTab(_ fyne.Window) fyne.CanvasObject {
-	//var source = "WIDGETS.Bottle.initAddTab"
 
 	bottleStorageLocationControls = make(map[*controls.BottleStorageLocationItem]int)
 
@@ -150,6 +165,14 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 	addForm.formClear = func() {
 		addForm.entryName.Text = ""
 		addForm.entryName.Refresh()
+		updateForm.entryVolume.Text = ""
+		updateForm.entryVolume.Refresh()
+		updateForm.entryAlcoholPercentage.Text = ""
+		updateForm.entryAlcoholPercentage.Refresh()
+		updateForm.entryWineType.Text = ""
+		updateForm.entryWineType.Refresh()
+		updateForm.entryYearProduced.Text = ""
+		updateForm.entryYearProduced.Refresh()
 		addForm.entryCustomerPrice.Text = ""
 		addForm.entryCustomerPrice.Refresh()
 		addForm.entrySupplierPrice.Text = ""
@@ -175,6 +198,38 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 	return mainContainer
 }
 
+// Form to edit many new objects to the API endpoint (POST)
+/*func initEditMassTab(_ fyne.Window) fyne.CanvasObject {
+
+	// retrieve structs from data package
+	Bottle := data.IndBottle
+
+	// Columns defines the header row for the table
+	var Columns = []rtable.ColAttr{
+		{ColName: "Select", Header: "Select", WidthPercent: 10}, // Checkbox column
+		{ColName: "ID", Header: "ID", WidthPercent: 50},
+		{ColName: "FullName", Header: "Nom", WidthPercent: 90},
+		{ColName: "WineType", Header: "Famille", WidthPercent: 90},
+		{ColName: "QuantityMinimumToOrder", Header: "Qté commande auto", WidthPercent: 90},
+		{ColName: "ThresholdToOrder", Header: "Quantité minimum", WidthPercent: 90},
+	}
+
+	tableOptions = &rtable.TableOptions{
+		RefWidth: "========================================",
+		ColAttrs: Columns,
+		Bindings: bind,
+	}
+
+	table = rtable.CreateTable(tableOptions)
+	buttonsContainer := initButtonContainer(&Bottle)
+
+	table.OnSelected = func(id widget.TableCellID) {
+		handleCellClick(id)
+	}
+
+	return buttonsContainer
+}
+*/
 // endregion " tabs "
 
 // region " containers "
@@ -203,7 +258,7 @@ func initMainContainer(updateForm *fyne.Container, buttonsContainer *fyne.Contai
 }
 
 func initFilterContainer() *fyne.Container {
-	filterStrings := []string{"Tous", "E"}
+	filterStrings := []string{"Tous"}
 
 	selectFilter := widget.NewSelect(filterStrings, func(s string) {
 		if s == "Tous" {
@@ -240,6 +295,21 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	labelSupplierPrice := widget.NewLabel("Prix du fournisseur")
 	entrySupplierPrice := widget.NewEntry()
 
+	labelDescriptionBottle := widget.NewLabel("Description")
+	entryDescriptionBottle := widget.NewEntry()
+
+	labelVolume := widget.NewLabel("Volume")
+	entryVolume := widget.NewEntry()
+
+	labelAlcoholPercentage := widget.NewLabel("Pourcentage d'alcool")
+	entryAlcoholPercentage := widget.NewEntry()
+
+	labelWineType := widget.NewLabel("Famille de vin")
+	entryWineType := widget.NewEntry()
+
+	labelYearProduced := widget.NewLabel("Année de production")
+	entryYearProduced := widget.NewEntry()
+
 	//Bottle's header
 	layoutHeader := &fyne.Container{Layout: layout.NewFormLayout()}
 	layoutHeader.Add(labelName)
@@ -251,6 +321,21 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	layoutHeader.Add(labelSupplierPrice)
 	layoutHeader.Add(entrySupplierPrice)
 
+	layoutHeader.Add(labelDescriptionBottle)
+	layoutHeader.Add(entryDescriptionBottle)
+
+	layoutHeader.Add(labelVolume)
+	layoutHeader.Add(entryVolume)
+
+	layoutHeader.Add(labelAlcoholPercentage)
+	layoutHeader.Add(entryAlcoholPercentage)
+
+	layoutHeader.Add(labelWineType)
+	layoutHeader.Add(entryWineType)
+
+	layoutHeader.Add(labelYearProduced)
+	layoutHeader.Add(entryYearProduced)
+
 	//BottleStorageLocation List
 
 	// List Title
@@ -258,14 +343,14 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	BSLListTitle.TextStyle.Bold = true
 
 	// List headers
-	labelBottle := widget.NewLabel("Nom")
+	labelStorage := widget.NewLabel("Nom")
 	labelQuantity := widget.NewLabel("Quantité")
 
 	// List items
 	gridContainerHeader := &fyne.Container{Layout: layout.NewGridLayout(3)}
 	// List headers
 	gridContainerHeader.Add(widget.NewLabel(""))
-	gridContainerHeader.Add(labelBottle)
+	gridContainerHeader.Add(labelStorage)
 	gridContainerHeader.Add(labelQuantity)
 	// List items
 	gridContainerItems := &fyne.Container{Layout: layout.NewGridLayout(3)}
@@ -284,19 +369,41 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	form.Add(AddItemBtn)
 
 	formStruct := editForm{
-		form:               form,
-		entryName:          entryName,
-		entryCustomerPrice: entryCustomerPrice,
-		entrySupplierPrice: entrySupplierPrice,
-		gridContainerItems: gridContainerItems,
+		form:                   form,
+		entryName:              entryName,
+		entryDescriptionBottle: entryDescriptionBottle,
+		entryVolume:            entryVolume,
+		entryAlcoholPercentage: entryAlcoholPercentage,
+		entryWineType:          entryWineType,
+		entryYearProduced:      entryYearProduced,
+		entryCustomerPrice:     entryCustomerPrice,
+		entrySupplierPrice:     entrySupplierPrice,
+		gridContainerItems:     gridContainerItems,
 	}
 
 	return formStruct
 }
 
-func initButtonContainer(Bottle *data.Bottle) *fyne.Container {
+//func initMassContainer(massUpdateForm *fyne.Container, buttonsContainer *fyne.Container) *fyne.Container {
+//	layoutMassUpdateForm := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 200), massUpdateForm))
+//	layoutWithButtons := container.NewBorder(layoutMassUpdateForm, buttonsContainer, nil, nil)
+//
+//	singleTab := container.NewAppTabs(
+//		container.NewTabItem("Modifier les produits séctionnés ", layoutWithButtons))
+//
+//	tableContainer := container.NewBorder(nil, nil, nil, nil, table)
+//
+//	leftContainer := tableContainer
+//	rightContainer := container.NewBorder(nil, nil, nil, nil, singleTab)
+//	mainContainer := container.New(layout.NewGridLayout(2))
+//
+//	mainContainer.Add(leftContainer)
+//	mainContainer.Add(rightContainer)
+//
+//	return mainContainer
+//}
 
-	//var source = "WIDGETS.Bottle.initButtonContainer"
+func initButtonContainer(Bottle *data.Bottle) *fyne.Container {
 
 	editBtn := widget.NewButtonWithIcon("Modifier ce produit", theme.ConfirmIcon(),
 		func() {})
@@ -313,7 +420,7 @@ func initButtonContainer(Bottle *data.Bottle) *fyne.Container {
 	}
 
 	buttonsContainer := container.NewHBox(editBtn, deleteBtn)
-	//endregion
+	//endregion " events "
 	return buttonsContainer
 }
 
@@ -354,8 +461,9 @@ func getBottles() (bool, *widget.Label) {
 	for i := 0; i < len(Bottles); i++ {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
 		t := Bottles[i]
-		id := strconv.Itoa(t.Id)
-		Bottles[i].ID = id
+		Bottles[i].ID = strconv.Itoa(t.Id)
+		Bottles[i].ThresholdToOrder = strconv.Itoa(t.ThresholdToOrderInt)
+		Bottles[i].QuantityMinimumToOrder = strconv.Itoa(t.QuantityMinimumToOrderInt)
 
 		// binding Bottle data
 		bind = append(bind, binding.BindStruct(&Bottles[i]))
@@ -401,7 +509,20 @@ func addBottle() {
 	name := addForm.entryName.Text
 	customerPriceString := addForm.entryCustomerPrice.Text
 	supplierPriceString := addForm.entrySupplierPrice.Text
-
+	volume, err := strconv.Atoi(addForm.entryVolume.Text)
+	if err != nil {
+		volume = 0
+	}
+	alcoholPercentage, err := strconv.ParseFloat(addForm.entryAlcoholPercentage.Text, 32)
+	if err != nil {
+		alcoholPercentage = 0
+	}
+	wineType := addForm.entryWineType.Text
+	yearProduced, err := strconv.Atoi(addForm.entryYearProduced.Text)
+	if err != nil {
+		yearProduced = 0
+	}
+	description := addForm.entryDescriptionBottle.Text
 	customerPriceString = strings.Replace(customerPriceString, ",", ".", 1)
 	supplierPriceString = strings.Replace(supplierPriceString, ",", ".", 1)
 
@@ -416,10 +537,14 @@ func addBottle() {
 	}
 
 	Bottle := &data.Bottle{
-		FullName:      name,
-		CustomerPrice: float32(customerPrice),
-		SupplierPrice: float32(supplierPrice),
-
+		FullName:               name,
+		CustomerPrice:          float32(customerPrice),
+		SupplierPrice:          float32(supplierPrice),
+		Volume:                 volume,
+		AlcoholPercentage:      float32(alcoholPercentage),
+		Description:            description,
+		WineType:               wineType,
+		YearProduced:           yearProduced,
 		BottleStorageLocations: bottleStorageLocations,
 	}
 	jsonValue, _ := json.Marshal(Bottle)
@@ -459,6 +584,22 @@ func updateBottle(Bottle *data.Bottle) {
 	name := updateForm.entryName.Text
 	customerPriceString := updateForm.entryCustomerPrice.Text
 	supplierPriceString := updateForm.entrySupplierPrice.Text
+	volume, err := strconv.Atoi(addForm.entryVolume.Text)
+	if err != nil {
+		volume = 0
+	}
+	alcoholPercentage, err := strconv.ParseFloat(addForm.entryAlcoholPercentage.Text, 32)
+	if err != nil {
+		alcoholPercentage = 0
+	}
+	wineType := addForm.entryWineType.Text
+	yearProduced, err := strconv.Atoi(addForm.entryYearProduced.Text)
+	if err != nil {
+		yearProduced = 0
+	}
+	description := addForm.entryDescriptionBottle.Text
+	customerPriceString = strings.Replace(customerPriceString, ",", ".", 1)
+	supplierPriceString = strings.Replace(supplierPriceString, ",", ".", 1)
 
 	customerPriceString = strings.Replace(customerPriceString, ",", ".", 1)
 	supplierPriceString = strings.Replace(supplierPriceString, ",", ".", 1)
@@ -478,6 +619,11 @@ func updateBottle(Bottle *data.Bottle) {
 		FullName:               name,
 		CustomerPrice:          float32(customerPrice),
 		SupplierPrice:          float32(supplierPrice),
+		Volume:                 volume,
+		AlcoholPercentage:      float32(alcoholPercentage),
+		Description:            description,
+		WineType:               wineType,
+		YearProduced:           yearProduced,
 		BottleStorageLocations: bottleStorageLocations,
 	}
 	jsonValue, _ := json.Marshal(bottle)
@@ -509,7 +655,7 @@ func deleteBottle(id int) {
 
 // endregion " Bottles "
 
-// region " bottles "
+// region " Map Storage Location "
 
 func getAndMapStorageLocationNames() ([]string, map[string]int) {
 	storageLocations := getAllStorageLocationName()
@@ -546,7 +692,7 @@ func getAllStorageLocationName() []data.PartialStorageLocation {
 	return storageLocationData
 }
 
-// endregion " bottles "
+// endregion " Map Storage Location "
 
 // region " filters "
 
@@ -633,8 +779,13 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Bottle *
 		buttonsContainer.Show()
 
 		updateForm.entryName.SetText(Bottle.FullName)
-		updateForm.entryCustomerPrice.SetText(fmt.Sprintf("%f", Bottle.CustomerPrice))
-		updateForm.entrySupplierPrice.SetText(fmt.Sprintf("%f", Bottle.SupplierPrice))
+		updateForm.entryCustomerPrice.SetText(fmt.Sprintf("%.2f", Bottle.CustomerPrice))
+		updateForm.entrySupplierPrice.SetText(fmt.Sprintf("%.2f", Bottle.SupplierPrice))
+		updateForm.entryDescriptionBottle.SetText(Bottle.Description)
+		updateForm.entryVolume.SetText(fmt.Sprintf("%d", Bottle.Volume))
+		updateForm.entryAlcoholPercentage.SetText(fmt.Sprintf("%.2f", Bottle.AlcoholPercentage))
+		updateForm.entryYearProduced.SetText(fmt.Sprintf("%d", Bottle.YearProduced))
+		updateForm.entryWineType.SetText(Bottle.WineType)
 
 		updateForm.gridContainerItems.RemoveAll()
 
@@ -676,6 +827,31 @@ func tableRefresh() {
 	}
 }
 
+// Handle cell clicked
+func handleCellClick(cell widget.TableCellID) map[string]bool {
+	selectedRows := make(map[string]bool)
+
+	if cell.Row == 0 {
+		// Header row clicked
+		return nil
+	}
+	identifier, err := rtable.GetStrCellValue(widget.TableCellID{cell.Row, 0}, tableOptions)
+	if err != nil {
+		fmt.Println(err.Error())
+		log(true, "handleCLick", err.Error())
+		return nil
+	}
+	if _, ok := selectedRows[identifier]; ok {
+		// Row already selected, deselect it
+		delete(selectedRows, identifier)
+	} else {
+		// Row not selected, select it
+		selectedRows[identifier] = true
+	}
+
+	return selectedRows
+}
+
 // endregion "table"
 
 // endregion " events "
@@ -688,7 +864,7 @@ func addBottleStorageLocationControl(storageLocationNames []string, storageLocat
 	bottleStorageLocationControls[item] = len(bottleStorageLocationControls) + 1
 
 	var deleteItemBtn *widget.Button
-	deleteItemBtn = widget.NewButtonWithIcon("", theme.DeleteIcon(),
+	deleteItemBtn = widget.NewButtonWithIcon("", theme.CancelIcon(),
 		func() {
 			gridContainerItems.Remove(deleteItemBtn)
 			gridContainerItems.Remove(item.SelectStorageLocation)

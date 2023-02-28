@@ -21,9 +21,9 @@ var UserTableRefreshMethod func()
 // UsersColumns defines the header row for the table
 var UsersColumns = []rtable.ColAttr{
 	{ColName: "ID", Header: "ID", WidthPercent: 40},
-	{ColName: "Name", Header: "Nom", WidthPercent: 120},
+	{ColName: "FirstName", Header: "Nom", WidthPercent: 120},
+	{ColName: "LastName", Header: "Nom", WidthPercent: 120},
 	{ColName: "Email", Header: "Email", WidthPercent: 120},
-	{ColName: "Role", Header: "Rôle", WidthPercent: 120},
 }
 
 // makeUsersPage function creates a new set of tabs
