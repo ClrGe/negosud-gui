@@ -66,6 +66,8 @@ type Bottle struct {
 	Picture                string                  `json:"picture"`
 	YearProduced           int                     `json:"yearProduced"`
 	AlcoholPercentage      float32                 `json:"alcoholPercentage"`
+	ThresholdToOrder       int                     `json:"thresholdToOrder"`
+	QuantityMinimumToOrder int                     `json:"quantityMinimumToOrder"`
 	CurrentPrice           float32                 `json:"currentPrice"`
 	CreatedAt              interface{}             `json:"createdAt"`
 	UpdatedAt              interface{}             `json:"updatedAt"`
@@ -77,6 +79,7 @@ type Bottle struct {
 	Producer               interface{}             `json:"producer"`
 	CustomerPrice          float32                 `json:"customerPrice"`
 	SupplierPrice          float32                 `json:"supplierPrice"`
+	IsSelected             bool
 }
 
 // PartialBottle holds only the necessary data for the table (= needs string only)

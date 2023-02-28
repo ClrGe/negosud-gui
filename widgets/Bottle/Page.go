@@ -56,11 +56,11 @@ func MakePage(_ fyne.Window) fyne.CanvasObject {
 
 	ListTab := container.NewTabItem("Liste des produits", initListTab(nil))
 	addTab := container.NewTabItem("Ajouter un produit", initAddTab(nil))
-	editMassTab := container.NewTabItem("Editer plusieurs produits", initEditMassTab(nil))
+	//editMassTab := container.NewTabItem("Editer plusieurs produits", initEditMassTab(nil))
 	tabs := container.NewAppTabs(
 		ListTab,
 		addTab,
-		editMassTab,
+		//editMassTab,
 	)
 	tabs.OnSelected = func(ti *container.TabItem) {
 		if ti == ListTab {
@@ -96,6 +96,9 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	var Columns = []rtable.ColAttr{
 		{ColName: "ID", Header: "ID", WidthPercent: 50},
 		{ColName: "FullName", Header: "Nom", WidthPercent: 90},
+		{ColName: "WineType", Header: "Famille", WidthPercent: 90},
+		{ColName: "QuantityMinimumToOrder", Header: "Qté commande auto", WidthPercent: 90},
+		{ColName: "ThresholdToOrder", Header: "Quantité minimum", WidthPercent: 90},
 	}
 
 	tableOptions = &rtable.TableOptions{
@@ -105,7 +108,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 	}
 	table = rtable.CreateTable(tableOptions)
 
-	//region UPDATE FORM
+	//region "UPDATE FORM"
 
 	updateForm = initForm(storageLocationNames, storageLocationMap)
 
@@ -127,7 +130,7 @@ func initListTab(_ fyne.Window) fyne.CanvasObject {
 		buttonsContainer.Hide()
 	}
 
-	//endregion
+	//endregion "UPDATE FORM"
 
 	//region " table events "
 	table.OnSelected = func(cell widget.TableCellID) {
@@ -175,78 +178,38 @@ func initAddTab(_ fyne.Window) fyne.CanvasObject {
 	return mainContainer
 }
 
-//Form to edit many new objects to the API endpoint (POST)
-func initEditMassTab(_ fyne.Window) fyne.CanvasObject {
+// Form to edit many new objects to the API endpoint (POST)
+/*func initEditMassTab(_ fyne.Window) fyne.CanvasObject {
 
 	// retrieve structs from data package
-	_ = data.IndBottle
+	Bottle := data.IndBottle
 
-	resp, label := getBottles()
-	if !resp {
-		return label
+	// Columns defines the header row for the table
+	var Columns = []rtable.ColAttr{
+		{ColName: "Select", Header: "Select", WidthPercent: 10}, // Checkbox column
+		{ColName: "ID", Header: "ID", WidthPercent: 50},
+		{ColName: "FullName", Header: "Nom", WidthPercent: 90},
+		{ColName: "WineType", Header: "Famille", WidthPercent: 90},
+		{ColName: "QuantityMinimumToOrder", Header: "Qté commande auto", WidthPercent: 90},
+		{ColName: "ThresholdToOrder", Header: "Quantité minimum", WidthPercent: 90},
 	}
 
-	_, _ = getAndMapStorageLocationNames()
-
-	type rowData struct {
-		name   string
-		age    int
-		active bool
-	}
-	data := []rowData{
-		{"Alice", 25, false},
-		{"Bob", 30, true},
-		{"Charlie", 40, true},
-		{"Dave", 20, false},
+	tableOptions = &rtable.TableOptions{
+		RefWidth: "========================================",
+		ColAttrs: Columns,
+		Bindings: bind,
 	}
 
-	// Create the table widget
-	table := widget.NewTable(
-		// Define the number of columns in the table
-		func() (int, int) {
-			return len(data), len(data)
-		},
-		// Define the content of each cell in the table
-		func() fyne.CanvasObject {
-			return widget.NewLabel("...")
-		},
-		// Define the content of each row in the table
-		func(id widget.TableCellID, cell fyne.CanvasObject) {
-			row := id.Row
-			col := id.Col
-			switch col {
-			case 0:
-				cell.(*widget.Label).SetText(data[row].name)
-			case 1:
-				cell.(*widget.Label).SetText(fmt.Sprintf("%d", data[row].age))
-			case 2:
-				checkbox := widget.NewCheck("", nil)
-				checkbox.SetChecked(data[row].active)
-				checkbox.OnChanged = func(checked bool) {
-					data[row].active = checked
-				}
-				checkbox.Refresh()
-				cell = checkbox
-			}
-		},
-	)
+	table = rtable.CreateTable(tableOptions)
+	buttonsContainer := initButtonContainer(&Bottle)
 
-	// Set the headers of the table
+	table.OnSelected = func(id widget.TableCellID) {
+		handleCellClick(id)
+	}
 
-	l := o.(*fyne.Container).Objects[0].(*widget.Label)
-	id := widget.TableCellID{Row: 1, Col: 1}
-	table.UpdateCell( )
-	table.SetColumnText(0, "Name")
-	table.SetColumnText(1, "Age")
-	table.SetColumnText(2, "Active")
-
-	// Create a scroll container to hold the table
-	tableContainer := container.NewScroll(table)
-
-	massupdateForm :=
-	return mainContainer
+	return buttonsContainer
 }
-
+*/
 // endregion " tabs "
 
 // region " containers "
@@ -312,6 +275,21 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	labelSupplierPrice := widget.NewLabel("Prix du fournisseur")
 	entrySupplierPrice := widget.NewEntry()
 
+	labelDescriptionBottle := widget.NewLabel("Description")
+	entryDescriptionBottle := widget.NewEntry()
+
+	labelVolume := widget.NewLabel("Volume")
+	entryVolume := widget.NewEntry()
+
+	labelAlcoholPercentage := widget.NewLabel("Pourcentage d'alcool")
+	entryAlcoholPercentage := widget.NewEntry()
+
+	labelWineType := widget.NewLabel("Famille de vin")
+	entryWineType := widget.NewEntry()
+
+	labelYearProduced := widget.NewLabel("Année de production")
+	entryYearProduced := widget.NewEntry()
+
 	//Bottle's header
 	layoutControlItemName := &fyne.Container{Layout: layout.NewFormLayout()}
 	layoutControlItemName.Add(labelName)
@@ -324,6 +302,26 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	layoutControlItemSupplierPrice := &fyne.Container{Layout: layout.NewFormLayout()}
 	layoutControlItemSupplierPrice.Add(labelSupplierPrice)
 	layoutControlItemSupplierPrice.Add(entrySupplierPrice)
+
+	layoutControlItemDescriptionBottle := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutControlItemDescriptionBottle.Add(labelDescriptionBottle)
+	layoutControlItemDescriptionBottle.Add(entryDescriptionBottle)
+
+	layoutControlItemVolume := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutControlItemVolume.Add(labelVolume)
+	layoutControlItemVolume.Add(entryVolume)
+
+	layoutControlItemAlcoholPercentage := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutControlItemAlcoholPercentage.Add(labelAlcoholPercentage)
+	layoutControlItemAlcoholPercentage.Add(entryAlcoholPercentage)
+
+	layoutControlItemWineType := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutControlItemWineType.Add(labelWineType)
+	layoutControlItemWineType.Add(entryWineType)
+
+	layoutControlItemYearProduced := &fyne.Container{Layout: layout.NewFormLayout()}
+	layoutControlItemYearProduced.Add(labelYearProduced)
+	layoutControlItemYearProduced.Add(entryYearProduced)
 
 	//BottleStorageLocation List
 
@@ -370,11 +368,24 @@ func initForm(storageLocationNames []string, storageLocationMap map[string]int) 
 	return formStruct
 }
 
-func initMassUpdate(storageLocationNames []string, storageLocationMap map[string]int) editForm {
-	form := &fyne.Container{Layout: layout.NewVBoxLayout()}
-
-
-}
+//func initMassContainer(massUpdateForm *fyne.Container, buttonsContainer *fyne.Container) *fyne.Container {
+//	layoutMassUpdateForm := container.NewCenter(container.NewGridWrap(fyne.NewSize(600, 200), massUpdateForm))
+//	layoutWithButtons := container.NewBorder(layoutMassUpdateForm, buttonsContainer, nil, nil)
+//
+//	singleTab := container.NewAppTabs(
+//		container.NewTabItem("Modifier les produits séctionnés ", layoutWithButtons))
+//
+//	tableContainer := container.NewBorder(nil, nil, nil, nil, table)
+//
+//	leftContainer := tableContainer
+//	rightContainer := container.NewBorder(nil, nil, nil, nil, singleTab)
+//	mainContainer := container.New(layout.NewGridLayout(2))
+//
+//	mainContainer.Add(leftContainer)
+//	mainContainer.Add(rightContainer)
+//
+//	return mainContainer
+//}
 
 func initButtonContainer(Bottle *data.Bottle) *fyne.Container {
 
@@ -434,8 +445,7 @@ func getBottles() (bool, *widget.Label) {
 	for i := 0; i < len(Bottles); i++ {
 		// converting 'int' to 'string' as rtable only accepts 'string' values
 		t := Bottles[i]
-		id := strconv.Itoa(t.Id)
-		Bottles[i].ID = id
+		Bottles[i].ID = strconv.Itoa(t.Id)
 
 		// binding Bottle data
 		bind = append(bind, binding.BindStruct(&Bottles[i]))
@@ -713,8 +723,8 @@ func tableOnSelected(cell widget.TableCellID, Columns []rtable.ColAttr, Bottle *
 		buttonsContainer.Show()
 
 		updateForm.entryName.SetText(Bottle.FullName)
-		updateForm.entryCustomerPrice.SetText(fmt.Sprintf("%f", Bottle.CustomerPrice))
-		updateForm.entrySupplierPrice.SetText(fmt.Sprintf("%f", Bottle.SupplierPrice))
+		updateForm.entryCustomerPrice.SetText(fmt.Sprintf("%.2f", Bottle.CustomerPrice))
+		updateForm.entrySupplierPrice.SetText(fmt.Sprintf("%.2f", Bottle.SupplierPrice))
 
 		updateForm.gridContainerItems.RemoveAll()
 
@@ -754,6 +764,31 @@ func tableRefresh() {
 	table.Refresh()
 }
 
+// Handle cell clicked
+func handleCellClick(cell widget.TableCellID) map[string]bool {
+	selectedRows := make(map[string]bool)
+
+	if cell.Row == 0 {
+		// Header row clicked
+		return nil
+	}
+	identifier, err := rtable.GetStrCellValue(widget.TableCellID{cell.Row, 0}, tableOptions)
+	if err != nil {
+		fmt.Println(err.Error())
+		log(true, "handleCLick", err.Error())
+		return nil
+	}
+	if _, ok := selectedRows[identifier]; ok {
+		// Row already selected, deselect it
+		delete(selectedRows, identifier)
+	} else {
+		// Row not selected, select it
+		selectedRows[identifier] = true
+	}
+
+	return selectedRows
+}
+
 // endregion "table"
 
 // endregion " events "
@@ -766,7 +801,7 @@ func addBottleStorageLocationControl(storageLocationNames []string, storageLocat
 	bottleStorageLocationControls[item] = len(bottleStorageLocationControls) + 1
 
 	var deleteItemBtn *widget.Button
-	deleteItemBtn = widget.NewButtonWithIcon("", theme.DeleteIcon(),
+	deleteItemBtn = widget.NewButtonWithIcon("", theme.CancelIcon(),
 		func() {
 			gridContainerItems.Remove(deleteItemBtn)
 			gridContainerItems.Remove(item.SelectStorageLocation)
